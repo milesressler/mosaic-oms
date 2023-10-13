@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mosaic OMS - Create Order</title>
+    <!-- Include Bootstrap CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-..." crossorigin="anonymous">
+    <style>
+        .item-controls {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .item-controls button {
+            border: none;
+            background: none;
+            font-size: .8em;
+            cursor: pointer;
+        }
+
+        .quantity-input {
+            max-width: 55px;
+            padding-right: 0;
+            padding-left: 5px;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body class="bg-light">
+    <div class="container mt-5">
+        <h2 class="text-center mb-4">Mosaic OMS - Create Order</h2>
+
+        <form>
+            <div class="mb-3">
+                <label for="customerName" class="form-label">Customer Name</label>
+                <input type="text" class="form-control" id="customerName" required>
+            </div>
+            <div class="mb-3">
+                <label for="phoneNumber" class="form-label">Phone Number (Optional)</label>
+                <input type="tel" class="form-control" id="phoneNumber">
+                <div class="form-check mt-2">
+                    <input class="form-check-input" type="checkbox" value="" id="optInNotifications">
+                    <label class="form-check-label" for="optInNotifications">
+                        Opt-in to Notifications
+                    </label>
+                </div>
+            </div>
+            <div class="mb-3">
+                <h6>Items:</h6>
+                <div id="itemsContainer">
+                    <div class="row mb-3">
+                        <div class="col">
+                            <input type="text" class="form-control" placeholder="Item Description" required>
+                        </div>
+                        <div class="col quantity-input">
+                            <input type="number" class="form-control quantity-input" placeholder="Quantity" min="1" required>
+                        </div>
+                        <div class="col-auto item-controls">
+                            <button type="button" onclick="changeQuantity(this, 1)">+</button>
+                            <button type="button" onclick="changeQuantity(this, -1)">-</button>
+                        </div>
+                        <div class="col-auto">
+                            <button type="button" class="btn btn-danger" onclick="removeItemRow(this)">Remove</button>
+                        </div>
+                    </div>
+                </div>
+                <button type="button" class="btn btn-secondary" onclick="addItemRow()">Add New Item</button>
+            </div>
+            <div class="mb-3">
+                <h6>Special Instructions:</h6>
+                <textarea class="form-control" rows="3" placeholder="Add any special instructions"></textarea>
+            </div>
+            <div class="text-end">
+                <button type="submit" class="btn btn-primary">Submit Order</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Include Bootstrap JS (Optional) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js" integrity="sha384-..." crossorigin="anonymous"></script>
+
+    <script>
+        function changeQuantity(button, value) {
+            const quantityInput = button.parentElement.previousElementSibling;
+            const currentValue = parseInt(quantityInput.value);
+            const newValue = currentValue + value;
+            if (newValue >= 1 && newValue <= 99) {
+                quantityInput.value = newValue;
+            }
+        }
+
+        function addItemRow() {
+            const itemsContainer = document.getElementById('itemsContainer');
+
+            const itemRow = document.createElement('div');
+            itemRow.classList.add('row', 'mb-3');
+
+            const itemDescCol = document.createElement('div');
+            itemDescCol.classList.add('col');
+            const itemDescInput = document.createElement('input');
+            itemDescInput.type = 'text';
+            itemDescInput.classList.add('form-control');
+            itemDescInput.placeholder = 'Item Description';
+            itemDescInput.required = true;
+            itemDescCol.appendChild(itemDescInput);
+
+            const itemQuantityCol = document.createElement('div');
+            itemQuantityCol.classList.add('col', 'quantity-input');
+            const itemQuantityInput = document.createElement('input');
+            itemQuantityInput.type = 'number';
+            itemQuantityInput.classList.add('form-control',  'quantity-input');
+            itemQuantityInput.placeholder = 'Quantity';
+            itemQuantityInput.min = '1';
+            itemQuantityInput.required = true;
+            itemQuantityCol.appendChild(itemQuantityInput);
+
+            const itemControlsCol = document.createElement('div');
+            itemControlsCol.classList.add('col-auto', 'item-controls');
+            const plusButton = document.createElement('button');
+            plusButton.type = 'button';
+            plusButton.textContent = '+';
+            plusButton.addEventListener('click', () => changeQuantity(plusButton, 1));
+            const minusButton = document.createElement('button');
+            minusButton.type = 'button';
+            minusButton.textContent = '-';
+            minusButton.addEventListener('click', () => changeQuantity(minusButton, -1));
+            itemControlsCol.appendChild(plusButton);
+            itemControlsCol.appendChild(minusButton);
+
+            const removeButtonCol = document.createElement('div');
+            removeButtonCol.classList.add('col-auto');
+            const removeButton = document.createElement('button');
+            removeButton.type = 'button';
+            removeButton.classList.add('btn', 'btn-danger');
+            removeButton.textContent = 'Remove';
+            removeButton.addEventListener('click', () => removeItemRow(removeButton));
+            removeButtonCol.appendChild(removeButton);
+
+            itemRow.appendChild(itemDescCol);
+            itemRow.appendChild(itemQuantityCol);
+            itemRow.appendChild(itemControlsCol);
+            itemRow.appendChild(removeButtonCol);
+
+            itemsContainer.appendChild(itemRow);
+        }
+
+        function removeItemRow(button) {
+            const itemsContainer = document.getElementById('itemsContainer');
+            const itemRow = button.parentElement.parentElement;
+            itemsContainer.removeChild(itemRow);
+        }
+    </script>
+</body>
+
+</html>
