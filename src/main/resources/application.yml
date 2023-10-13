@@ -1,0 +1,25 @@
+spring:
+  devtools:
+    livereload:
+      enabled: false
+
+---
+
+spring:
+  config:
+    activate:
+      on-profile: dev
+
+management:
+  info:
+    env:
+      enabled: true
+    git:
+      mode: full
+  endpoints:
+    jmx:
+      exposure:
+        include: health,info,env,beans
+    web:
+      exposure:
+        include: health,info,env,beans
