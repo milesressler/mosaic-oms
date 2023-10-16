@@ -2,11 +2,18 @@ package com.mosaicchurchaustin.oms.data.entity.order;
 
 import com.mosaicchurchaustin.oms.data.entity.user.UserEntity;
 import jakarta.persistence.*;
+import lombok.*;
 
 import java.util.Calendar;
 
 @Entity
 @Table(name = "order_history")
+@Getter
+@Setter
+@Builder
+@ToString
+@AllArgsConstructor
+@NoArgsConstructor
 public class OrderHistoryEntity {
 
     @Id
@@ -14,13 +21,15 @@ public class OrderHistoryEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
 
-    @ManyToOne
+    @ManyToOne(optional = false)
+    @ToString.Exclude
     OrderEntity orderEntity;
 
-    @ManyToOne
+    @ManyToOne(optional = false)
+    @ToString.Exclude
     UserEntity userEntity;
 
-    @Column(name = "timestamp")
+    @Column(name = "timestamp", nullable = false)
     Calendar timestamp;
 
     @Enumerated(EnumType.STRING)
@@ -28,7 +37,7 @@ public class OrderHistoryEntity {
     OrderStatus orderStatus;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "type")
+    @Column(name = "type", nullable = false)
     OrderEventType eventType;
 
 

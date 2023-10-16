@@ -2,6 +2,13 @@ spring:
   devtools:
     livereload:
       enabled: false
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: "https://dev-milessmiles.auth0.com/"
+auth0:
+  audience: "http://localhost"
 
 ---
 
@@ -14,7 +21,7 @@ spring:
   jpa:
     generate-ddl: true
     hibernate:
-      ddl-auto: update
+      ddl-auto: validate
 management:
   info:
     env:

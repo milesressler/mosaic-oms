@@ -1,26 +1,23 @@
 package com.mosaicchurchaustin.oms.data.response;
 
 import com.mosaicchurchaustin.oms.data.entity.order.OrderEntity;
-import com.mosaicchurchaustin.oms.data.entity.order.OrderStatus;
-import lombok.*;
+import lombok.Builder;
+import lombok.Data;
+import lombok.Getter;
 import lombok.experimental.SuperBuilder;
 
-@Data
 @SuperBuilder
 @Getter
-@AllArgsConstructor
-public class OrderResponse {
-    private String uuid;
-    private Customer customer;
-    private OrderStatus orderStatus;
+public class OrderDetailResponse extends OrderResponse {
 
-    public static OrderResponse from(final OrderEntity orderEntity) {
+    public static OrderDetailResponse from(final OrderEntity orderEntity) {
 
-        return OrderResponse.builder()
+
+        return OrderDetailResponse.builder()
                 .uuid(orderEntity.getUuid())
                 .orderStatus(orderEntity.getOrderStatus())
                 .customer(
-                        Customer.builder()
+                        OrderResponse.Customer.builder()
                                 .name(orderEntity.getCustomer().getName())
                                 .build()
                 )

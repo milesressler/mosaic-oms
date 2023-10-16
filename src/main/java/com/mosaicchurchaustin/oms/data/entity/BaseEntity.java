@@ -1,6 +1,7 @@
 package com.mosaicchurchaustin.oms.data.entity;
 
 import jakarta.persistence.*;
+import lombok.Getter;
 import lombok.ToString;
 import org.hibernate.Hibernate;
 
@@ -9,6 +10,7 @@ import java.util.Objects;
 
 @MappedSuperclass
 @ToString
+@Getter
 public abstract class BaseEntity {
 
     @Id
