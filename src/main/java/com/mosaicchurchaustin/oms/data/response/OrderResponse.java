@@ -1,4 +1,4 @@
-package com.mosaicchurchaustin.oms.data.responses;
+package com.mosaicchurchaustin.oms.data.response;
 
 import lombok.Builder;
 import lombok.Data;

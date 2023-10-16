@@ -2,9 +2,10 @@ services:
   mysql:
     image: 'mysql:latest'
     environment:
-      - 'MYSQL_DATABASE=mydatabase'
-      - 'MYSQL_PASSWORD=secret'
-      - 'MYSQL_ROOT_PASSWORD=verysecret'
-      - 'MYSQL_USER=myuser'
+      - 'MYSQL_DATABASE=mosaicoms'
+      - 'MYSQL_PASSWORD=Uwv1cTzGs0ReGO5A'
+      - 'MYSQL_ROOT_PASSWORD=xiOrJxAjFDhP8aZkUFFjToyOr9g='
+      - 'MYSQL_USER=mosaic-oms-api'
     ports:
       - '3306'
+      - '33060:3306'
