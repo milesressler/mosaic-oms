@@ -13,6 +13,7 @@ import lombok.*;
 @NoArgsConstructor
 @ToString
 public class OrderItemEntity extends BaseEntity {
+    public static final String ENTITY_NAME = "orderItem";
 
     @ManyToOne(optional = false)
     @ToString.Exclude

@@ -12,9 +12,5 @@ public record CreateOrderRequest(
         String customerPhone,
         Boolean optInNotifications,
         String specialInstructions,
-        @NotEmpty List<@Valid Item> items) {
-
-    public record Item(@NotBlank String description,
-                       String notes,
-                       @Min(1) @Max(1000) Integer quantity){}
+        @NotEmpty List<@Valid ItemRequest> items) {
 }

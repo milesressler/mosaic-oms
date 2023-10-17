@@ -33,7 +33,7 @@ public class OrderHistoryEntity {
     Calendar timestamp;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "order_status")
+    @Column(name = "order_status", nullable = false)
     OrderStatus orderStatus;
 
     @Enumerated(EnumType.STRING)

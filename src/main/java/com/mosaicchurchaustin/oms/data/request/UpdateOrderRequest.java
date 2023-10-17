@@ -12,12 +12,6 @@ public record UpdateOrderRequest(
         Boolean optInNotifications,
         String specialInstructions,
         List<@NotNull Long> removeItems,
-        List<@Valid Item> setItems,
-        List<@Valid Item> addItems) {
-
-    public record Item(@NotBlank String description,
-                       String notes,
-                       @Min(1) @Max(1000) Integer quantity) {
-
-    }
+        List<@Valid ItemRequest> setItems,
+        List<@Valid ItemRequest> addItems) {
 }

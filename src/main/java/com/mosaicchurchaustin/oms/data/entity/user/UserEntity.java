@@ -15,6 +15,9 @@ import lombok.*;
 @NoArgsConstructor
 public class UserEntity extends BaseUuidEntity {
 
+    @Column(unique = true, name = "external_id")
+    String externalId;
+
     @Column(name = "name")
     String name;
 

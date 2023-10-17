@@ -4,9 +4,8 @@ create table customers
         primary key,
     created      datetime(6)  null,
     updated      datetime(6)  null,
-    name         varchar(255) null,
-    phone_number varchar(255) null,
-    uuid         varchar(255) null
+    uuid         varchar(255) null,
+    name         varchar(255) null
 );
 
 create table items
@@ -25,11 +24,12 @@ create table orders
         primary key,
     created              datetime(6)                                                                    null,
     updated              datetime(6)                                                                    null,
+    uuid                 varchar(255)                                                                   null,
     opt_in_notifications bit                                                                            not null,
     order_status         enum ('AWAITING_DELIVERY', 'COMPLETED', 'CREATED', 'DELIVERING', 'FULFILLING') not null,
     special_instructions varchar(255)                                                                   null,
-    customer_id          bigint                                                                         null,
-    uuid                 varchar(255)                                                                   null,
+    phone_number         varchar(255)                                                                   null,
+    customer_id          bigint                                                                         not null,
     constraint FKpxtb8awmi0dk6smoh2vp1litg
         foreign key (customer_id) references customers (id)
 );
@@ -53,14 +53,17 @@ create table order_items
 
 create table users
 (
-    id       bigint auto_increment
+    id          bigint auto_increment
         primary key,
-    created  datetime(6)  null,
-    updated  datetime(6)  null,
-    name     varchar(255) null,
-    source   int          null,
-    username varchar(255) null,
-    uuid     varchar(255) null
+    created     datetime(6)  null,
+    updated     datetime(6)  null,
+    uuid        varchar(255) null,
+    external_id varchar(255) null,
+    name        varchar(255) null,
+    source      int          null,
+    username    varchar(255) null,
+    constraint UK_cup9hom3h5cte4btcq935d0uu
+        unique (external_id)
 );
 
 create table order_history
@@ -68,7 +71,7 @@ create table order_history
     id              bigint auto_increment
         primary key,
     type            enum ('STATUS_CHANGE')                                                         not null,
-    order_status    enum ('AWAITING_DELIVERY', 'COMPLETED', 'CREATED', 'DELIVERING', 'FULFILLING') null,
+    order_status    enum ('AWAITING_DELIVERY', 'COMPLETED', 'CREATED', 'DELIVERING', 'FULFILLING') not null,
     timestamp       datetime(6)                                                                    not null,
     order_entity_id bigint                                                                         not null,
     user_entity_id  bigint                                                                         not null,

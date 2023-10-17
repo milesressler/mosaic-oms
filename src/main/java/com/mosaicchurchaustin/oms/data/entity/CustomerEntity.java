@@ -13,10 +13,6 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 public class CustomerEntity extends BaseUuidEntity {
-
     @Column(name = "name")
     String name;
-
-    @Column(name = "phone_number")
-    String phoneNumber;
 }
