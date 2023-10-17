@@ -7,8 +7,7 @@ spring:
       resourceserver:
         jwt:
           issuer-uri: "https://dev-milessmiles.auth0.com/"
-auth0:
-  audience: "http://localhost"
+          audiences: "http://localhost"
 
 ---
 
