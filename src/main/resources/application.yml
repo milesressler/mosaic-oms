@@ -6,9 +6,17 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: "https://dev-milessmiles.auth0.com/"
+          issuer-uri: "https://${auth0.domain}/"
           audiences: "http://localhost"
 
+auth0:
+  domain: dev-milessmiles.auth0.com
+  apitoken: ""
+
+mosaic:
+  oms:
+    frontend:
+      url: http://localhost:5173
 ---
 
 spring:

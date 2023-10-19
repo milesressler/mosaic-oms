@@ -25,6 +25,7 @@ public class OrderDetailResponse extends OrderResponse {
 
         return OrderDetailResponse.builder()
                 .uuid(orderEntity.getUuid())
+                .id(orderEntity.getId())
                 .orderStatus(orderEntity.getOrderStatus())
                 .customer(
                         OrderResponse.Customer.builder()

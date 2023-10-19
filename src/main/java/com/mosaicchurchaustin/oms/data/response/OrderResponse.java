@@ -10,6 +10,7 @@ import lombok.experimental.SuperBuilder;
 @Getter
 @AllArgsConstructor
 public class OrderResponse {
+    private Long id;
     private String uuid;
     private Customer customer;
     private OrderStatus orderStatus;
@@ -18,6 +19,7 @@ public class OrderResponse {
 
         return OrderResponse.builder()
                 .uuid(orderEntity.getUuid())
+                .id(orderEntity.getId())
                 .orderStatus(orderEntity.getOrderStatus())
                 .customer(
                         Customer.builder()

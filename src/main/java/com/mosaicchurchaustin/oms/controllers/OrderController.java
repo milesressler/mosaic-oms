@@ -36,7 +36,9 @@ public class OrderController {
 
     @ResponseBody
     @GetMapping(path = "/order", produces = MediaType.APPLICATION_JSON_VALUE)
-    public Page<OrderResponse> getOrders(Pageable pageable, @RequestParam("status") List<String> statuses) {
+    public Page<OrderResponse> getOrders(final Pageable pageable,
+                                         @RequestParam(value = "status", required = false)
+                                             final List<String> statuses) {
         final Page<OrderEntity> orderEntities = orderService.getOrders(pageable, statuses);
         return new PageImpl<>(
                 orderEntities.getContent().stream().map(OrderResponse::from).collect(Collectors.toList()),

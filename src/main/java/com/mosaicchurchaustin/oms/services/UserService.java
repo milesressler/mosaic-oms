@@ -2,6 +2,7 @@ package com.mosaicchurchaustin.oms.services;
 
 import com.mosaicchurchaustin.oms.data.entity.user.UserEntity;
 import com.mosaicchurchaustin.oms.data.entity.user.UserSource;
+import com.mosaicchurchaustin.oms.data.request.SyncUserRequest;
 import com.mosaicchurchaustin.oms.repositories.UserRepository;
 import jakarta.transaction.Transactional;
 import org.apache.commons.lang3.StringUtils;
@@ -22,6 +23,15 @@ public class UserService {
 
     @Value("${spring.security.oauth2.resourceserver.jwt.issuer-uri}")
     String issueUri;
+
+    @Transactional
+    public UserEntity syncUser(final SyncUserRequest request) {
+
+        final UserEntity userEntity = currentUser();
+        userEntity.setName(request.name().trim());
+        userEntity.setUsername(request.username().trim());
+        return userRepository.save(userEntity);
+    }
 
     @Transactional
     public UserEntity syncUser(final String idToken) {

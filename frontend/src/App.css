@@ -5,15 +5,15 @@
   text-align: center;
 }
 
-.logo {
-  max-height: 75px;
-  padding: 1.5em;
+.m-logo {
+  max-height: 100px;
+  padding: 1em;
   max-width: 50%;
 }
-.logo:hover {
+.m-logo:hover {
   filter: drop-shadow(0 0 2em #646cffaa);
 }
-.logo.react:hover {
+.m-logo.react:hover {
   filter: drop-shadow(0 0 2em #61dafbaa);
 }
 

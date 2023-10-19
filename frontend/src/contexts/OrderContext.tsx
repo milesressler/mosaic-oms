@@ -2,13 +2,18 @@ import { useState, createContext } from "react";
 
 export const OrderContext = createContext({
     orderList: [],
-    setUserName: () => {},
-
+    getOrdersPage: (page, pageSize) => {},
 });
 
 export const OrderContextProvider = (props) => {
+
     return (
-        <OrderContext.Provider value={{orderList: [{id: 1}]}}>
+        <OrderContext.Provider value={{
+            orderList: [],
+            getOrdersPage: (page, pageSize) => {
+
+            }
+        }}>
             {props.children}
         </OrderContext.Provider>
     );
