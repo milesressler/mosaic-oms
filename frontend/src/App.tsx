@@ -15,6 +15,7 @@ import {AuthenticationGuard} from "./components/auth0/AuthenticationGuard";
 import '@mantine/core/styles.css';
 
 import { MantineProvider } from '@mantine/core';
+import OrderFormPage from "./pages/OrderFormPage.tsx";
 
 
 function App() {
@@ -27,6 +28,7 @@ function App() {
                         <Routes>
                             <Route path="/" element={<LoginPage />} errorElement={<ErrorPage/>} />
                             <Route path="/orders" element={<AuthenticationGuard component={OrdersPage} />} />
+                            <Route path="/order/create" element={<AuthenticationGuard component={OrderFormPage} />} />
                             <Route path="/callback" element={<AuthCallbackPage />} />
                         </Routes>
                     </OrderContextProvider>

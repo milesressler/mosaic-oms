@@ -21,3 +21,17 @@ interface User {
 enum OrderStatus {
     FULFILLED = "FULFILLED"
 }
+
+    interface ItemRequest {
+    description: string;
+    notes: string;
+    quantity: number;
+}
+
+interface OrderRequest {
+    customerName: string;
+    customerPhone: string;
+    specialInstructions: string;
+    optInNotifications: boolean;
+    items: ItemRequest[];
+}

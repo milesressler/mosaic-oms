@@ -1,14 +1,13 @@
-import {useContext, useEffect, useState} from "react";
-import {OrderContext} from "../contexts/OrderContext";
+import {useEffect} from "react";
 import useApi from "../hooks/useApi";
 import ordersApi from "../services/ordersApi";
 import {useAuth0} from "@auth0/auth0-react";
 import userApi from "../services/userApi";
 import { Badge } from '@mantine/core';
+import {Link} from "react-router-dom";
 
 
 function OrdersPage() {
-    const { orderList } = useContext(OrderContext);
     const getOrdersApi = useApi(ordersApi.getOrders);
 
     /** User sync should move somewhere else **/
@@ -32,6 +31,7 @@ function OrdersPage() {
             <div style={{maxWidth: '75vw'}}>
 
                 <h1>Open Orders</h1>
+                <Link to={"/order/create"} >Create New</Link>
 
                 <div>
                     {getOrdersApi.loading && <p>Orders are loading!</p>}
