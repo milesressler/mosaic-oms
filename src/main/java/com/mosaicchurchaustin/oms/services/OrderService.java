@@ -65,6 +65,11 @@ public class OrderService {
                 new EntityNotFoundException(OrderEntity.ENTITY_NAME, orderUuid));
     }
 
+    public OrderEntity getOrder(final Long orderId) {
+        return orderRepository.findById(orderId).orElseThrow(() ->
+                new EntityNotFoundException(OrderEntity.ENTITY_NAME, orderId.toString()));
+    }
+
     @Transactional
     public OrderItemEntity updateOrderItem(final Long orderItemId, final UpdateOrderItemRequest updateOrderItemRequest) {
         final OrderItemEntity orderItemEntity = orderItemRepository.findById(orderItemId).orElseThrow(() ->
@@ -100,7 +105,9 @@ public class OrderService {
     @Transactional
     public OrderEntity updateOrder(final String orderUuid,
                                    final UpdateOrderRequest request) {
+
         final OrderEntity orderEntity = getOrder(orderUuid);
+
         if (request.optInNotifications() != null) {
             orderEntity.setOptInNotifications(request.optInNotifications());
         }

@@ -59,6 +59,7 @@ const Dashboard = () => {
                                                 <Text size="sm">Status: <Badge>{order.orderStatus}</Badge></Text>
                                                 <Text size="sm">Order Number: {order.id}</Text>
                                                 <Text size="sm">Customer: {order.customer.name}</Text>
+                                                <Link to={`/order/${order.id}`}>Details</Link>
                                             </div>
                                             <Button
                                                 size="xs"

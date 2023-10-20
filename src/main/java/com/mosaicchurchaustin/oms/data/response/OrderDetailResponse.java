@@ -18,7 +18,7 @@ public class OrderDetailResponse extends OrderResponse {
 
     private List<OrderItemResponse> items;
     private History lastStatusChange;
-
+    private List<History> history;
 
 
     public static OrderDetailResponse from(final OrderEntity orderEntity) {
@@ -26,12 +26,14 @@ public class OrderDetailResponse extends OrderResponse {
         return OrderDetailResponse.builder()
                 .uuid(orderEntity.getUuid())
                 .id(orderEntity.getId())
+                .created(orderEntity.getCreated())
                 .orderStatus(orderEntity.getOrderStatus())
                 .customer(
                         OrderResponse.Customer.builder()
                                 .name(orderEntity.getCustomer().getName())
                                 .build()
                 )
+                .history(orderEntity.getOrderHistoryEntityList().stream().map(History::from).toList())
                 .lastStatusChange(History.from(orderEntity.getLastStatusChange()))
                 .items(orderEntity.getOrderItemList().stream().map(OrderItemResponse::from).collect(Collectors.toList()))
                 .build();

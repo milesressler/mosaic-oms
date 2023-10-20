@@ -11,6 +11,7 @@ import com.mosaicchurchaustin.oms.data.response.OrderResponse;
 import com.mosaicchurchaustin.oms.services.OrderService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -52,7 +53,10 @@ public class OrderController {
     public OrderDetailResponse getOrderDetail(
             @PathVariable("uuid") String orderUuid
     ) {
-        final OrderEntity orderEntity = orderService.getOrder(orderUuid);
+        final OrderEntity orderEntity = StringUtils.isNumeric(orderUuid) ?
+                orderService.getOrder(Long.valueOf(orderUuid)) :
+                orderService.getOrder(orderUuid);
+
         return OrderDetailResponse.from(orderEntity);
     }
 

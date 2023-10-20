@@ -16,6 +16,7 @@ import '@mantine/core/styles.css';
 import { MantineProvider } from '@mantine/core';
 import OrderFormPage from "./pages/OrderFormPage.tsx";
 import Dashboard from "./pages/Dashboard.tsx";
+import OrderDetailsPage from "./pages/OrderDetailsPage";
 
 
 function App() {
@@ -29,6 +30,7 @@ function App() {
                             <Route path="/" element={<LoginPage />} errorElement={<ErrorPage/>} />
                             {/*<Route path="/dashboard" element={<AuthenticationGuard component={Dashboard} />} />*/}
                             <Route path="/orders" element={<AuthenticationGuard component={Dashboard} />} />
+                            <Route path="/order/:id" element={<AuthenticationGuard component={OrderDetailsPage} />} />
                             <Route path="/order/create" element={<AuthenticationGuard component={OrderFormPage} />} />
                             <Route path="/callback" element={<AuthCallbackPage />} />
                         </Routes>

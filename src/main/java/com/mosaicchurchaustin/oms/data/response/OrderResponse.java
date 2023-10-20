@@ -5,11 +5,14 @@ import com.mosaicchurchaustin.oms.data.entity.order.OrderStatus;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 
+import java.util.Calendar;
+
 @Data
 @SuperBuilder
 @Getter
 @AllArgsConstructor
 public class OrderResponse {
+    private Calendar created;
     private Long id;
     private String uuid;
     private Customer customer;
@@ -20,6 +23,7 @@ public class OrderResponse {
         return OrderResponse.builder()
                 .uuid(orderEntity.getUuid())
                 .id(orderEntity.getId())
+                .created(orderEntity.getCreated())
                 .orderStatus(orderEntity.getOrderStatus())
                 .customer(
                         Customer.builder()

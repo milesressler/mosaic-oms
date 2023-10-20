@@ -1,7 +1,7 @@
 interface BaseObject {
     uuid: string;
-    created: Date;
-    updated: Date;
+    created: string;
+    updated: string;
     id: number;
 }
 
