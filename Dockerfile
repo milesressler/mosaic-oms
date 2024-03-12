@@ -1,4 +1,4 @@
-FROM openjdk:17-jdk-alpine
+FROM amazoncorretto:17
 COPY /build/libs/mosaic-oms-*.jar /opt/mosaic/mosaic-oms.jar
 EXPOSE 8085
 WORKDIR /opt/mosaic
