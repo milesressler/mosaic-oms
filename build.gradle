@@ -48,3 +48,8 @@ tasks.named('test') {
 bootRun {
 	args = ["--spring.profiles.active=dev"]
 }
+
+bootJar {
+	archiveFileName = "${rootProject.name}-${project.property('version')}.jar"
+}
+
