@@ -6,13 +6,14 @@ phases:
       - echo Logging in to Amazon ECR...
       - aws --version
       - $(aws ecr get-login --region $AWS_DEFAULT_REGION --no-include-email)
-      - REPOSITORY_URI=638820400855.dkr.ecr.us-west-2.amazonaws.com/mosaic-api-prod
-      - COMMIT_HASH=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
-      - IMAGE_TAG=${COMMIT_HASH:=latest}
+
   install:
     runtime-versions:
       java: corretto17
     commands:
+      - REPOSITORY_URI=638820400855.dkr.ecr.us-west-2.amazonaws.com/mosaic-api-prod
+      - COMMIT_HASH=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
+      - IMAGE_TAG=${COMMIT_HASH:=latest}
       - ./gradlew build bootJar
       - echo Building the Docker image...
       - docker build -t $REPOSITORY_URI:latest .
