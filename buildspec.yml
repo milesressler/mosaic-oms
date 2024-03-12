@@ -12,7 +12,6 @@ phases:
   install:
     runtime-versions:
       java: openjdk17
-  build:
     commands:
       - ./gradlew build bootJar
       - echo Building the Docker image...
