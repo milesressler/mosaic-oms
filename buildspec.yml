@@ -5,7 +5,8 @@ phases:
     commands:
       - echo Logging in to Amazon ECR...
       - aws --version
-      - $(aws ecr get-login --region $AWS_DEFAULT_REGION --no-include-email)
+      - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $REPOSITORY_URI
+#      - $(aws ecr get-login --region $AWS_DEFAULT_REGION --no-include-email)
 
   install:
     runtime-versions:
@@ -14,6 +15,8 @@ phases:
       - REPOSITORY_URI=638820400855.dkr.ecr.us-west-2.amazonaws.com/mosaic-api-prod
       - COMMIT_HASH=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
       - IMAGE_TAG=${COMMIT_HASH:=latest}
+  build:
+    commands:
       - ./gradlew build bootJar
       - echo Building the Docker image...
       - docker build -t $REPOSITORY_URI:latest .
