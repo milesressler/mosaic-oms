@@ -12,7 +12,7 @@ phases:
     runtime-versions:
       java: corretto17
     commands:
-      - REPOSITORY_URI=638820400855.dkr.ecr.us-west-2.amazonaws.com/mosaic-api-prod
+      - REPOSITORY_URI=public.ecr.aws/g7f8d4r4/mosaic-oms
       - COMMIT_HASH=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
       - IMAGE_TAG=${COMMIT_HASH:=latest}
   build:
