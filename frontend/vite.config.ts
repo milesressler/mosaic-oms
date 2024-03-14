@@ -8,5 +8,10 @@ export default defineConfig({
   plugins: [react()],
   server: {
     host: true
-  }
+  },
+  build: {
+    outDir: '../src/main/resources/static/',
+    emptyOutDir: true,
+  },
 })
+

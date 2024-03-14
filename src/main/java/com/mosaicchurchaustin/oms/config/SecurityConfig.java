@@ -41,9 +41,10 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(final HttpSecurity http) throws Exception {
         http
                 .authorizeHttpRequests((registry) -> {
+                    registry.requestMatchers(HttpMethod.GET, "/api/item").anonymous();
+                    registry.requestMatchers("/api/**").authenticated();
                     registry.requestMatchers("/actuator/**").anonymous();
-                    registry.requestMatchers(HttpMethod.GET, "/item").anonymous();
-                    registry.anyRequest().authenticated();
+                    registry.anyRequest().anonymous();
                     //.hasAuthority("SCOPE_read:messages")
                 })
                 .httpBasic(Customizer.withDefaults())
