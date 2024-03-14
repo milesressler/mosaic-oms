@@ -1,7 +1,4 @@
 spring:
-  devtools:
-    livereload:
-      enabled: false
   security:
     oauth2:
       resourceserver:
@@ -17,13 +14,19 @@ mosaic:
   oms:
     frontend:
       url: http://localhost:5173
+management:
+  endpoints:
+    web:
+      base-path: /api/actuator
 ---
 
 spring:
   config:
     activate:
       on-profile: dev
-
+  devtools:
+    livereload:
+      enabled: false
 
   jpa:
     generate-ddl: true
@@ -42,3 +45,40 @@ management:
     web:
       exposure:
         include: health,info,env,beans
+
+---
+
+spring:
+  config:
+    activate:
+      on-profile: prod
+  devtools:
+    livereload:
+      enabled: false
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: "https://${auth0.domain}/"
+          audiences: "https://mosaic.miles-smiles.us"
+
+auth0:
+  domain: dev-milessmiles.auth0.com
+  apitoken: ""
+
+mosaic:
+  oms:
+    frontend:
+      url: https:mosaic.miles-smiles.us
+
+management:
+  info:
+    git:
+      mode: full
+  endpoints:
+    jmx:
+      exposure:
+        include: health,info
+    web:
+      exposure:
+        include: health,info

@@ -7,7 +7,6 @@ import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
@@ -42,8 +41,8 @@ public class SecurityConfig {
         http
                 .authorizeHttpRequests((registry) -> {
                     registry.requestMatchers(HttpMethod.GET, "/api/item").anonymous();
+                    registry.requestMatchers("/api/actuator/**").anonymous();
                     registry.requestMatchers("/api/**").authenticated();
-                    registry.requestMatchers("/actuator/**").anonymous();
                     registry.anyRequest().anonymous();
                     //.hasAuthority("SCOPE_read:messages")
                 })
