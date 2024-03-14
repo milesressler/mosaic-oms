@@ -27,6 +27,9 @@ public class SecurityConfig {
         configuration.addAllowedOrigin(
                 frontendUrl
         );
+        configuration.addAllowedOrigin(
+                frontendUrl + "/"
+        );
         configuration.setAllowedMethods(Arrays.asList(
                 HttpMethod.GET.name(), HttpMethod.POST.name(), HttpMethod.PUT.name()
         ));
