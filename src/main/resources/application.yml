@@ -69,7 +69,7 @@ auth0:
 mosaic:
   oms:
     frontend:
-      url: https:mosaic.miles-smiles.us
+      url: https://mosaic.miles-smiles.us
 
 management:
   info:
