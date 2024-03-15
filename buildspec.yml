@@ -41,5 +41,5 @@ phases:
 #      - ./gradlew buildPushed -PnotifySlack=true
 artifacts:
   files:
-    - build/libs/mosaic-oms-*.jar
+#    - build/libs/mosaic-oms-*.jar
     - imagedefinitions.json
