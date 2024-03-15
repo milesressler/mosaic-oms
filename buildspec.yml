@@ -29,7 +29,7 @@ phases:
   post_build:
     commands:
       - echo Build completed on `date`
-      - echo Pushing the Docker images...
+      - echo Pushing the Docker images....
 #      - docker push $PUBLIC_REPOSITORY_URI:latest
 #      - docker push $PUBLIC_REPOSITORY_URI:$IMAGE_TAG
       - docker --config ~/.private push $REPOSITORY_URI:latest
