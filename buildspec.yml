@@ -34,7 +34,10 @@ phases:
 #      - docker push $PUBLIC_REPOSITORY_URI:$IMAGE_TAG
       - docker --config ~/.private push $REPOSITORY_URI:latest
       - docker --config ~/.private push $REPOSITORY_URI:$IMAGE_TAG
+      - echo Writing image definitions file...
+      - printf '[{"name":"mosaic-oms","imageUri":"%s"}]' $REPOSITORY_URI:$IMAGE_TAG > imagedefinitions.json
 #      - ./gradlew buildPushed -PnotifySlack=true
 artifacts:
   files:
     - build/libs/mosaic-oms-*.jar
+    - imagedefinitions.json
