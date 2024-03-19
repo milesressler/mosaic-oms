@@ -7,16 +7,12 @@ phases:
     commands:
       - echo Logging in to Amazon ECR...
       - aws --version
-#      - aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin public.ecr.aws
       - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker  --config ~/.private login --username AWS --password-stdin $REPOSITORY_URI
-#      - $(aws ecr get-login --region $AWS_DEFAULT_REGION --no-include-email)
-
 
   install:
     runtime-versions:
       java: corretto17
     commands:
-      - PUBLIC_REPOSITORY_URI=public.ecr.aws/g7f8d4r4/mosaic-oms
       - REPOSITORY_URI=638820400855.dkr.ecr.us-west-2.amazonaws.com/mosaic-api-prod
       - COMMIT_HASH=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
       - IMAGE_TAG=${COMMIT_HASH:=latest}
@@ -24,16 +20,12 @@ phases:
     commands:
       - ./gradlew buildProdUI build bootJar
       - echo Building the Docker image....
-      - docker build -t $PUBLIC_REPOSITORY_URI:latest .
-#      - docker tag $PUBLIC_REPOSITORY_URI:latest $PUBLIC_REPOSITORY_URI:$IMAGE_TAG
-      - docker tag $PUBLIC_REPOSITORY_URI:latest $REPOSITORY_URI:$IMAGE_TAG
-      - docker tag $PUBLIC_REPOSITORY_URI:latest $REPOSITORY_URI:latest
+      - docker build -t REPOSITORY_URI:latest .
+      - docker tag REPOSITORY_URI:latest $REPOSITORY_URI:$IMAGE_TAG
   post_build:
     commands:
       - echo Build completed on `date`
       - echo Pushing the Docker images...
-#      - docker push $PUBLIC_REPOSITORY_URI:latest
-#      - docker push $PUBLIC_REPOSITORY_URI:$IMAGE_TAG
       - docker --config ~/.private push $REPOSITORY_URI:latest
       - docker --config ~/.private push $REPOSITORY_URI:$IMAGE_TAG
       - echo Writing image definitions file...
@@ -41,5 +33,4 @@ phases:
 #      - ./gradlew buildPushed -PnotifySlack=true
 artifacts:
   files:
-#    - build/libs/mosaic-oms-*.jar
     - imagedefinitions.json

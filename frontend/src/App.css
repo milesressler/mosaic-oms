@@ -1,14 +1,14 @@
-#root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+#content {
+  max-width: 900px;
+  margin: 56px auto 0;
+  /*background-color: #eee;*/
+
 }
 
 .m-logo {
-  max-height: 100px;
-  padding: 1em;
-  max-width: 50%;
+  max-height: 56px;
+  padding-top: 10px;
+  padding-bottom: 8px;
 }
 .m-logo:hover {
   filter: drop-shadow(0 0 2em #646cffaa);

@@ -13,6 +13,8 @@ function OrdersPage() {
     /** User sync should move somewhere else **/
     const syncUser = useApi(userApi.syncUser);
     const { user } = useAuth0();
+
+
     useEffect(() => {
         syncUser.request(user.name, user.email);
     }, [user]);
@@ -28,14 +30,15 @@ function OrdersPage() {
 
     return (
         <>
-            <div style={{maxWidth: '75vw'}}>
+            {/*<div>*/}
 
                 <h1>Open Orders</h1>
                 <Link to={"/order/create"} >Create New</Link>
 
                 <div>
-                    {getOrdersApi.loading && <p>Orders are loading!</p>}
-                    {!getOrdersApi.loading && <>
+                    {/*{getOrdersApi.loading && <p>Orders are loading!</p>}*/}
+                    {/*{!getOrdersApi.loading && <>*/}
+                    {<>
                         {getOrdersApi.error && <p>{getOrdersApi.error}</p>}
 
                     {getOrdersApi.data?.content.map((order) => (
@@ -47,7 +50,7 @@ function OrdersPage() {
                     </>
                     }
                 </div>
-            </div>
+            {/*</div>*/}
         </>
     )
 }

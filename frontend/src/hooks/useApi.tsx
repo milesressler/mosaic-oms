@@ -7,13 +7,13 @@ export default (apiFunc) => {
 
     const request = async (...args) => {
         setLoading(true);
-        setData(null);
         setError('');
         try {
             const result = await apiFunc(...args);
             setData(result.data);
         } catch (err) {
             setError(err.message || "Unexpected Error!");
+            setData(null);
         } finally {
             setLoading(false);
         }

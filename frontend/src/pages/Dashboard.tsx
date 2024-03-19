@@ -32,23 +32,20 @@ const Dashboard = () => {
     };
 
     return (
-        <Container size={800} mt={4}>
-            <Text size="xl" weight={700} align="center" mb={4}>
-                Order Picker Dashboard
-            </Text>
+        <>
 
-            <Card shadow="xs" padding="md" radius="md" style={{ marginBottom: '1rem' }}>
-                <Text size="md">Orders to Pick</Text>
-                <Button size="sm" fullWidth color="blue" variant="light">
-                    Refresh Dashboard
-                </Button>
-            </Card>
+            {/*<Card shadow="xs" padding="md" radius="md" style={{ marginBottom: '1rem' }}>*/}
+            {/*    <Text size="md">Orders to Pick</Text>*/}
+            {/*    <Button size="sm" fullWidth color="blue" variant="light">*/}
+            {/*        Refresh Dashboard*/}
+            {/*    </Button>*/}
+            {/*</Card>*/}
 
-            <Card shadow="xs" padding="md" radius="md">
-                <Text size="md">Order List</Text>
+            {/*<Card shadow="xs" padding="md" radius="md">*/}
+            {/*    <Text size="md">Order List</Text>*/}
                 <Button size="sm" fullWidth color="blue" variant="light"    component={Link} to={"/order/create"}>Create New</Button>
-                {getOrdersApi.loading && <p>Orders are loading!</p>}
-                {!getOrdersApi.loading && <>
+                {/*{getOrdersApi.loading && <p>Orders are loading!</p>}*/}
+                { <>
                     {getOrdersApi.error && <p>{getOrdersApi.error}</p>}
                     <div>
                         {getOrdersApi.data?.content.map((order) => (
@@ -76,8 +73,8 @@ const Dashboard = () => {
                         )}
                     </div>
                 </>}
-            </Card>
-        </Container>
+            {/*</Card>*/}
+        </>
     );
 };
 
