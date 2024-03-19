@@ -3,16 +3,13 @@ import useApi from "../hooks/useApi";
 import userApi from "../services/userApi";
 import {useAuth0} from "@auth0/auth0-react";
 import {useEffect} from "react";
-import {Autocomplete, Group, Burger, rem, UnstyledButton, Avatar, Text} from '@mantine/core';
+import {Group, Burger, Text} from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
-// import { IconSearch } from '@tabler/icons-react';
 import classes from './css/HeaderSearch.module.css';
-import userButtonClass from './css/UserButton.module.css';
 import mosaicLogo from "../assets/Mosaic-Church-logo-horizontal-web-dark-180-pad.png";
 import {Link} from "react-router-dom";
 import LoginButton from "./auth0/LoginButton.tsx";
 import UserCard from "./UserCard.tsx";
-// import { IconChevronRight } from '@tabler/icons-react';
 
 
 
@@ -51,13 +48,12 @@ export function NavigationBar() {
                         <img src={mosaicLogo} className="m-logo" alt="Mosaic Church logo"/>
 
                     </Link>
-                    OMS
-                    {items}
+                    <Text>OMS</Text>
+                    { isAuthenticated && items }
                 </Group>
 
                 <Group>
                     <Burger opened={opened} onClick={toggle} size="sm" hiddenFrom="md"/>
-                    {/*<MantineLogo size={28} />*/}
                 </Group>
 
                 <Group mr={0} gap={5} visibleFrom="md">
