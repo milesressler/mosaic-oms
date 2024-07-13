@@ -7,15 +7,17 @@ import lombok.Getter;
 
 @Getter
 @Builder
-public class SuggestedItemResponse {
+public class AdminItemResponse {
     private String description;
     private String placeholder;
     private Long id;
+    private Boolean suggestedItem;
 
-    public static SuggestedItemResponse from(final ItemEntity itemEntity) {
-        return SuggestedItemResponse.builder()
+    public static AdminItemResponse from(final ItemEntity itemEntity) {
+        return AdminItemResponse.builder()
                 .description(itemEntity.getDescription())
                 .placeholder(itemEntity.getPlaceholder())
+                .suggestedItem(itemEntity.getIsSuggestedItem())
                 .id(itemEntity.getId())
                 .build();
 

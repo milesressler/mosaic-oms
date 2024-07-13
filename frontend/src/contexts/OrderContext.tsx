@@ -10,7 +10,7 @@ export const OrderContextProvider = (props) => {
     return (
         <OrderContext.Provider value={{
             orderList: [],
-            getOrdersPage: (page, pageSize) => {
+            getOrdersPage: (page: number, pageSize: number) => {
 
             }
         }}>

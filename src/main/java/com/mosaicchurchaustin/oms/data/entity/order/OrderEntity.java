@@ -3,9 +3,20 @@ package com.mosaicchurchaustin.oms.data.entity.order;
 import com.mosaicchurchaustin.oms.data.entity.BaseUuidEntity;
 import com.mosaicchurchaustin.oms.data.entity.CustomerEntity;
 import com.mosaicchurchaustin.oms.data.entity.OrderItemEntity;
-import jakarta.persistence.*;
-import lombok.*;
-import org.hibernate.annotations.Formula;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 import org.hibernate.annotations.JoinFormula;
 
 import java.util.ArrayList;
@@ -33,6 +44,9 @@ public class OrderEntity extends BaseUuidEntity {
 
     @Column(name = "special_instructions")
     String specialInstructions;
+
+    @Column(name = "cart_id")
+    String cartId;
 
     @OneToMany(mappedBy = "orderEntity")
     @ToString.Exclude

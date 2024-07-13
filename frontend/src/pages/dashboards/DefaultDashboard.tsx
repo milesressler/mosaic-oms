@@ -1,22 +1,20 @@
-import React, {useEffect} from 'react';
-import {Container, Card, Text, Button, Badge} from '@mantine/core';
-import useApi from "../hooks/useApi.tsx";
-import ordersApi from "../services/ordersApi.tsx";
-import userApi from "../services/userApi.tsx";
-import {useAuth0} from "@auth0/auth0-react";
+import {useEffect} from 'react';
+import {Card, Text, Button, Badge} from '@mantine/core';
+import useApi from "src/hooks/useApi.tsx";
+import ordersApi from "src/services/ordersApi.tsx";
 import {Link} from "react-router-dom";
 
-const Dashboard = () => {
+const DefaultDashboard = () => {
     const getOrdersApi = useApi(ordersApi.getOrders);
 
-    /** User sync should move somewhere else **/
-    const syncUser = useApi(userApi.syncUser);
-    const { user } = useAuth0();
-
-    useEffect(() => {
-        syncUser.request(user.name, user.email);
-    }, [user]);
-    /** end user sync **/
+    // /** User sync should move somewhere else **/
+    // const syncUser = useApi(userApi.syncUser);
+    // const { user } = useAuth0();
+    //
+    // useEffect(() => {
+    //     syncUser.request(user.name, user.email);
+    // }, [user]);
+    // /** end user sync **/
 
     useEffect(() => {
         getOrdersApi.request()
@@ -26,7 +24,7 @@ const Dashboard = () => {
         return () => clearInterval(interval);
     }, []);
 
-    const handleMarkAsReady = (orderId) => {
+    const handleMarkAsReady = (orderId: string) => {
         // Add functionality to mark order as ready
         console.log(`Order ${orderId} marked as ready`);
     };
@@ -37,7 +35,7 @@ const Dashboard = () => {
             {/*<Card shadow="xs" padding="md" radius="md" style={{ marginBottom: '1rem' }}>*/}
             {/*    <Text size="md">Orders to Pick</Text>*/}
             {/*    <Button size="sm" fullWidth color="blue" variant="light">*/}
-            {/*        Refresh Dashboard*/}
+            {/*        Refresh DefaultDashboard*/}
             {/*    </Button>*/}
             {/*</Card>*/}
 
@@ -78,4 +76,4 @@ const Dashboard = () => {
     );
 };
 
-export default Dashboard;
+export default DefaultDashboard;

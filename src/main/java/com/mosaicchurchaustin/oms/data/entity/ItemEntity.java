@@ -13,6 +13,9 @@ import lombok.*;
 @NoArgsConstructor
 @ToString
 public class ItemEntity extends BaseEntity {
+    @Column(name = "placeholder", nullable = false)
+    String placeholder;
+
     @Column(name = "description", nullable = false)
     String description;
 

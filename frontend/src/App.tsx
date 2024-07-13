@@ -1,7 +1,8 @@
 import './App.css'
 import {
     Routes,
-    Route
+    Route,
+    RedirectFunction, Navigate
 } from "react-router-dom";
 import ErrorPage from "./pages/ErrorPage.tsx";
 import LandingPage from "./pages/LandingPage.tsx";
@@ -15,9 +16,12 @@ import '@mantine/core/styles.css';
 
 import {Card, Container, MantineProvider} from '@mantine/core';
 import OrderFormPageSample from "./pages/OrderFormPageSample.tsx";
-import Dashboard from "./pages/Dashboard.tsx";
+import Dashboard from "./pages/dashboards/DefaultDashboard.tsx";
 import OrderDetailsPage from "./pages/OrderDetailsPage";
 import OrderFormPage from "./pages/OrderFormPage.tsx";
+import React from "react";
+import CustomerDashboard from "./pages/dashboards/CustomerDashboard.tsx";
+import {ItemProvider} from "./contexts/ItemContext.tsx";
 
 
 function App() {
@@ -30,18 +34,27 @@ function App() {
             <Auth0ProviderWithNavigate>
                 <AuthContextProvider>
                     <OrderContextProvider>
-                        <Card  {...contentContainerProps} shadow="xs" padding="md" radius="md" id={"content"}>
-                            <Routes>
-                                <Route path="/" element={<LandingPage />} errorElement={<ErrorPage/>} />
-                                {/*<Route path="/dashboard" element={<AuthenticationGuard component={Dashboard} />} />*/}
-                                <Route path="/orders" element={<AuthenticationGuard component={Dashboard} />} />
-                                <Route path="/order/:id" element={<AuthenticationGuard component={OrderDetailsPage} />} />
-                                <Route path="/order/create" element={<AuthenticationGuard component={OrderFormPage} />} />
-                                <Route path="/order/create/old" element={<AuthenticationGuard component={OrderFormPageSample} />} />
-                                <Route path="/callback" element={<AuthCallbackPage />} />
-                            </Routes>
-                        </Card>
-                        <NavigationBar/>
+                        <ItemProvider>
+                            <Card  {...contentContainerProps} shadow="xs" padding="md" radius="md" id={"content"}>
+                                <Routes>
+                                    <Route path="/" element={<LandingPage />} errorElement={<ErrorPage/>} />
+                                    <Route path="/dashboard/public" element={<CustomerDashboard />} errorElement={<ErrorPage/>} />
+                                    <Route path="/dashboard/taker" element={<CustomerDashboard />} errorElement={<ErrorPage/>} />
+                                    <Route path="/dashboard/filler" element={<CustomerDashboard />} errorElement={<ErrorPage/>} />
+                                    <Route path="/dashboard/runner" element={<CustomerDashboard />} errorElement={<ErrorPage/>} />
+                                    <Route path="/dashboard/distributor" element={<CustomerDashboard />} errorElement={<ErrorPage/>} />
+
+                                    {/*<Route path="/dashboard" element={<AuthenticationGuard component={DefaultDashboard} />} />*/}
+                                    <Route path="/orders" element={<AuthenticationGuard component={Dashboard} />} />
+                                    <Route path="/order/:id" element={<AuthenticationGuard component={OrderDetailsPage} />} />
+                                    <Route path="/order/create" element={<AuthenticationGuard component={OrderFormPage} />} />
+                                    <Route path="/order/create/old" element={<AuthenticationGuard component={OrderFormPageSample} />} />
+                                    <Route path="/callback" element={<AuthCallbackPage />} />
+                                    <Route path="*" element={<Navigate to="/" replace />} />
+                                </Routes>
+                            </Card>
+                            <NavigationBar/>
+                        </ItemProvider>
                     </OrderContextProvider>
                 </AuthContextProvider>
             </Auth0ProviderWithNavigate>

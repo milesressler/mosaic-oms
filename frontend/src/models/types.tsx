@@ -35,3 +35,13 @@ interface OrderRequest {
     optInNotifications: boolean;
     items: ItemRequest[];
 }
+
+export interface ApiResponse<T> {
+    data: T;
+    error?: string;
+}
+export interface Item {
+    id: number;
+    placeholder: string;
+    description: string;
+}
