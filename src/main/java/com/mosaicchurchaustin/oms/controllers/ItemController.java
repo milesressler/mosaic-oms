@@ -20,10 +20,9 @@ public class ItemController {
 
     @ResponseBody
     @GetMapping(path = "/item", produces = MediaType.APPLICATION_JSON_VALUE)
-    public List<SuggestedItemResponse> getSuggestedItems() {
+    public List<SuggestedItemResponse> getAllItems() {
         return itemService.getSuggestedItems().stream()
                 .map(SuggestedItemResponse::from)
                 .toList();
     }
-
 }

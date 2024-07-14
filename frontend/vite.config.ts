@@ -13,5 +13,10 @@ export default defineConfig({
     outDir: '../src/main/resources/static/',
     emptyOutDir: true,
   },
+  resolve: {
+    alias: {
+      src: "/src",
+    },
+  },
 })
 

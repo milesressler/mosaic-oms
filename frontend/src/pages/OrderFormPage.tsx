@@ -4,9 +4,22 @@ import {Link} from "react-router-dom";
 import {TextInput, Checkbox, Button, Group, Box, Textarea, Autocomplete, Table, CloseButton} from '@mantine/core';
 import { useForm } from '@mantine/form';
 import {IconXboxX} from "@tabler/icons-react";
+import {useItems} from "../hooks/useItems.tsx";
+import {useState} from "react";
 
 function OrderFormPageSample() {
     const createOrderAPI = useApi(ordersApi.createOrder);
+
+    const [ placeholder, setPlaceholder] = useState("Additional info");
+    const { items, loading, error } = useItems();
+    const [itemDescription, setItemDescription] = useState('');
+
+    const handleItemChange = (value: string) => {
+        setItemDescription(value);
+        const item = items.find(item => item.description === value);
+        setPlaceholder(item ? item.placeholder : "Additional item detail");
+    }
+
     const form = useForm({
         initialValues: {
             customerName: '',
@@ -53,8 +66,13 @@ function OrderFormPageSample() {
                     mb={'10px'}
                     label="Add Item"
                     placeholder="Pick item or enter anything"
-                    data={['Pants', 'Socks', 'Shoes', 'Shirt']}
-                    // onKeyDown={form.values.}
+                    data={items && items.length > 0 ? items.map(i => i.description) : []}
+                    onChange={handleItemChange}
+                    value={itemDescription}
+                />
+                <Textarea
+                    label="Item detail"
+                    placeholder={placeholder}
                 />
 
                 <Table striped withTableBorder

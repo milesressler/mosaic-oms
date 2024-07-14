@@ -1,17 +1,17 @@
 import { useState } from "react";
 
-export default (apiFunc) => {
+export default (apiFunc: any) => {
     const [data, setData] = useState(null);
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
 
-    const request = async (...args) => {
+    const request = async (...args: any[]) => {
         setLoading(true);
         setError('');
         try {
             const result = await apiFunc(...args);
             setData(result.data);
-        } catch (err) {
+        } catch (err: any) {
             setError(err.message || "Unexpected Error!");
             setData(null);
         } finally {

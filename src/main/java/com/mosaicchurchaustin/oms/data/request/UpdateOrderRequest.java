@@ -12,6 +12,6 @@ public record UpdateOrderRequest(
         Boolean optInNotifications,
         String specialInstructions,
         List<@NotNull Long> removeItems,
-        List<@Valid ItemRequest> setItems,
-        List<@Valid ItemRequest> addItems) {
+        List<@Valid OrderItemRequest> setItems,
+        List<@Valid OrderItemRequest> addItems) {
 }

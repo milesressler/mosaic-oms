@@ -10,7 +10,7 @@ import com.mosaicchurchaustin.oms.data.entity.order.OrderHistoryEntity;
 import com.mosaicchurchaustin.oms.data.entity.order.OrderStatus;
 import com.mosaicchurchaustin.oms.data.entity.user.UserEntity;
 import com.mosaicchurchaustin.oms.data.request.CreateOrderRequest;
-import com.mosaicchurchaustin.oms.data.request.ItemRequest;
+import com.mosaicchurchaustin.oms.data.request.OrderItemRequest;
 import com.mosaicchurchaustin.oms.data.request.UpdateOrderItemRequest;
 import com.mosaicchurchaustin.oms.data.request.UpdateOrderRequest;
 import com.mosaicchurchaustin.oms.exception.EntityNotFoundException;
@@ -126,22 +126,20 @@ public class OrderService {
             orderEntity.setCustomer(customer);
         }
 
-        if (request.removeItems() != null && request.removeItems().size() > 0) {
+        if (request.removeItems() != null && !request.removeItems().isEmpty()) {
             final Set<Long> removeIds = request.removeItems().stream().filter(itemId ->
                     orderEntity.getOrderItemList().stream().map(BaseEntity::getId).collect(Collectors.toSet()).contains(itemId))
                     .collect(Collectors.toSet());
             orderItemRepository.deleteByIdIn(removeIds);
         }
 
-        if (request.addItems() != null && request.addItems().size() > 0) {
+        if (request.addItems() != null && !request.addItems().isEmpty()) {
             addItemsToOrder(orderEntity, request.addItems());
         }
 
-        if (request.setItems() != null && request.setItems().size() > 0) {
+        if (request.setItems() != null && !request.setItems().isEmpty()) {
             throw new RuntimeException("SetItems not yet supported.");
         }
-
-
 
         return orderRepository.save(orderEntity);
     }
@@ -186,8 +184,8 @@ public class OrderService {
                 });
     }
 
-    private void addItemsToOrder(final OrderEntity orderEntity, List<ItemRequest> items) {
-        for (final ItemRequest item: items) {
+    private void addItemsToOrder(final OrderEntity orderEntity, List<OrderItemRequest> items) {
+        for (final OrderItemRequest item: items) {
             final ItemEntity itemEntity = itemRepository.findByDescription(item.description()).orElseGet(() ->
                     itemRepository.save(ItemEntity.builder().description(item.description()).isSuggestedItem(false).build())
             );

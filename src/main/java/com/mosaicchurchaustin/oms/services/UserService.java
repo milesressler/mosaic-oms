@@ -37,7 +37,7 @@ public class UserService {
     public UserEntity syncUser(final String idToken) {
 
         final JwtDecoder jwtDecoder = JwtDecoders.fromIssuerLocation(issueUri);
-        final Jwt idJwt =jwtDecoder.decode(idToken);
+        final Jwt idJwt = jwtDecoder.decode(idToken);
 
         final JwtAuthenticationToken authenticationToken =
                 (JwtAuthenticationToken) SecurityContextHolder.getContext().getAuthentication();

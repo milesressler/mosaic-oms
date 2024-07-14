@@ -12,5 +12,5 @@ public record CreateOrderRequest(
         String customerPhone,
         Boolean optInNotifications,
         String specialInstructions,
-        @NotEmpty List<@Valid ItemRequest> items) {
+        @NotEmpty List<@Valid OrderItemRequest> items) {
 }

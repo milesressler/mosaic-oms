@@ -7,10 +7,11 @@ import java.util.Arrays;
 public enum OrderStatus {
 
     CREATED,
-    FULFILLING,
-    AWAITING_DELIVERY,
-    DELIVERING,
-    COMPLETED;
+    ASSIGNED,
+    FILLED,
+    IN_TRANSIT,
+    READY_FOR_PICKUP,
+    DELIVERED;
 
     public static OrderStatus from(final String orderStatusString) {
         return Arrays.stream(OrderStatus.values()).filter(orderStatus -> orderStatus.name().equalsIgnoreCase(orderStatusString))
