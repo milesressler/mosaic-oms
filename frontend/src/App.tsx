@@ -2,26 +2,25 @@ import './App.css'
 import {
     Routes,
     Route,
-    RedirectFunction, Navigate
+    Navigate
 } from "react-router-dom";
-import ErrorPage from "./pages/ErrorPage.tsx";
-import LandingPage from "./pages/LandingPage.tsx";
-import {Auth0ProviderWithNavigate} from "./components/auth0/Auth0ProviderWithNavigate.tsx";
-import NavigationBar from "./components/NavigationBar.tsx";
-import {OrderContextProvider} from "./contexts/OrderContext";
-import {AuthContextProvider} from "./contexts/AuthContext";
-import AuthCallbackPage from "./pages/AuthCallback";
-import {AuthenticationGuard} from "./components/auth0/AuthenticationGuard";
+import ErrorPage from "src/pages/ErrorPage.tsx";
+import LandingPage from "src/pages/LandingPage.tsx";
+import {Auth0ProviderWithNavigate} from "src/components/auth0/Auth0ProviderWithNavigate.tsx";
+import NavigationBar from "src/components/NavigationBar.tsx";
+import {OrderContextProvider} from "src/contexts/OrderContext";
+import {AuthContextProvider} from "src/contexts/AuthContext";
+import AuthCallbackPage from "src/pages/AuthCallback";
+import {AuthenticationGuard} from "src/components/auth0/AuthenticationGuard";
 import '@mantine/core/styles.css';
 
-import {Card, Container, MantineProvider} from '@mantine/core';
-import OrderFormPageSample from "./pages/OrderFormPageSample.tsx";
-import Dashboard from "./pages/dashboards/DefaultDashboard.tsx";
-import OrderDetailsPage from "./pages/OrderDetailsPage";
-import OrderFormPage from "./pages/OrderFormPage.tsx";
-import React from "react";
-import CustomerDashboard from "./pages/dashboards/CustomerDashboard.tsx";
-import {ItemProvider} from "./contexts/ItemContext.tsx";
+import {Card, MantineProvider} from '@mantine/core';
+import OrderFormPageSample from "src/pages/OrderFormPageSample.tsx";
+import Dashboard from "src/pages/dashboards/DefaultDashboard.tsx";
+import OrderDetailsPage from "src/pages/OrderDetailsPage";
+import OrderFormPage from "src/pages/OrderFormPage.tsx";
+import CustomerDashboard from "src/pages/dashboards/CustomerDashboard.tsx";
+import {ItemProvider} from "src/contexts/ItemContext.tsx";
 
 
 function App() {
