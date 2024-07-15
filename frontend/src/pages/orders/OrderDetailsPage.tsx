@@ -1,7 +1,7 @@
 import { Timeline} from "@mantine/core";
 import {useParams} from "react-router-dom";
-import useApi from "../hooks/useApi";
-import ordersApi from "../services/ordersApi";
+import useApi from "src/hooks/useApi";
+import ordersApi from "src/services/ordersApi";
 import {useEffect} from "react";
 import { DateTime } from "luxon";
 

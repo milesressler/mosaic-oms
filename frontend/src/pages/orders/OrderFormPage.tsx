@@ -1,10 +1,10 @@
-import useApi from "../hooks/useApi.tsx";
-import ordersApi from "../services/ordersApi.tsx";
+import useApi from "src/hooks/useApi.tsx";
+import ordersApi from "src/services/ordersApi.tsx";
 import {Link} from "react-router-dom";
 import {TextInput, Checkbox, Button, Group, Box, Textarea, Autocomplete, Table, CloseButton} from '@mantine/core';
 import { useForm } from '@mantine/form';
 import {IconXboxX} from "@tabler/icons-react";
-import {useItems} from "../hooks/useItems.tsx";
+import {useItems} from "src/hooks/useItems.tsx";
 import {useState} from "react";
 
 function OrderFormPageSample() {
