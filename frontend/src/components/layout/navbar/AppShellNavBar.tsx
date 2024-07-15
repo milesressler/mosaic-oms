@@ -6,12 +6,13 @@ import routes from "src/routesConfig.tsx";
 import {LogoutButton} from "src/components/auth0/LogoutButton.tsx";
 import {useAuth0} from "@auth0/auth0-react";
 import LoginButton from "src/components/auth0/LoginButton.tsx";
+import {getRolesFromAuth0User} from "src/components/auth0/Auth0Utils.tsx";
 
 
 export function NavbarNested() {
 
     const { isAuthenticated, user } = useAuth0();
-    const userRoles = user?.['https://mosaic.miles-smiles.us/roles'].map((role: string) => role.toLowerCase()) || []; // Adjust namespace accordingly
+    const userRoles = getRolesFromAuth0User(user); // Adjust namespace accordingly
     const hasRequiredRole = (requiredRole: string) => {
         if (!requiredRole) return true;
         return userRoles.includes(requiredRole.toLowerCase());
