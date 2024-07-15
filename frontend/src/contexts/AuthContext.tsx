@@ -7,7 +7,7 @@ export const AuthContext = createContext({
 
 });
 
-export const AuthContextProvider = (props) => {
+export const AuthContextProvider = (props: any) => {
     const { getAccessTokenSilently } = useAuth0();
 
     useEffect(() => {

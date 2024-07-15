@@ -7,15 +7,6 @@ import {Link} from "react-router-dom";
 const DefaultDashboard = () => {
     const getOrdersApi = useApi(ordersApi.getOrders);
 
-    // /** User sync should move somewhere else **/
-    // const syncUser = useApi(userApi.syncUser);
-    // const { user } = useAuth0();
-    //
-    // useEffect(() => {
-    //     syncUser.request(user.name, user.email);
-    // }, [user]);
-    // /** end user sync **/
-
     useEffect(() => {
         getOrdersApi.request()
         const interval = setInterval(() => {
@@ -41,7 +32,6 @@ const DefaultDashboard = () => {
 
             {/*<Card shadow="xs" padding="md" radius="md">*/}
             {/*    <Text size="md">Order List</Text>*/}
-                <Button size="sm" fullWidth color="blue" variant="light"    component={Link} to={"/order/create"}>Create New</Button>
                 {/*{getOrdersApi.loading && <p>Orders are loading!</p>}*/}
                 { <>
                     {getOrdersApi.error && <p>{getOrdersApi.error}</p>}

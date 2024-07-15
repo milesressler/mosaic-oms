@@ -1,5 +1,5 @@
-import useApi from "../hooks/useApi.tsx";
-import ordersApi from "../services/ordersApi.tsx";
+import useApi from "src/hooks/useApi.tsx";
+import ordersApi from "src/services/ordersApi.tsx";
 import {Link} from "react-router-dom";
 
 function OrderFormPageSample() {
@@ -17,7 +17,7 @@ function OrderFormPageSample() {
         while (Math.random() < 0.65 || items.size == 0) {
             items.add(random(itemList));
         }
-        const itemRequests = [];
+        const itemRequests: any[] = [];
         items.forEach(val => itemRequests.push({
             "description": val,
             "quantity": ~~(Math.random() * 10)+1

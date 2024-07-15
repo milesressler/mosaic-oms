@@ -1,0 +1,2 @@
+ALTER TABLE orders
+    ADD COLUMN cart_id VARCHAR(255);
