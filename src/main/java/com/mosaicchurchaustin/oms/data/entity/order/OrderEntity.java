@@ -60,7 +60,7 @@ public class OrderEntity extends BaseUuidEntity {
     @Column(name = "order_status", nullable = false)
     OrderStatus orderStatus;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinFormula("(" +
             "SELECT h.id " +
             "FROM order_history h " +

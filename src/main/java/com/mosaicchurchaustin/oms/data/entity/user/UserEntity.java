@@ -21,7 +21,7 @@ public class UserEntity extends BaseUuidEntity {
     @Column(name = "name")
     String name;
 
-    @Column(name = "username")
+    @Column(name = "username", unique = true)
     String username;
 
     @Column(name = "source")

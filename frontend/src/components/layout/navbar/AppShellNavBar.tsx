@@ -1,7 +1,7 @@
 import {ScrollArea, AppShell, Stack} from '@mantine/core';
 import classes from './NavbarNested.module.css';
 import {LinksGroup} from "src/components/layout/navbar/NavBarLinksGroup.tsx";
-import UserCard from "src/components/UserCard.tsx";
+import UserCard from "src/components/auth0/UserCard.tsx";
 import routes from "src/routesConfig.tsx";
 import {LogoutButton} from "src/components/auth0/LogoutButton.tsx";
 import {useAuth0} from "@auth0/auth0-react";

@@ -3,11 +3,13 @@ import msmBg from "../assets/mosaic-street-ministry-bg.png";
 function LandingPage() {
     return (
         <>
-            <div id={'content'} style={{height: '660px',
+            <div style={{height: '3000px',
                 width: '100%',
                 backgroundSize: 'contain',
                 backgroundRepeat: 'no-repeat',
-                backgroundImage: `url(${msmBg})`, paddingTop: '560px'}}>
+                backgroundImage: `url(${msmBg})`,
+                paddingTop: '200px',
+                }}>
             </div>
         </>)}
 

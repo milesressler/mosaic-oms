@@ -1,9 +1,15 @@
 import client from "./client";
+import {User} from "src/models/types.tsx";
 
-const syncUser = (name, email) => {
+const syncUser = (name: string, email: string) =>
     client.post<User>("/user", {name, username: email});
-}
+
+const syncUserWithToken = (idToken: string) => client.post<User>("/user/token", {}, {headers: {
+        "X-Auth0-ID": idToken
+    }});
+
 
 export default {
-    syncUser
+    syncUser,
+    syncUserWithToken,
 };

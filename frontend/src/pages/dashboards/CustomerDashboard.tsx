@@ -1,13 +1,12 @@
-import useApi from "../../hooks/useApi.tsx";
-import ordersApi from "../../services/ordersApi.tsx";
 
-const CustomerDashboard = () => {
-    const getOrdersApi = useApi(ordersApi.getOrders);
-    return (
-        <>
+import {Order} from "src/models/types.tsx";
+import OrdersTable from "src/components/OrdersTable.tsx";
 
-        </>
-    )
+const CustomerDashboard = ({onSelectRow}: {onSelectRow: (order: Order) => void}) => {
+    return (<OrdersTable view={"CustomerDashboard"}
+                         onSelectRow={onSelectRow}
+                         showProgressIndicator={true}
+    ></OrdersTable>);
 }
 
 export default CustomerDashboard;

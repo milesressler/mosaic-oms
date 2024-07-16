@@ -2,14 +2,16 @@ package com.mosaicchurchaustin.oms.services;
 
 import com.mosaicchurchaustin.oms.data.entity.user.UserEntity;
 import com.mosaicchurchaustin.oms.data.entity.user.UserSource;
-import com.mosaicchurchaustin.oms.data.request.SyncUserRequest;
 import com.mosaicchurchaustin.oms.repositories.UserRepository;
 import jakarta.transaction.Transactional;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.oauth2.jwt.*;
+import org.springframework.security.oauth2.jwt.BadJwtException;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.security.oauth2.jwt.JwtDecoders;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.stereotype.Service;
 
@@ -23,15 +25,6 @@ public class UserService {
 
     @Value("${spring.security.oauth2.resourceserver.jwt.issuer-uri}")
     String issueUri;
-
-    @Transactional
-    public UserEntity syncUser(final SyncUserRequest request) {
-
-        final UserEntity userEntity = currentUser();
-        userEntity.setName(request.name().trim());
-        userEntity.setUsername(request.username().trim());
-        return userRepository.save(userEntity);
-    }
 
     @Transactional
     public UserEntity syncUser(final String idToken) {

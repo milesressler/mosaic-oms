@@ -4,7 +4,6 @@ import {AuthContextProvider} from "src/contexts/AuthContext";
 import '@mantine/core/styles.css';
 
 import {MantineProvider} from '@mantine/core';
-import {ItemProvider} from "src/contexts/ItemContext.tsx";
 import {AppShellComponent} from "src/components/layout/AppShellComponent.tsx";
 
 
@@ -13,9 +12,7 @@ function App() {
     <><MantineProvider>
             <Auth0ProviderWithNavigate>
                 <AuthContextProvider>
-                    <ItemProvider>
-                        <AppShellComponent/>
-                    </ItemProvider>
+                    <AppShellComponent/>
                 </AuthContextProvider>
             </Auth0ProviderWithNavigate>
     </MantineProvider>

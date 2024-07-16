@@ -13,6 +13,7 @@ import java.util.Calendar;
 @AllArgsConstructor
 public class OrderResponse {
     private Calendar created;
+    private Calendar lastStatusUpdate;
     private Long id;
     private String uuid;
     private Customer customer;
@@ -24,6 +25,7 @@ public class OrderResponse {
                 .uuid(orderEntity.getUuid())
                 .id(orderEntity.getId())
                 .created(orderEntity.getCreated())
+                .lastStatusUpdate(orderEntity.getLastStatusChange().getTimestamp())
                 .orderStatus(orderEntity.getOrderStatus())
                 .customer(
                         Customer.builder()

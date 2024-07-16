@@ -7,7 +7,7 @@ const client: AxiosInstance = axios.create({
     },
 });
 
-export const addAccessTokenInterceptor = (getAccessTokenSilently) => {
+export const addAccessTokenInterceptor = (getAccessTokenSilently: any) => {
     client.interceptors.request.use(async (config) => {
         const token: string = await getAccessTokenSilently();
         config.headers.authorization = `Bearer ${token}`;

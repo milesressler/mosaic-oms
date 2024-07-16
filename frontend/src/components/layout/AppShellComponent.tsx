@@ -6,28 +6,33 @@ import {useDisclosure} from "@mantine/hooks";
 import {useAuth0} from "@auth0/auth0-react";
 import routes from "src/routesConfig.tsx";
 import useApi from "src/hooks/useApi.tsx";
-import userApi from "src/services/userApi.tsx";
-import {useEffect} from "react";
+import {useEffect, useState} from "react";
 import mosaicLogo from "src/assets/Mosaic-Church-logo-horizontal-web-dark-180-pad.png";
-import UserCard from "src/components/UserCard.tsx";
+import UserCard from "src/components/auth0/UserCard.tsx";
 import {LogoutButton} from "src/components/auth0/LogoutButton.tsx";
 import LoginButton from "src/components/auth0/LoginButton.tsx";
 import AsideContent from "src/components/layout/aside/AsideContent.tsx";
+import UserApi from "src/services/userApi.tsx";
 
 export function AppShellComponent() {
+    const DEFAULT_HEADER_HEIGHT = 60;
     const [opened, { toggle, close }] = useDisclosure(false);
     const [asideOpened, asideHandler] = useDisclosure(false);
     const location = useLocation();
-    const syncUser = useApi(userApi.syncUser);
-    const { user } = useAuth0();
+    const syncUserWithToken = useApi(UserApi.syncUserWithToken);
+    const { user, getIdTokenClaims, isAuthenticated } = useAuth0();
+    const [headerHeight, setHeaderHeight] = useState(DEFAULT_HEADER_HEIGHT);
 
     useEffect(() => {
-        if (user) {
-            syncUser.request(user?.name, user?.email);
-        }
-    }, [user]);
+        const fetchIdToken = async () => {
+            if (isAuthenticated && user) {
+                const idTokenClaims = await getIdTokenClaims();
+                await syncUserWithToken.request( idTokenClaims?.__raw);
+            }
+        };
+        fetchIdToken();
+    }, [isAuthenticated, getIdTokenClaims, user]);
 
-    const { isAuthenticated } = useAuth0();
 
     // Get active route
     const activeRoute = routes
@@ -38,13 +43,17 @@ export function AppShellComponent() {
         close();
     }, [activeRoute]);
 
+    useEffect(() => {
+        setHeaderHeight(activeRoute.headerHidden ? 0 : DEFAULT_HEADER_HEIGHT);
+    }, [activeRoute]);
+
 
 
     return (
         <AppShell
-            header={{ height: 60 }}
+            header={{ height: activeRoute.headerHidden ? 0 : headerHeight }}
             navbar={{ width: isAuthenticated ? 250 : 0, breakpoint: 'md', collapsed: { mobile: !opened, desktop: activeRoute.navBarHidden ? !opened : false} }}
-            aside={{ width: isAuthenticated ? 200 : 0, breakpoint: 'md', collapsed: { mobile: !asideOpened, desktop: !asideOpened || activeRoute.headerHidden},  }}
+            aside={{ width: isAuthenticated ? { base: 200, md: 250, lg: 300, xl: 350 } : 0, breakpoint: 'md', collapsed: { mobile: !asideOpened, desktop: !asideOpened || activeRoute.headerHidden || activeRoute.minimalHeader },  }}
         >
             { !activeRoute.headerHidden && <AppShell.Header>
                     <div
@@ -59,26 +68,34 @@ export function AppShellComponent() {
                         }}
                     >
                         <Group>
-                            { !asideOpened && <Burger opened={opened} onClick={toggle} size="sm"
+                            { isAuthenticated && (!asideOpened || activeRoute.minimalHeader) && <Burger opened={opened} onClick={toggle} size="sm"
                                     hiddenFrom={!activeRoute.navBarHidden ? "md" : ""}
                             /> }
                             <Link to={"/"}>
                                 <img src={mosaicLogo} className="m-logo" alt="Mosaic Church logo"/>
                             </Link>
                         </Group>
+                        { !isAuthenticated &&
+                            <Group hiddenFrom={'md'}>
+                                <LoginButton></LoginButton>
+                            </Group>
+                        }
+                        {!activeRoute.minimalHeader &&
                         <Group mr={0} gap={5} visibleFrom={'md'}>
                                 {isAuthenticated && <UserCard />}
                                 {isAuthenticated && <LogoutButton></LogoutButton>}
                                 {!isAuthenticated && <LoginButton></LoginButton>}
 
-                            <Burger opened={asideOpened} onClick={asideHandler.toggle} size="sm" />
-                        </Group>
-                        { !opened && <Burger opened={asideOpened} onClick={asideHandler.toggle} size="sm" hiddenFrom={'md'} /> }
+                            { isAuthenticated && <Burger opened={asideOpened} onClick={asideHandler.toggle} size="sm" /> }
+                        </Group> }
+                        { isAuthenticated && !activeRoute.minimalHeader  && !opened && <Burger opened={asideOpened} onClick={asideHandler.toggle} size="sm" hiddenFrom={'md'} /> }
+
+
 
                     </div>
             </AppShell.Header>
             }
-            <AppShell.Main>
+            <AppShell.Main style={{paddingTop: headerHeight }}>
                 <Routes>
                     {routes.flatMap((route: any) => route.children || [route]).map((route) => {
                         const Element = route.public
@@ -96,8 +113,8 @@ export function AppShellComponent() {
                 </Routes>
             </AppShell.Main>
              { isAuthenticated && <AppShellNavBar ></AppShellNavBar> }
-            <AppShell.Aside>
+            { isAuthenticated && <AppShell.Aside>
                 <AsideContent/>
-            </AppShell.Aside>
+            </AppShell.Aside> }
         </AppShell>);
 }

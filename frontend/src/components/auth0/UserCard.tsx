@@ -23,8 +23,6 @@ export function UserCard() {
                     {user?.email}
                 </Text>
             </div>
-
-            {/*<IconChevronRight style={{ width: rem(14), height: rem(14) }} stroke={1.5} />*/}
         </Group>
     </UnstyledButton></>
     );

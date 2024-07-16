@@ -2,12 +2,15 @@ import LandingPage from "src/pages/LandingPage.tsx";
 import ErrorPage from "src/pages/ErrorPage.tsx";
 import CustomerDashboard from "src/pages/dashboards/CustomerDashboard.tsx";
 import OrderDetailsPage from "src/pages/orders/OrderDetailsPage.tsx";
-import DefaultDashboard from "src/pages/dashboards/DefaultDashboard.tsx";
 import OrderFormPage from "src/pages/orders/OrderFormPage.tsx";
 import {Navigate} from "react-router-dom";
 import AuthCallbackPage from "src/pages/AuthCallback.tsx";
-import {IconDashboard, IconHome, IconUser } from "@tabler/icons-react";
-import OrderFormPageSample from "src/pages/orders/OrderFormPageSample.tsx";
+import {IconDashboard, IconHome, IconUser, IconReport } from "@tabler/icons-react";
+import ItemsManagementPage from "src/pages/admin/ItemsManagementPage.tsx";
+import OrderTakerDashboard from "src/pages/dashboards/OrderTakerDashboard.tsx";
+import OrderFillerDashboard from "src/pages/dashboards/OrderFillerDashboard.tsx";
+import AdminOrdersPage from "src/pages/admin/AdminOrdersPage.tsx";
+import ReportPlaceholder from "src/pages/reports/ReportPlaceholder.tsx";
 
 
 const routes = [
@@ -35,20 +38,31 @@ const routes = [
                 element: CustomerDashboard,
                 errorElement: ErrorPage,
                 navBarHidden: true,
-                headerHidden: true,
+                headerHidden: false,
+                minimalHeader: true,
                 asideHidden: true,
                 public: true,
-                title: 'Public Dashboard',
+                title: 'Customer Monitor',
                 showInNavBar: true,
             },
             {
                 key: 'taker-dashboard',
                 path: '/dashboard/taker',
-                element: CustomerDashboard,
+                element: OrderTakerDashboard,
                 errorElement: ErrorPage,
                 navBarHidden: true,
                 headerHidden: false,
-                title: 'Taker Dashboard',
+                title: 'Order Taker',
+                showInNavBar: true,
+            },
+            {
+                key: 'filler-dashboard',
+                path: '/dashboard/filler',
+                element: OrderFillerDashboard,
+                errorElement: ErrorPage,
+                navBarHidden: true,
+                headerHidden: false,
+                title: 'Order Filler',
                 showInNavBar: true,
             },
             // Add other dashboard routes here
@@ -64,16 +78,16 @@ const routes = [
             {
                 key: 'orders',
                 path: '/orders',
-                element: DefaultDashboard,
+                element: AdminOrdersPage,
                 title: 'Orders',
                 showInNavBar: true,
             },
             {
-                key: 'order-create-old',
-                path: '/order/old',
-                element: OrderFormPageSample,
-                title: 'Create Order (Old)',
-                showInNavBar: false,
+                key: 'items',
+                path: '/admin/items',
+                element: ItemsManagementPage,
+                title: 'Items',
+                showInNavBar: true,
             },
             {
                 key: 'order-create',
@@ -90,6 +104,16 @@ const routes = [
                 showInNavBar: false,
             },
         ],
+    },
+    {
+        key: 'reports',
+        path: '/reports',
+        element: ReportPlaceholder,
+        public: false,
+        showInNavBar: true,
+        title: "Reports",
+        errorElement: ErrorPage,
+        icon: IconReport,
     },
     {
         key: 'callback',
