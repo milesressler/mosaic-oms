@@ -2,21 +2,18 @@ import useApi from "src/hooks/useApi.tsx";
 import ordersApi from "src/services/ordersApi.tsx";
 import {
     TextInput,
-    Checkbox,
     Button,
     Group,
     Textarea,
     Autocomplete,
-    Table,
-    CloseButton,
-    Paper, ActionIcon, Switch, Divider, LoadingOverlay
+    Paper, Divider, LoadingOverlay
 } from '@mantine/core';
 import { useForm } from '@mantine/form';
-import {IconTrash, IconXboxX} from "@tabler/icons-react";
 import {useEffect, useState} from "react";
 import itemsApi from "src/services/itemsApi.tsx";
 import {randomId} from "@mantine/hooks";
-import {Item} from "src/models/types.tsx";
+import {Item, OrderRequest} from "src/models/types.tsx";
+import OrderItemForm from "src/components/orderform/OrderItemForm.tsx";
 
 function OrderFormPage() {
     const createOrderAPI = useApi(ordersApi.createOrder);
@@ -33,7 +30,7 @@ function OrderFormPage() {
 
     const handleItemChange = (value: string) => {
         setItemDescription(value);
-        const item: Item = suggestedItemsApi.data?.find(item => item.description === value);
+        const item = suggestedItemsApi.data?.find(item => item.description === value) ?? null;
         setSelectedItem(item);
     }
 
@@ -47,40 +44,31 @@ function OrderFormPage() {
         },
 
         validate: {
-            customerName: (value) => !value ? 'Customer name is required' : null
+            customerName: (value) => !value ? 'Customer name is required' : null,
+            items: (value) => value.length === 0 ? 'At least one item is required' : null,
         },
     });
 
 
+    const submitOrder = (values: any) => {
+        form.validate();
+        const request: OrderRequest = {
+            customerName: values.customerName,
+            customerPhone: values.customerPhone,
+            specialInstructions: values.specialInstructions,
+            optInNotifications: values.optInNotifications,
+            items: values.items,
+        };
+        createOrderAPI.request(request);
+    }
     const itemFields = form.values.items.map((item: Item, index: number) => (
-        <Group key={item.description} mt="xs" justify={'space-between'} >
-            <TextInput
-                placeholder="Item"
-                withAsterisk
-                sx={{ flex: 1 }}
-                {...form.getInputProps(`items.${index}.description`)}
-            />
-            <Switch
-                label="Active"
-                {...form.getInputProps(`items.${index}.active`, { type: 'checkbox' })}
-            />
-            <ActionIcon onClick={() => form.removeListItem('items', index)}>
-                <IconTrash size={16} />
-            </ActionIcon>
-        </Group>
+        <OrderItemForm form={form} item={item} index={index} suggestedItems={suggestedItemsApi.data ?? []}/>
     ));
 
     return (<>
-        {createOrderAPI.loading && <div>Creating</div>}
-        {!createOrderAPI.loading && createOrderAPI.data !== null &&
-            <div>
-                <div>Created Order #{createOrderAPI.data.id}</div>
-            </div>
-        }
-
         <Paper  withBorder shadow="md" p={30} mt={30} radius="md" maw={600}  miw={400} mx="auto">
             <LoadingOverlay visible={createOrderAPI.loading} />
-            <form onSubmit={form.onSubmit((values) => console.log(values))}>
+            <form onSubmit={form.onSubmit((values) => submitOrder(values))}>
                 <TextInput
                     label="Customer Name"
                     placeholder="Jim Smith"
@@ -102,27 +90,28 @@ function OrderFormPage() {
 
                 <Autocomplete
                     mb={'10px'}
-                    label="Add Item"
+                    label="Item"
                     placeholder="Pick item or enter anything"
                     data={suggestedItemsApi.data && suggestedItemsApi.data.length > 0 ? suggestedItemsApi.data.map(i => i.description) : []}
                     onChange={handleItemChange}
                     value={itemDescription}
                 />
                 <Textarea
-                    label="Item detail"
+                    label="Additional Item details (size, color, etc)"
                     required={!!selectedItem?.placeholder}
                     placeholder={selectedItem?.placeholder ? selectedItem.placeholder : "Additional item detail"}
                 />
 
-                <Group position="center" mt="md">
+                <Group justify={"flex-end"} my="md">
                     <Button
                         onClick={() =>
-                            form.insertListItem('items', { name: '', active: false, key: randomId() })
+                            form.insertListItem('items', { name: itemDescription,  quantity: 1, notes: "", key: randomId() })
                         }
                     >
                         Add item
                     </Button>
                 </Group>
+                <Divider/>
 
 
                 {itemFields}

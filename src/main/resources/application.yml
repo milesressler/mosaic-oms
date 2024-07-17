@@ -18,6 +18,11 @@ management:
   endpoints:
     web:
       base-path: /api/actuator
+
+cap-metro:
+  api:
+    trip-updates:
+      path: https://data.texas.gov/download/rmk2-acnw/application%2Foctet-stream
 ---
 
 spring:

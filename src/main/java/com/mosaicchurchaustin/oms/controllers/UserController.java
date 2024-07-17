@@ -10,13 +10,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api")
+@RequestMapping("/api/user")
 @RequiredArgsConstructor
 public class UserController {
 
     final UserService userService;
 
-    @PostMapping(path = "/user/token", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(path = "/token", produces = MediaType.APPLICATION_JSON_VALUE)
     UserResponse syncUser(
             @RequestHeader("X-Auth0-ID") final String idToken
     ) {

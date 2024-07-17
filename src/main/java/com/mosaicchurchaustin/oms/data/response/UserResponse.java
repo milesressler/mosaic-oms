@@ -8,8 +8,12 @@ import lombok.Getter;
 @Getter
 public class UserResponse {
     private String name;
+    private String uuid;
 
     public static UserResponse from(final UserEntity userEntity) {
-        return UserResponse.builder().name(userEntity.getName()).build();
+        return UserResponse.builder()
+                .name(userEntity.getName())
+                .uuid(userEntity.getUuid())
+                .build();
     }
 }

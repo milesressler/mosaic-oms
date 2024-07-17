@@ -1,5 +1,5 @@
 import {useNavigate} from "react-router-dom";
-import OrdersTable from "src/components/OrdersTable.tsx";
+import OrdersTable from "src/components/orders/OrdersTable.tsx";
 import {Order} from "src/models/types.tsx";
 
 const AdminOrdersPage = () => {
@@ -8,7 +8,7 @@ const AdminOrdersPage = () => {
 
     return (
         <>
-            <OrdersTable view={"AdminOrdersPage"}
+            <OrdersTable view={"admin"}
                          autoRefresh={false}
                          onSelectRow={(order: Order) => {
                              navigate(`/order/${order.id}`);

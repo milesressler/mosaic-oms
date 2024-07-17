@@ -35,6 +35,26 @@ export interface User {
     name: string
 }
 
+export enum Location {
+    MOSAIC_NORTH = "MOSAIC_NORTH",
+    MOSAIC_SOUTH = "MOSAIC_SOUTH",
+    MOSAIC_FORT_WORTH = "MOSAIC_FORT_WORTH",
+}
+
+export interface TransitInfo {
+    stopId: string,
+    direction?: string,
+    routeId: string,
+    tripId: string,
+    stopInfo: {
+        stopId: string,
+        stopName: string,
+    },
+    nextArrivalTime: number,
+    previousArrivalTime?: number,
+}
+
+
 export enum OrderStatus {
     CREATED = "CREATED",
     FILLED = "FILLED",
@@ -52,9 +72,9 @@ export enum OrderStatus {
 
 export interface OrderRequest {
     customerName: string;
-    customerPhone: string;
-    specialInstructions: string;
-    optInNotifications: boolean;
+    customerPhone?: string;
+    specialInstructions?: string;
+    optInNotifications?: boolean;
     items: ItemRequest[];
 }
 
@@ -89,3 +109,5 @@ export interface OrderItem {
     notes: string | null;
     id: number;
 }
+
+

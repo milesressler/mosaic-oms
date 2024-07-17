@@ -36,6 +36,10 @@ dependencies {
 	implementation 'org.flywaydb:flyway-core'
 	implementation 'org.flywaydb:flyway-mysql'
 	implementation 'com.auth0:auth0:2.6.1'
+	implementation 'com.google.protobuf:protobuf-java:4.27.2'
+	implementation 'com.google.protobuf:protobuf-java-util:4.27.2'
+	implementation 'org.springframework.boot:spring-boot-starter-cache'
+	implementation 'com.github.ben-manes.caffeine:caffeine:3.1.8'
 
 	compileOnly 'org.projectlombok:lombok'
 	developmentOnly 'org.springframework.boot:spring-boot-devtools'
@@ -86,4 +90,10 @@ task buildAndBootRun {
 	dependsOn 'bootRun'
 	tasks.findByName('bootRun').mustRunAfter 'buildForBoot'
 }
-
+sourceSets {
+	main {
+		java {
+			srcDirs 'build/generated/source/proto/main/java', 'build/generated/source/proto/main/grpc'
+		}
+	}
+}

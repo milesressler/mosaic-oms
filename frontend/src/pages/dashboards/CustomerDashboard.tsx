@@ -1,12 +1,22 @@
 
 import {Order} from "src/models/types.tsx";
-import OrdersTable from "src/components/OrdersTable.tsx";
+import OrdersTable from "src/components/orders/OrdersTable.tsx";
+import {Grid, GridCol} from "@mantine/core";
+import Transit from "src/components/transit/Transit.tsx";
 
 const CustomerDashboard = ({onSelectRow}: {onSelectRow: (order: Order) => void}) => {
-    return (<OrdersTable view={"CustomerDashboard"}
+    return (<Grid>
+        <GridCol span={8}>
+            <OrdersTable view={"default"}
                          onSelectRow={onSelectRow}
                          showProgressIndicator={true}
-    ></OrdersTable>);
+            />
+        </GridCol>
+        <GridCol span={4}>
+            <Transit/>
+        </GridCol>
+
+        </Grid>);
 }
 
 export default CustomerDashboard;

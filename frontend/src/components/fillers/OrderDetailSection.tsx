@@ -6,7 +6,7 @@ import {Box, Button, Divider, Group, LoadingOverlay, Text, Title} from "@mantine
 import {useAuth0} from "@auth0/auth0-react";
 
 interface OrderDetailSectionProps {
-    order: Order;
+    order?: Order;
     onModified: () => void,
 }
 
@@ -17,16 +17,17 @@ export function OrderDetailSection({order, onModified}: OrderDetailSectionProps)
     const updateStateApi = useApi(ordersApi.updateOrderStatus);
 
     useEffect(() => {
-        orderDetailApi.request(order.id);
+        order && orderDetailApi.request(order.id);
     }, [order]);
 
     const assignToMe: () => void = () => {
-        updateStateApi.request(order.uuid, OrderStatus.ASSIGNED)
+        updateStateApi.request(order?.uuid, OrderStatus.ASSIGNED)
     }
 
     useEffect(() => {
         if (!updateStateApi.loading && !updateStateApi.error) {
             onModified();
+            orderDetailApi.request(order?.id);
         }
     }, [updateStateApi.data]);
 
@@ -36,20 +37,25 @@ export function OrderDetailSection({order, onModified}: OrderDetailSectionProps)
                         zIndex={1000}
                         overlayProps={{ radius: "sm", blur: 2 }} />
         <Group justify={'space-between'} pr={10}>
-            <Title>Order: {order.id}</Title>
+            <Title>Order: {order?.id}</Title>
             <Button onClick={assignToMe} disabled={
                 orderDetailApi.loading ||
                 orderDetailApi.data === null ||
                 updateStateApi.loading ||
-                [OrderStatus.CREATED, OrderStatus.ASSIGNED].indexOf(order.orderStatus) === -1 ||
+                [OrderStatus.CREATED, OrderStatus.ASSIGNED].indexOf(order?.orderStatus) === -1 ||
                 (order.orderStatus === OrderStatus.ASSIGNED &&
                     orderDetailApi.data?.lastStatusChange?.assigneeExt === user?.sub)
             }
             >Assign to Me</Button>
         </Group>
         <Divider></Divider>
-        <Text><Text span fw={500}>Customer:</Text> {orderDetailApi.data?.customer?.name}</Text>
-        <Text><Text span fw={500}>Assigned to:</Text> {orderDetailApi.data?.lastStatusChange?.user}</Text>
+        <Text>
+            <Text span fw={500}>Customer:</Text> {orderDetailApi.data?.customer?.name}
+        </Text>
+        <Text><Text span fw={500}>Assigned:</Text>
+            { orderDetailApi.data?.orderStatus === OrderStatus.ASSIGNED ?
+                orderDetailApi.data?.lastStatusChange?.user ?? "[unassigned]" : "[unassigned]"}
+        </Text>
         <Divider></Divider>
         <ul>
         {orderDetailApi.data?.items?.map((item) => {
