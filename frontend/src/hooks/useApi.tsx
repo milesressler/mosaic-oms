@@ -1,13 +1,13 @@
 import {useCallback, useState} from "react";
 
-type ApiFunc<T> = (...args: any[]) => Promise<{ data: T }>;
+type ApiFunc<T, Args extends any[]> = (...args: Args) => Promise<{ data: T }>;
 
-export default function useApi<T>(apiFunc: ApiFunc<T>) {
+export default function useApi<T, Args extends any[]>(apiFunc: ApiFunc<T, Args>) {
     const [data, setData] = useState<T | null>(null);
     const [error, setError] = useState<string>("");
     const [loading, setLoading] = useState<boolean>(false);
 
-    const request = useCallback(async (...args: any[]) => {
+    const request = useCallback(async (...args: Args) => {
         setLoading(true);
         setError('');
         try {
@@ -28,6 +28,3 @@ export default function useApi<T>(apiFunc: ApiFunc<T>) {
         request
     };
 };
-
-
-

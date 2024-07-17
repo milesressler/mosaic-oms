@@ -18,16 +18,27 @@ export function OrderDetailSection({order, onModified}: OrderDetailSectionProps)
 
     useEffect(() => {
         order && orderDetailApi.request(order.id);
-    }, [order]);
+    }, [order, updateStateApi.data]);
+
+
+    const assignedToMe = orderDetailApi.data?.orderStatus === OrderStatus.ASSIGNED &&
+        orderDetailApi.data?.lastStatusChange?.assigneeExt === user?.sub;
 
     const assignToMe: () => void = () => {
-        updateStateApi.request(order?.uuid, OrderStatus.ASSIGNED)
+        if (assignedToMe) {
+            unassign();
+        } else {
+            updateStateApi.request(order!.uuid, OrderStatus.ASSIGNED);
+        }
+    }
+    const unassign: () => void = () => {
+        updateStateApi.request(order!.uuid, OrderStatus.CREATED)
     }
 
     useEffect(() => {
         if (!updateStateApi.loading && !updateStateApi.error) {
             onModified();
-            orderDetailApi.request(order?.id);
+            orderDetailApi.request(order!.id);
         }
     }, [updateStateApi.data]);
 
@@ -42,11 +53,10 @@ export function OrderDetailSection({order, onModified}: OrderDetailSectionProps)
                 orderDetailApi.loading ||
                 orderDetailApi.data === null ||
                 updateStateApi.loading ||
-                [OrderStatus.CREATED, OrderStatus.ASSIGNED].indexOf(order?.orderStatus) === -1 ||
-                (order.orderStatus === OrderStatus.ASSIGNED &&
-                    orderDetailApi.data?.lastStatusChange?.assigneeExt === user?.sub)
+                ([OrderStatus.CREATED, OrderStatus.ASSIGNED].indexOf(orderDetailApi.data?.orderStatus) === -1 &&
+                !assignedToMe)
             }
-            >Assign to Me</Button>
+            >{assignedToMe ? "Unassign" : "Assign to Me"}</Button>
         </Group>
         <Divider></Divider>
         <Text>
