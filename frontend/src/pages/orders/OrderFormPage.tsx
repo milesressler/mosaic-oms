@@ -5,22 +5,27 @@ import {
     Button,
     Group,
     Textarea,
-    Autocomplete,
-    Paper, Divider, LoadingOverlay
+    Paper, Divider, LoadingOverlay, Text, Modal
 } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import {useEffect, useState} from "react";
 import itemsApi from "src/services/itemsApi.tsx";
 import {randomId} from "@mantine/hooks";
-import {Item, OrderRequest} from "src/models/types.tsx";
+import {OrderRequest} from "src/models/types.tsx";
 import OrderItemForm from "src/components/orderform/OrderItemForm.tsx";
+import OrderItemDisplay from "src/components/orderform/OrderItemDisplay.tsx";
+
+export interface FormItem {
+    description: string,
+    notes?: string,
+    quantity: number,
+    itemkey?: string,
+}
 
 function OrderFormPage() {
     const createOrderAPI = useApi(ordersApi.createOrder);
     const suggestedItemsApi = useApi(itemsApi.getSuggestedItems);
-
-    const [ selectedItem, setSelectedItem] = useState<Item|null>(null);
-    const [itemDescription, setItemDescription] = useState('');
+    const [updatingItem, setUpdatingItem] = useState<FormItem|null>(null);
 
 
     useEffect(() => {
@@ -28,11 +33,6 @@ function OrderFormPage() {
     }, [true]);
 
 
-    const handleItemChange = (value: string) => {
-        setItemDescription(value);
-        const item = suggestedItemsApi.data?.find(item => item.description === value) ?? null;
-        setSelectedItem(item);
-    }
 
     const form = useForm({
         initialValues: {
@@ -61,13 +61,53 @@ function OrderFormPage() {
         };
         createOrderAPI.request(request);
     }
-    const itemFields = form.values.items.map((item: Item, index: number) => (
-        <OrderItemForm form={form} item={item} index={index} suggestedItems={suggestedItemsApi.data ?? []}/>
+    const itemFields = form.values.items.map((formItem: FormItem, index: number) => (
+        <OrderItemDisplay
+            formItem={formItem}
+            onEditSelected={() => setUpdatingItem(formItem)}
+            onDelete={() => form.removeListItem('items', index)}
+            handleQuantityChange={(quantity) => {
+                if (quantity > 0) {
+                    form.setValues((currentValues: any) => ({
+                        items: currentValues.items.map((currentItem: FormItem) =>
+                            formItem.itemkey === currentItem.itemkey ? { ...currentItem, quantity: quantity } : currentItem
+                        ),
+                    }));
+                }
+            }}
+        />
     ));
+
+    const addNewItem = () => {
+        setUpdatingItem({ description: '',  quantity: 1, notes: "" });
+    };
 
     return (<>
         <Paper  withBorder shadow="md" p={30} mt={30} radius="md" maw={600}  miw={400} mx="auto">
             <LoadingOverlay visible={createOrderAPI.loading} />
+            {<Modal opened={!!updatingItem} onClose={() => setUpdatingItem(null)}>
+                {/*<Card center maw={200}>*/}
+                { updatingItem && <OrderItemForm suggestedItems={suggestedItemsApi?.data ?? []}
+                               formItem={updatingItem}
+                               handleItemUpdate={(draftItem: FormItem) => {
+                                   if (draftItem.itemkey) {
+                                       form.setValues((currentValues: any) => ({
+                                           items: currentValues.items.map((currentItem: FormItem) =>
+                                               draftItem.itemkey === currentItem.itemkey ? { ...currentItem,
+                                                   description: draftItem.description,
+                                                   notes: draftItem.notes,
+                                               } : currentItem
+                                           ),
+                                       }));
+                                   } else {
+                                       form.insertListItem('items',
+                                           {...draftItem, itemkey: randomId()}
+                                       );
+                                   }
+                                   setUpdatingItem(null);
+                               }}></OrderItemForm> }
+                {/*</Card>*/}
+            </Modal> }
             <form onSubmit={form.onSubmit((values) => submitOrder(values))}>
                 <TextInput
                     label="Customer Name"
@@ -88,55 +128,30 @@ function OrderFormPage() {
                 {/*    {...form.getInputProps('optInNotifications', { type: 'checkbox' })}*/}
                 {/*/>*/}
 
-                <Autocomplete
-                    mb={'10px'}
-                    label="Item"
-                    placeholder="Pick item or enter anything"
-                    data={suggestedItemsApi.data && suggestedItemsApi.data.length > 0 ? suggestedItemsApi.data.map(i => i.description) : []}
-                    onChange={handleItemChange}
-                    value={itemDescription}
-                />
-                <Textarea
-                    label="Additional Item details (size, color, etc)"
-                    required={!!selectedItem?.placeholder}
-                    placeholder={selectedItem?.placeholder ? selectedItem.placeholder : "Additional item detail"}
-                />
+
+                {itemFields.length === 0 && <Text c={'dimmed'}>No items added </Text> }
+                {itemFields}
 
                 <Group justify={"flex-end"} my="md">
-                    <Button
-                        onClick={() =>
-                            form.insertListItem('items', { name: itemDescription,  quantity: 1, notes: "", key: randomId() })
-                        }
-                    >
+                    <Button onClick={addNewItem}>
                         Add item
                     </Button>
                 </Group>
-                <Divider/>
-
-
-                {itemFields}
-
 
                 <Divider my="md" />
 
                 <Textarea
                     label="Special Instructions"
-                    placeholder="General notes about the order as a whole"
+                    placeholder="General notes about the order"
                     {...form.getInputProps('specialInstructions')}
-
                 />
 
                 <Button fullWidth mt="xl" type="submit">
                     Create Order
                 </Button>
-
-                {/*<Group justify="flex-end" mt="md">*/}
-                {/*    <Button type="submit">Submit Order</Button>*/}
-                {/*</Group>*/}
             </form>
         </Paper>
 
-        {/*<div>*/}
     </>);
 }
 
