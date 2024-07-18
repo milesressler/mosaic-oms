@@ -2,7 +2,7 @@ import {AppShell, Burger, Group} from "@mantine/core";
 import AppShellNavBar from "src/components/layout/navbar/AppShellNavBar.tsx";
 import {Link, matchPath, Route, Routes, useLocation} from "react-router-dom";
 import {AuthenticationGuard} from "src/components/auth0/AuthenticationGuard.tsx";
-import {useDisclosure} from "@mantine/hooks";
+import { useDisclosure} from "@mantine/hooks";
 import {useAuth0} from "@auth0/auth0-react";
 import routes from "src/routesConfig.tsx";
 import useApi from "src/hooks/useApi.tsx";
@@ -14,6 +14,20 @@ import LoginButton from "src/components/auth0/LoginButton.tsx";
 import AsideContent from "src/components/layout/aside/AsideContent.tsx";
 import UserApi from "src/services/userApi.tsx";
 
+const mappedRoutes = routes.flatMap((route: any) => route.children || [route]).map((route) => {
+    // const Element = route.element;
+    const Element = route.public
+        ? route.element
+        : () => <AuthenticationGuard component={route.element} />;
+    return (
+        <Route
+            key={route.key}
+            path={route.path}
+            element={<Element />}
+            errorElement={route.errorElement && <route.errorElement />}
+        />
+    );
+});
 export function AppShellComponent() {
     const DEFAULT_HEADER_HEIGHT = 60;
     const [opened, { toggle, close }] = useDisclosure(false);
@@ -27,7 +41,8 @@ export function AppShellComponent() {
         const fetchIdToken = async () => {
             if (isAuthenticated && user) {
                 const idTokenClaims = await getIdTokenClaims();
-                await syncUserWithToken.request( idTokenClaims?.__raw);
+                idTokenClaims &&
+                    await syncUserWithToken.request( idTokenClaims?.__raw);
             }
         };
         fetchIdToken();
@@ -97,19 +112,7 @@ export function AppShellComponent() {
             }
             <AppShell.Main style={{paddingTop: headerHeight }}>
                 <Routes>
-                    {routes.flatMap((route: any) => route.children || [route]).map((route) => {
-                        const Element = route.public
-                            ? route.element
-                            : () => <AuthenticationGuard component={route.element} />;
-                        return (
-                            <Route
-                                key={route.key}
-                                path={route.path}
-                                element={<Element />}
-                                errorElement={route.errorElement && <route.errorElement />}
-                            />
-                        );
-                    })}
+                    {mappedRoutes}
                 </Routes>
             </AppShell.Main>
              { isAuthenticated && <AppShellNavBar ></AppShellNavBar> }
