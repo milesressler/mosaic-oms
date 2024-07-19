@@ -2,6 +2,7 @@ package com.mosaicchurchaustin.oms.data.response;
 
 
 import com.mosaicchurchaustin.oms.data.entity.ItemEntity;
+import com.mosaicchurchaustin.oms.data.entity.OrderItemEntity;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -12,6 +13,8 @@ public class AdminItemResponse {
     private String placeholder;
     private Long id;
     private Boolean suggestedItem;
+    private Long totalOrdered;
+    private Long totalFilled;
 
     public static AdminItemResponse from(final ItemEntity itemEntity) {
         return AdminItemResponse.builder()
@@ -19,6 +22,18 @@ public class AdminItemResponse {
                 .placeholder(itemEntity.getPlaceholder())
                 .suggestedItem(itemEntity.getIsSuggestedItem())
                 .id(itemEntity.getId())
+                .totalFilled(itemEntity.getOrderItems()
+                        .stream()
+                        .map(OrderItemEntity::getQuantityFulfilled)
+                        .mapToLong(Long::valueOf)
+                        .sum()
+                )
+                .totalOrdered(itemEntity.getOrderItems()
+                        .stream()
+                        .map(OrderItemEntity::getQuantity)
+                        .mapToLong(Long::valueOf)
+                        .sum()
+                )
                 .build();
 
     }

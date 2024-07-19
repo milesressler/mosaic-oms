@@ -5,21 +5,27 @@ import com.mosaicchurchaustin.oms.data.entity.order.OrderEntity;
 import com.mosaicchurchaustin.oms.data.request.CreateOrderRequest;
 import com.mosaicchurchaustin.oms.data.request.UpdateOrderItemRequest;
 import com.mosaicchurchaustin.oms.data.request.UpdateOrderRequest;
-import com.mosaicchurchaustin.oms.data.response.OrderItemResponse;
 import com.mosaicchurchaustin.oms.data.response.OrderDetailResponse;
+import com.mosaicchurchaustin.oms.data.response.OrderItemResponse;
 import com.mosaicchurchaustin.oms.data.response.OrderResponse;
 import com.mosaicchurchaustin.oms.services.OrderService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api")
@@ -41,12 +47,9 @@ public class OrderController {
     public Page<OrderResponse> getOrders(final Pageable pageable,
                                          @RequestParam(value = "status", required = false)
                                              final List<String> statuses) {
-        final Page<OrderEntity> orderEntities = orderService.getOrders(pageable, statuses);
-        return new PageImpl<>(
-                orderEntities.getContent().stream().map(OrderResponse::from).collect(Collectors.toList()),
-                pageable,
-                orderEntities.getTotalElements()
-        );
+        return  orderService.getOrders(pageable, statuses)
+                .map(OrderResponse::from);
+
     }
 
     @ResponseBody

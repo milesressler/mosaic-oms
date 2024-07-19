@@ -72,7 +72,7 @@ export function OrdersTable({
     const [counter, setCounter] = useState(0);
     const [progress, setProgress] = useState(0);
 
-    const [sortBy, setSortBy] = useState<string | null>('id');
+    const [sortBy, setSortBy] = useState<string | null>('created');
     const [reverseSortDirection, setReverseSortDirection] = useState(true);
 
     const visibleColumns = columns.filter(column => column.views?.includes(view));

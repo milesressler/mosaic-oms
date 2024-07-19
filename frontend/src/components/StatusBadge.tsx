@@ -23,6 +23,9 @@ export function StatusBadge({ orderStatus }: { orderStatus: OrderStatus }) {
         case OrderStatus.DELIVERED:
             color = 'purple';
             break;
+        case OrderStatus.CANCELLED:
+            color = 'red';
+            break;
         default:
             color = 'gray'; // Default color for any unknown statuses
     }

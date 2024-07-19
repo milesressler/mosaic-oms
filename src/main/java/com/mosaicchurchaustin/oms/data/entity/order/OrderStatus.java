@@ -6,6 +6,7 @@ import java.util.Arrays;
 
 public enum OrderStatus {
 
+    CANCELLED,
     CREATED,
     ASSIGNED,
     FILLED,

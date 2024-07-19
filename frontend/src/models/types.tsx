@@ -20,6 +20,7 @@ export interface OrderDetails extends Order {
         status: OrderStatus;
         timestamp: string;
     };
+    specialInstructions: string;
     history: {
         user: string;
         status: OrderStatus;
@@ -62,6 +63,7 @@ export enum OrderStatus {
     READY_FOR_PICKUP = "READY_FOR_PICKUP",
     IN_TRANSIT = "IN_TRANSIT",
     DELIVERED = "DELIVERED",
+    CANCELLED = "CANCELLED",
 }
 
     interface ItemRequest {
@@ -96,6 +98,8 @@ export interface Item {
 
 export interface AdminItem extends Item{
     suggestedItem: boolean;
+    totalOrdered: number;
+    totalFilled: number;
 }
 
 export interface UpdateItemRequest {

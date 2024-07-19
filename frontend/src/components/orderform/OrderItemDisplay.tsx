@@ -11,8 +11,8 @@ interface OrderItemDisplayProps {
 export function OrderItemDisplay({formItem, handleQuantityChange, onDelete, onEditSelected}: OrderItemDisplayProps) {
     return(
         <Box key={formItem.itemkey} my={4}>
-            <Group justify={'space-between'} gap={15}>
-                <div style={{marginRight: 'auto'}}>
+            <Group gap={15}>
+                <Box  onClick={onEditSelected} style={{ flex: 1}}>
                     <Text>
                         {formItem.description}
                     </Text>
@@ -20,19 +20,22 @@ export function OrderItemDisplay({formItem, handleQuantityChange, onDelete, onEd
                         {/*{'xl size'}*/}
                         {formItem.notes}
                     </Text>}
-                </div>
-                <NumberInput allowDecimal={false}
-                             // placeholder="Quantity"
+                </Box>
+                <NumberInput
+                    allowDecimal={false}
                              min={1}
                              max={100}
                              maw={70}
                              clampBehavior="strict"
+                            allowNegative={false}
                             value={formItem.quantity}
-                onChange={(val) => {handleQuantityChange(+val)}}>
+                onChange={(val) =>
+                    handleQuantityChange((val ?? '') === '' ? 0 : +val)
+                }>
 
                 </NumberInput>
                 <IconPencil cursor={'pointer'} onClick={onEditSelected}></IconPencil>
-                <IconX cursor={'pointer'} style={{padding: '10px'}} onClick={onDelete}></IconX>
+                <IconX cursor={'pointer'} onClick={onDelete}></IconX>
             </Group>
         </Box>);
 }

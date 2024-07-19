@@ -7,9 +7,10 @@ interface OrderItemFormProps {
     formItem: FormItem,
     suggestedItems?: Item[],
     handleItemUpdate: (formItem: FormItem) => void,
+    onCancel?: () => void,
 }
 
-export function OrderItemForm({formItem, suggestedItems = [], handleItemUpdate}: OrderItemFormProps) {
+export function OrderItemForm({formItem, suggestedItems = [], handleItemUpdate, onCancel}: OrderItemFormProps) {
 
     const [draftItem, setDraftItem] = useState(formItem);
     const [ selectedItem, setSelectedItem] = useState<Item|null>(null);
@@ -24,7 +25,9 @@ export function OrderItemForm({formItem, suggestedItems = [], handleItemUpdate}:
     }
 
     const returnItem = () => {
-        handleItemUpdate(draftItem);
+        if (draftItem?.description) {
+            handleItemUpdate(draftItem);
+        }
     }
 
     return (<>
@@ -38,14 +41,18 @@ export function OrderItemForm({formItem, suggestedItems = [], handleItemUpdate}:
                         value={draftItem?.description}
                     />
                     <Textarea
-                        label="Additional item note (size, color, etc)"
+                        label="Additional item note"
                         required={!!selectedItem?.placeholder}
-                        placeholder={selectedItem?.placeholder ? selectedItem.placeholder : "Additional item detail"}
+                        placeholder={selectedItem?.placeholder ? selectedItem.placeholder :
+                            "Size, color, preferences, etc"}
                         onChange={handleNoteChange}
                         value={draftItem?.notes}
                     />
 
-                <Group justify={"flex-end"} my="md">
+                <Group justify={"space-between"} my="md">
+                    <Button  variant="outline" color="gray"  onClick={onCancel}>
+                        Cancel
+                    </Button>
                     <Button onClick={returnItem}>
                         { formItem?.itemkey ? 'Update item' : 'Add to order'}
                     </Button>

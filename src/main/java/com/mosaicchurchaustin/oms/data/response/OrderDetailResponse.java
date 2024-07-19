@@ -19,6 +19,7 @@ public class OrderDetailResponse extends OrderResponse {
     private List<OrderItemResponse> items;
     private History lastStatusChange;
     private List<History> history;
+    private String specialInstructions;
 
 
     public static OrderDetailResponse from(final OrderEntity orderEntity) {
@@ -36,6 +37,7 @@ public class OrderDetailResponse extends OrderResponse {
                 .history(orderEntity.getOrderHistoryEntityList().stream().map(History::from).toList())
                 .lastStatusChange(History.from(orderEntity.getLastStatusChange()))
                 .items(orderEntity.getOrderItemList().stream().map(OrderItemResponse::from).collect(Collectors.toList()))
+                .specialInstructions(orderEntity.getSpecialInstructions())
                 .build();
     }
 

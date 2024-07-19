@@ -67,13 +67,14 @@ function OrderFormPage() {
             onEditSelected={() => setUpdatingItem(formItem)}
             onDelete={() => form.removeListItem('items', index)}
             handleQuantityChange={(quantity) => {
-                if (quantity > 0) {
-                    form.setValues((currentValues: any) => ({
-                        items: currentValues.items.map((currentItem: FormItem) =>
-                            formItem.itemkey === currentItem.itemkey ? { ...currentItem, quantity: quantity } : currentItem
-                        ),
-                    }));
-                }
+                form.setValues((currentValues: any) => ({
+                    items: currentValues.items
+                        .map((currentItem: FormItem) =>
+                            formItem.itemkey === currentItem.itemkey ?
+                                { ...currentItem, quantity: quantity } :
+                                currentItem)
+                }));
+
             }}
         />
     ));
@@ -82,36 +83,42 @@ function OrderFormPage() {
         setUpdatingItem({ description: '',  quantity: 1, notes: "" });
     };
 
+    function updateFromDraftItem(draftItem: FormItem) {
+        if (draftItem.itemkey) {
+            form.setValues((currentValues: any) => ({
+                items: currentValues.items.map((currentItem: FormItem) =>
+                    draftItem.itemkey === currentItem.itemkey ? {
+                        ...currentItem,
+                        description: draftItem.description,
+                        notes: draftItem.notes,
+                    } : currentItem
+                ),
+            }));
+        } else {
+            form.insertListItem('items',
+                {...draftItem, itemkey: randomId()}
+            );
+        }
+        setUpdatingItem(null);
+    }
+
     return (<>
+        <LoadingOverlay visible={createOrderAPI.loading} />
         <Paper  withBorder shadow="md" p={30} mt={30} radius="md" maw={600}  miw={400} mx="auto">
-            <LoadingOverlay visible={createOrderAPI.loading} />
+
             {<Modal opened={!!updatingItem} onClose={() => setUpdatingItem(null)}>
                 {/*<Card center maw={200}>*/}
-                { updatingItem && <OrderItemForm suggestedItems={suggestedItemsApi?.data ?? []}
-                               formItem={updatingItem}
-                               handleItemUpdate={(draftItem: FormItem) => {
-                                   if (draftItem.itemkey) {
-                                       form.setValues((currentValues: any) => ({
-                                           items: currentValues.items.map((currentItem: FormItem) =>
-                                               draftItem.itemkey === currentItem.itemkey ? { ...currentItem,
-                                                   description: draftItem.description,
-                                                   notes: draftItem.notes,
-                                               } : currentItem
-                                           ),
-                                       }));
-                                   } else {
-                                       form.insertListItem('items',
-                                           {...draftItem, itemkey: randomId()}
-                                       );
-                                   }
-                                   setUpdatingItem(null);
-                               }}></OrderItemForm> }
+                { updatingItem && <OrderItemForm
+                    suggestedItems={suggestedItemsApi?.data ?? []}
+                    formItem={updatingItem}
+                    onCancel={() => setUpdatingItem(null)}
+                    handleItemUpdate={updateFromDraftItem}></OrderItemForm> }
                 {/*</Card>*/}
             </Modal> }
             <form onSubmit={form.onSubmit((values) => submitOrder(values))}>
                 <TextInput
                     label="Customer Name"
-                    placeholder="Jim Smith"
+                    placeholder="First name and last initial"
                     required
                     {...form.getInputProps('customerName')}
                 />
@@ -146,9 +153,14 @@ function OrderFormPage() {
                     {...form.getInputProps('specialInstructions')}
                 />
 
-                <Button fullWidth mt="xl" type="submit">
-                    Create Order
-                </Button>
+                <Group justify={'space-between'}>
+                    <Button variant="outline" color="gray"  mt="xl" onClick={() => form.reset()}>
+                        Clear Form
+                    </Button>
+                    <Button mt="xl" type="submit">
+                        Create Order
+                    </Button>
+                </Group>
             </form>
         </Paper>
 
