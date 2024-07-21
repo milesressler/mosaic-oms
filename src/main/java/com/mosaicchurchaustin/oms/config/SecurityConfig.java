@@ -52,7 +52,6 @@ public class SecurityConfig {
                 .authorizeHttpRequests((registry) -> {
                     registry.requestMatchers("/api/admin/**").hasAuthority(MosaicAuthority.ADMIN.getAuthority());
                     registry.requestMatchers(HttpMethod.GET, "/api/item").permitAll();
-                    registry.requestMatchers(HttpMethod.GET, "/api/transit/bus/arrivals").permitAll();
                     registry.requestMatchers("/api/actuator/**").permitAll();
                     registry.requestMatchers("/api/**").authenticated();
                     registry.anyRequest().anonymous();

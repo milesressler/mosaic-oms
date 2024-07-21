@@ -7,7 +7,7 @@ import Transit from "src/components/transit/Transit.tsx";
 const CustomerDashboard = ({onSelectRow}: {onSelectRow: (order: Order) => void}) => {
     return (<Grid>
         <GridCol span={8}>
-            <OrdersTable view={"default"}
+            <OrdersTable view={"public"}
                          onSelectRow={onSelectRow}
                          showProgressIndicator={true}
             />

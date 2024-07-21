@@ -40,6 +40,9 @@ public class OrderHistoryEntity {
     @Column(name = "type", nullable = false)
     OrderEventType eventType;
 
+    @Column(name = "comment")
+    String comment;
+
 
     @PrePersist
     protected void onCreate() {

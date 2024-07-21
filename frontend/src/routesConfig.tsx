@@ -11,6 +11,8 @@ import OrderTakerDashboard from "src/pages/dashboards/OrderTakerDashboard.tsx";
 import OrderFillerDashboard from "src/pages/dashboards/OrderFillerDashboard.tsx";
 import AdminOrdersPage from "src/pages/admin/AdminOrdersPage.tsx";
 import ReportPlaceholder from "src/pages/reports/ReportPlaceholder.tsx";
+import OrderDetailSection from "src/components/fillers/OrderDetailSection.tsx";
+import UserManagementPage from "src/pages/admin/UserManagementPage.tsx";
 
 
 const routes = [
@@ -64,6 +66,18 @@ const routes = [
                 headerHidden: false,
                 title: 'Order Filler',
                 showInNavBar: true,
+                children: [
+                    {
+                        key: 'filler-dashboard-view',
+                        path: 'order/:id',
+                        element: OrderDetailSection
+                    },
+                    {
+                        key: 'filler-dashboard-fill',
+                        path: 'order/:id',
+                        element: OrderFormPage
+                    }
+                ]
             },
             // Add other dashboard routes here
         ],
@@ -90,10 +104,24 @@ const routes = [
                 showInNavBar: true,
             },
             {
+                key: 'users',
+                path: '/admin/users',
+                element: UserManagementPage,
+                title: 'Users',
+                showInNavBar: true,
+            },
+            {
                 key: 'order-create',
                 path: '/order/create',
                 element: OrderFormPage,
                 title: 'Create Order',
+                showInNavBar: true,
+            },
+            {
+                key: 'audit',
+                path: '/audit',
+                element: OrderFormPage,
+                title: 'Audit Log',
                 showInNavBar: true,
             },
             {

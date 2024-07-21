@@ -33,7 +33,21 @@ export interface Customer {
 }
 
 export interface User {
-    name: string
+    name: string,
+    nickname: string,
+    picture: string,
+    userId: string,
+    emailVerified: boolean,
+    created: number,
+}
+
+export interface OrderAction {
+    timestamp: number,
+    action: string,
+}
+export interface UserDetail extends User {
+    roles: string[]
+    recentActions: OrderAction[];
 }
 
 export enum Location {
@@ -58,15 +72,20 @@ export interface TransitInfo {
 
 export enum OrderStatus {
     CREATED = "CREATED",
+    ACCEPTED = "ACCEPTED",
+    NEED_INFO = "NEED_INFO",
+    IN_PROGRESS = "IN_PROGRESS",
     FILLED = "FILLED",
-    ASSIGNED = "ASSIGNED",
     READY_FOR_PICKUP = "READY_FOR_PICKUP",
-    IN_TRANSIT = "IN_TRANSIT",
-    DELIVERED = "DELIVERED",
+
+    ASSIGNED = "ASSIGNED",
+    COMPLETED = "COMPLETED",
+
+
     CANCELLED = "CANCELLED",
 }
 
-    interface ItemRequest {
+export interface ItemRequest {
     description: string;
     notes: string;
     quantity: number;
@@ -112,6 +131,24 @@ export interface OrderItem {
     quantityFulfilled: number;
     notes: string | null;
     id: number;
+}
+
+export interface AdminUser {
+
+}
+
+export interface OrderFeedItem {
+    timestamp: number;
+    orderId: number;
+    orderStatus: OrderStatus;
+    user: {
+        name: string;
+        uuid: string;
+    };
+}
+
+export interface AuditLog {
+    timestamp: string
 }
 
 

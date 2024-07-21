@@ -14,12 +14,18 @@ import com.mosaicchurchaustin.oms.data.request.OrderItemRequest;
 import com.mosaicchurchaustin.oms.data.request.UpdateOrderItemRequest;
 import com.mosaicchurchaustin.oms.data.request.UpdateOrderRequest;
 import com.mosaicchurchaustin.oms.exception.EntityNotFoundException;
-import com.mosaicchurchaustin.oms.repositories.*;
+import com.mosaicchurchaustin.oms.repositories.CustomerRepository;
+import com.mosaicchurchaustin.oms.repositories.ItemRepository;
+import com.mosaicchurchaustin.oms.repositories.OrderHistoryRepository;
+import com.mosaicchurchaustin.oms.repositories.OrderItemRepository;
+import com.mosaicchurchaustin.oms.repositories.OrderRepository;
 import jakarta.transaction.Transactional;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
@@ -49,6 +55,17 @@ public class OrderService {
 
     @Autowired
     UserService userService;
+
+    public List<OrderHistoryEntity> getOrderHistory() {
+        final Pageable pageable = PageRequest.of(0, 20, Sort.by(Sort.Order.desc("timestamp")));
+
+        return orderHistoryRepository.findAll(pageable).getContent();
+    }
+
+    public List<OrderHistoryEntity> getOrderHistory(final Long orderId) {
+        final Pageable pageable = PageRequest.of(0, 20, Sort.by(Sort.Order.desc("timestamp")));
+        return orderHistoryRepository.findAllByOrderEntityId(pageable, orderId).getContent();
+    }
 
     public Page<OrderEntity> getOrders(final Pageable pageable, final List<String> statusFilters) {
         final List<OrderStatus> orderStatusList = statusFilters != null && statusFilters.size() > 0 ?
@@ -157,6 +174,7 @@ public class OrderService {
                         ? null : request.specialInstructions().trim())
                 .phoneNumber(StringUtils.isBlank(request.customerPhone())
                         ? null : request.customerPhone())
+                .orderStatus(OrderStatus.CREATED)
                 .build());
 
         addItemsToOrder(orderEntity, request.items());
@@ -187,8 +205,9 @@ public class OrderService {
     private void addItemsToOrder(final OrderEntity orderEntity, List<OrderItemRequest> items) {
         for (final OrderItemRequest item: items) {
             final ItemEntity itemEntity = itemRepository.findByDescription(item.description()).orElseGet(() ->
-                    itemRepository.save(ItemEntity.builder().description(item.description()).isSuggestedItem(false).build())
-            );
+                    itemRepository.findByDescriptionAndRemovedIsTrue(item.description()).orElseGet(() ->
+                        itemRepository .save(ItemEntity.builder().description(item.description()).isSuggestedItem(false).build())
+            ));
 
             orderEntity.getOrderItemList().add(
                     orderItemRepository.save(new OrderItemEntity(

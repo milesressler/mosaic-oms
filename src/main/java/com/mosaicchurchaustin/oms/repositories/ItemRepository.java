@@ -10,5 +10,6 @@ import java.util.Optional;
 @Repository
 public interface ItemRepository extends JpaRepository<ItemEntity, Long> {
     Optional<ItemEntity> findByDescription(String description);
+    Optional<ItemEntity> findByDescriptionAndRemovedIsTrue(String description);
     List<ItemEntity> findAllByIsSuggestedItem(Boolean isSuggestedItem);
 }

@@ -5,6 +5,8 @@ import jakarta.validation.constraints.*;
 
 import java.util.List;
 
+
+@Valid
 public record UpdateOrderRequest(
         String customerName,
         @Pattern(regexp="(^$|[0-9]{10})", message = "customerPhone should be 10 digits")

@@ -13,6 +13,11 @@ import {LogoutButton} from "src/components/auth0/LogoutButton.tsx";
 import LoginButton from "src/components/auth0/LoginButton.tsx";
 import AsideContent from "src/components/layout/aside/AsideContent.tsx";
 import UserApi from "src/services/userApi.tsx";
+import {IconArrowsMaximize, IconArrowsMinimize, IconLayoutNavbarExpand} from "@tabler/icons-react";
+import {SelectedOrderContextProvider, SelectedOrderProvider} from "src/contexts/SelectedOrderContext.tsx";
+const audience = import.meta.env.VITE_AUTH0_AUDIENCE;
+const domain = import.meta.env.VITE_AUTH0_DOMAIN;
+const clientId = import.meta.env.VITE_AUTH0_CLIENT_ID;
 
 const mappedRoutes = routes.flatMap((route: any) => route.children || [route]).map((route) => {
     // const Element = route.element;
@@ -25,7 +30,16 @@ const mappedRoutes = routes.flatMap((route: any) => route.children || [route]).m
             path={route.path}
             element={<Element />}
             errorElement={route.errorElement && <route.errorElement />}
-        />
+        >
+            {
+                route.children?.flatMap((child:any) => {
+                   return <Route
+                        key={child.key} path={child.path}
+                        element={<child.element/>}
+                        />
+            })
+        }
+        </Route>
     );
 });
 export function AppShellComponent() {
@@ -34,15 +48,14 @@ export function AppShellComponent() {
     const [asideOpened, asideHandler] = useDisclosure(false);
     const location = useLocation();
     const syncUserWithToken = useApi(UserApi.syncUserWithToken);
-    const { user, getIdTokenClaims, isAuthenticated } = useAuth0();
+    const { user, getIdTokenClaims, getAccessTokenSilently, isAuthenticated } = useAuth0();
     const [headerHeight, setHeaderHeight] = useState(DEFAULT_HEADER_HEIGHT);
+    const [fullscreen, setFullscreen] = useState(false);
 
     useEffect(() => {
         const fetchIdToken = async () => {
             if (isAuthenticated && user) {
-                const idTokenClaims = await getIdTokenClaims();
-                idTokenClaims &&
-                    await syncUserWithToken.request( idTokenClaims?.__raw);
+                    await syncUserWithToken.request();
             }
         };
         fetchIdToken();
@@ -62,6 +75,15 @@ export function AppShellComponent() {
         setHeaderHeight(activeRoute.headerHidden ? 0 : DEFAULT_HEADER_HEIGHT);
     }, [activeRoute]);
 
+    useEffect(() => {
+        function onFullscreenChange() {
+            setFullscreen(Boolean(document.fullscreenElement));
+        }
+
+        document.addEventListener('fullscreenchange', onFullscreenChange);
+
+        return () => document.removeEventListener('fullscreenchange', onFullscreenChange);
+    }, []);
 
 
     return (
@@ -86,6 +108,8 @@ export function AppShellComponent() {
                             { isAuthenticated && (!asideOpened || activeRoute.minimalHeader) && <Burger opened={opened} onClick={toggle} size="sm"
                                     hiddenFrom={!activeRoute.navBarHidden ? "md" : ""}
                             /> }
+                            {!fullscreen && <IconArrowsMaximize cursor={'pointer'} onClick={() => document.body.requestFullscreen()}></IconArrowsMaximize> }
+                            {fullscreen && <IconArrowsMinimize cursor={'pointer'} onClick={() => document.exitFullscreen()}></IconArrowsMinimize> }
                             <Link to={"/"}>
                                 <img src={mosaicLogo} className="m-logo" alt="Mosaic Church logo"/>
                             </Link>
@@ -111,9 +135,11 @@ export function AppShellComponent() {
             </AppShell.Header>
             }
             <AppShell.Main style={{paddingTop: headerHeight }}>
-                <Routes>
-                    {mappedRoutes}
-                </Routes>
+                <SelectedOrderProvider>
+                    <Routes>
+                        {mappedRoutes}
+                    </Routes>
+                </SelectedOrderProvider>
             </AppShell.Main>
              { isAuthenticated && <AppShellNavBar ></AppShellNavBar> }
             { isAuthenticated && <AppShell.Aside>

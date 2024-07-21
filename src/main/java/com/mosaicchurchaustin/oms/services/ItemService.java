@@ -33,6 +33,16 @@ public class ItemService {
     }
 
     @Transactional
+    public void removeItem(final Long id) {
+        final ItemEntity itemEntity = itemRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Item", id.toString()));
+
+        itemEntity.setRemoved(true);
+        itemRepository.save(itemEntity);
+
+    }
+
+    @Transactional
     public ItemEntity updateItem(final Long id, final UpdateItemRequest request) {
         final ItemEntity itemEntity = itemRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Item", id.toString()));

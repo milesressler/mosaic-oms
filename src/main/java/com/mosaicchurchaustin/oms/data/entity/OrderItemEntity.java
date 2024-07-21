@@ -15,6 +15,11 @@ import lombok.*;
 public class OrderItemEntity extends BaseEntity {
     public static final String ENTITY_NAME = "orderItem";
 
+    @Override
+    public String getEntityType() {
+        return ENTITY_NAME;
+    }
+
     @ManyToOne(optional = false)
     @ToString.Exclude
     OrderEntity orderEntity;

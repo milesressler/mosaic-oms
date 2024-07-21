@@ -13,6 +13,8 @@ import java.util.Objects;
 @Getter
 public abstract class BaseEntity {
 
+    public abstract String getEntityType();
+
     @Id
     @Column(name = "id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)

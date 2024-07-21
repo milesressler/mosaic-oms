@@ -3,35 +3,45 @@ import {Badge} from "@mantine/core";
 
 export function StatusBadge({ orderStatus }: { orderStatus: OrderStatus }) {
     let color: string;
+    let text = orderStatus.toUpperCase();
 
     switch (orderStatus) {
         case OrderStatus.CREATED:
             color = 'blue';
             break;
+        case OrderStatus.ACCEPTED:
+            color = 'cyan';
+            break;
         case OrderStatus.ASSIGNED:
             color = 'cyan';
             break;
         case OrderStatus.FILLED:
-            color = 'green';
+            color = 'lightblue';
             break;
-        case OrderStatus.IN_TRANSIT:
+        case OrderStatus.NEED_INFO:
             color = 'yellow';
+            text = "NEED INFO";
             break;
         case OrderStatus.READY_FOR_PICKUP:
-            color = 'orange';
+            color = 'green';
+            text = "READY FOR PICKUP";
             break;
-        case OrderStatus.DELIVERED:
+        case OrderStatus.COMPLETED:
             color = 'purple';
             break;
         case OrderStatus.CANCELLED:
             color = 'red';
+            break;
+        case OrderStatus.IN_PROGRESS:
+            color = 'cyan';
+            text = 'IN PROGRESS'
             break;
         default:
             color = 'gray'; // Default color for any unknown statuses
     }
 
     return (
-        <Badge color={color}>{orderStatus.toUpperCase()}</Badge>
+        <Badge color={color}>{text}</Badge>
     );
 }
 

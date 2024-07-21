@@ -1,14 +1,16 @@
 export interface ColumnConfig {
-    name: string;
+    label: string;
+    id?: string
     sortField?: string;
     views?: string[];
 }
 
 export const columns: ColumnConfig[] = [
-    { name: 'Order #', sortField: 'id', views: ['default', 'admin'] },
-    { name: 'Created', sortField: 'created', views: ['default', 'admin'] },
-    { name: 'Updated', sortField: 'updated', views: ['default'] },
-    { name: 'Updated', sortField: 'updatedDetail', views: ['admin'] },
-    { name: 'Status', sortField: 'orderStatus', views: ['default', 'admin'] },
-    { name: 'Customer', sortField: 'customer.name', views: ['default', 'admin'] },
+    { label: 'Order #', sortField: 'id', views: ['default', 'admin', 'public'] },
+    { label: 'Created', sortField: 'created', views: ['default', 'admin', 'public'] },
+    { label: 'Updated', sortField: 'updated', views: ['default'] },
+    { label: 'Updated', id:'updatedDetail', sortField: 'updated', views: ['admin'] },
+    { label: 'Status', sortField: 'orderStatus', views: ['default', 'admin'] },
+    { label: 'Status', id:'statusObfuscated', sortField: 'orderStatus', views: [ 'public'] },
+    { label: 'Customer', sortField: 'customer.name', views: ['default', 'admin', 'public'] },
 ];

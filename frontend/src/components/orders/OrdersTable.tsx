@@ -116,24 +116,37 @@ export function OrdersTable({
         setSortBy(field);
         refreshOrders();
     };
+
+    const getObfusgatedStatus = (status: OrderStatus) => {
+        if ([OrderStatus.COMPLETED, OrderStatus.CREATED, OrderStatus.CANCELLED, OrderStatus.NEED_INFO,
+        OrderStatus.READY_FOR_PICKUP].indexOf(status) != -1) {
+            return status;
+        } else {
+            return OrderStatus.IN_PROGRESS;
+        }
+    }
+
     const rows = getOrdersApi.data?.content?.map((order: Order) => (
         <Table.Tr  style={{cursor: onSelectRow ? 'pointer' : ''}}
                    key={order.uuid}
                    bg={order.uuid === selectedOrder?.uuid ? '#F3f3f3' : ""}
                    onClick={() => onSelectRow && onSelectRow(order)}
         >
-            {visibleColumns.map((column: ColumnConfig,  index: number) => (
-                <Table.Td key={column.name} colSpan={index === visibleColumns.length - 1 ? 2 : 1}>
-                    {column.name === 'Order #' && order.id}
-                    {column.name === 'Created' && <>
+            {visibleColumns.map((column: ColumnConfig,  index: number) =>{
+                const key = column.id ?? column.label;
+             return (
+                <Table.Td key={key} colSpan={index === visibleColumns.length - 1 ? 2 : 1}>
+                    {key === 'Order #' && order.id}
+                    {key === 'Created' && <>
                         <Text>{DateTime.fromISO(order.created).toLocaleString(DateTime.TIME_SIMPLE)}</Text>
                         <Text c={"dimmed"} size={'xs'}>{DateTime.fromISO(order.created).toLocaleString(DateTime.DATE_FULL)}</Text>
                     </>}
-                    {column.name === 'Updated' && <Text c={'dimmed'}>{DateTime.fromISO(order.lastStatusUpdate).toRelative()}</Text>}
-                    {column.name === 'Status' && <StatusBadge orderStatus={order.orderStatus} />}
-                    {column.name === 'Customer' && order.customer?.name}
+                    {key === 'Updated' && <Text c={'dimmed'}>{DateTime.fromISO(order.lastStatusUpdate).toRelative()}</Text>}
+                    {key === 'Status' && <StatusBadge orderStatus={order.orderStatus} />}
+                    {key === 'Customer' && order.customer?.name}
+                    {key === 'statusObfuscated' && <StatusBadge orderStatus={getObfusgatedStatus(order.orderStatus)}/> }
                 </Table.Td>
-            ))}
+            )})}
         </Table.Tr>
     ));
 
@@ -144,11 +157,11 @@ export function OrdersTable({
                     <Table.Tr>
                         {visibleColumns.map((column: ColumnConfig) => (
                             <Th
-                                key={column.name}
+                                key={column.id ?? column.label }
                                 sorted={sortBy === column.sortField}
                                 reversed={reverseSortDirection}
                                 onSort={column.sortField ? () => column.sortField && setSorting(column.sortField) : undefined}                            >
-                                {column.name}
+                                {column.label}
                             </Th>
                         ))}
                         { showProgressIndicator && autoRefresh &&

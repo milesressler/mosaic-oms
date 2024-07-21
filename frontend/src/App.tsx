@@ -3,7 +3,7 @@ import {Auth0ProviderWithNavigate} from "src/components/auth0/Auth0ProviderWithN
 import {AuthContextProvider} from "src/contexts/AuthContext";
 import '@mantine/core/styles.css';
 
-import {MantineProvider} from '@mantine/core';
+import {MantineProvider,ColorSchemeScript} from '@mantine/core';
 import {AppShellComponent} from "src/components/layout/AppShellComponent.tsx";
 
 

@@ -2,10 +2,12 @@ package com.mosaicchurchaustin.oms.controllers;
 
 import com.mosaicchurchaustin.oms.data.entity.OrderItemEntity;
 import com.mosaicchurchaustin.oms.data.entity.order.OrderEntity;
+import com.mosaicchurchaustin.oms.data.entity.order.OrderHistoryEntity;
 import com.mosaicchurchaustin.oms.data.request.CreateOrderRequest;
 import com.mosaicchurchaustin.oms.data.request.UpdateOrderItemRequest;
 import com.mosaicchurchaustin.oms.data.request.UpdateOrderRequest;
 import com.mosaicchurchaustin.oms.data.response.OrderDetailResponse;
+import com.mosaicchurchaustin.oms.data.response.OrderFeedResponse;
 import com.mosaicchurchaustin.oms.data.response.OrderItemResponse;
 import com.mosaicchurchaustin.oms.data.response.OrderResponse;
 import com.mosaicchurchaustin.oms.services.OrderService;
@@ -92,6 +94,20 @@ public class OrderController {
             ){
         final OrderItemEntity orderItemEntity = orderService.updateOrderItem(orderItemId, request);
         return OrderItemResponse.from(orderItemEntity);
+    }
+
+    @ResponseBody
+    @GetMapping(path ="/order/history", produces = MediaType.APPLICATION_JSON_VALUE)
+    public List<OrderFeedResponse> getOrderHistory(
+            @RequestParam(required = false) final Long orderId
+    ) {
+        final List<OrderHistoryEntity> results;
+        if (orderId != null) {
+            results = orderService.getOrderHistory(orderId);
+        } else {
+            results = orderService.getOrderHistory();
+        }
+        return results.stream().map(OrderFeedResponse::from).toList();
     }
 
 

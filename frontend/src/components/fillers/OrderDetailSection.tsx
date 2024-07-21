@@ -1,44 +1,53 @@
-import {Order, OrderStatus} from "src/models/types.tsx";
+import {OrderStatus} from "src/models/types.tsx";
 import {useEffect} from "react";
 import useApi from "src/hooks/useApi.tsx";
 import ordersApi from "src/services/ordersApi.tsx";
-import {Box, Button, Group, LoadingOverlay, Paper, Text, Title} from "@mantine/core";
+import {Box, Button, Group, isNumberLike, LoadingOverlay, Paper, Text, Title} from "@mantine/core";
 import {useAuth0} from "@auth0/auth0-react";
+import {useParams} from "react-router-dom";
+import { useSelectedOrder } from "src/contexts/SelectedOrderContext";
 
-interface OrderDetailSectionProps {
-    order?: Order;
-    onModified: () => void,
-}
+export function OrderDetailSection({}) {
 
-export function OrderDetailSection({order, onModified}: OrderDetailSectionProps) {
-
+    const { doForceRefresh } = useSelectedOrder();
     const {user} = useAuth0();
     const orderDetailApi = useApi(ordersApi.getOrderById);
     const updateStateApi = useApi(ordersApi.updateOrderStatus);
 
+    const { id } = useParams();
+
     useEffect(() => {
-        order && orderDetailApi.request(order.id);
-    }, [order, updateStateApi.data]);
+        if (id && isNumberLike(id)) {
+            doForceRefresh();
+            orderDetailApi.request(+id);
+        }
+    }, [id, updateStateApi.data]);
 
 
     const assignedToMe = orderDetailApi.data?.orderStatus === OrderStatus.ASSIGNED &&
         orderDetailApi.data?.lastStatusChange?.assigneeExt === user?.sub;
 
-    const assignToMe: () => void = () => {
+    const assignToMe = () => {
         if (assignedToMe) {
-            unassign();
+            return unassign();
         } else {
-            updateStateApi.request(order!.uuid, OrderStatus.ASSIGNED);
+            return updateStateApi.request(orderDetailApi.data!.uuid, OrderStatus.ASSIGNED);
         }
     }
-    const unassign: () => void = () => {
-        updateStateApi.request(order!.uuid, OrderStatus.CREATED)
+    const unassign = () => updateStateApi.request(orderDetailApi.data!.uuid, OrderStatus.CREATED);
+
+
+    const startFilling = () => {
+        if (!assignedToMe) {
+            assignToMe().then()
+        }
+
     }
 
     useEffect(() => {
-        if (!updateStateApi.loading && !updateStateApi.error) {
-            onModified();
-            orderDetailApi.request(order!.id);
+        if (!updateStateApi.loading && !updateStateApi.error && orderDetailApi.data?.id) {
+            // onModified();
+            orderDetailApi.request(orderDetailApi.data!.id);
         }
     }, [updateStateApi.data]);
 
@@ -48,7 +57,7 @@ export function OrderDetailSection({order, onModified}: OrderDetailSectionProps)
                         zIndex={1000}
                         overlayProps={{ radius: "sm", blur: 2 }} />
         <Group justify={'space-between'} pr={10} mb={10}>
-            <Title>Order: {order?.id}</Title>
+            <Title>Order: {orderDetailApi.data?.id}</Title>
             <Button onClick={assignToMe} disabled={
                 orderDetailApi.loading ||
                 orderDetailApi.data === null ||
@@ -74,9 +83,12 @@ export function OrderDetailSection({order, onModified}: OrderDetailSectionProps)
             </Text> }
         </Paper>
 
-            <Group grow my={10}>
-                <Button>Start Filling</Button>
+            { (orderDetailApi.data?.orderStatus === OrderStatus.CREATED || assignedToMe) && <Group grow my={10}>
+                <Button onClick={startFilling}>
+                    {orderDetailApi.data?.orderStatus === OrderStatus.CREATED && 'Assign and '} Start Filling
+                </Button>
             </Group>
+            }
         {/*<Divider></Divider>*/}
 
         <Paper  shadow="xs">

@@ -13,6 +13,14 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 public class CustomerEntity extends BaseUuidEntity {
+
+    public static String ENTITY_TYPE = "Customer";
+
+    @Override
+    public String getEntityType() {
+        return ENTITY_TYPE;
+    }
+
     @Column(name = "name")
     String name;
 }

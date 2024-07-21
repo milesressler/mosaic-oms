@@ -8,7 +8,7 @@ spring:
 
 auth0:
   domain: dev-milessmiles.auth0.com
-  apitoken: ""
+  managementAudience: "https://dev-milessmiles.auth0.com/api/v2/"
 
 mosaic:
   oms:
@@ -69,7 +69,6 @@ spring:
 
 auth0:
   domain: dev-milessmiles.auth0.com
-  apitoken: ""
 
 mosaic:
   oms:
