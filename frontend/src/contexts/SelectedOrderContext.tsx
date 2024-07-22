@@ -1,8 +1,8 @@
 import React, {createContext, ReactNode, useContext, useState} from "react";
-import {Order} from "src/models/types.tsx";
+
 export interface SelectedOrderContextType {
-    selectedOrder: Order | null;
-    setSelectedOrder: (order: Order | null) => void;
+    selectedOrderId: number | null;
+    setSelectedOrderId: (orderId: number | null) => void;
     forceRefresh: boolean;
     doForceRefresh: () => void;
 }
@@ -11,7 +11,7 @@ const SelectedOrderContext = createContext<SelectedOrderContextType|undefined   
 
 // Create the provider component
 export const SelectedOrderProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-    const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+    const [selectedOrderId, setSelectedOrderId] = useState<number | null>(null);
     const [forceRefresh, setForceRefresh] = useState(false);
 
     const doForceRefresh = () => {
@@ -19,7 +19,7 @@ export const SelectedOrderProvider: React.FC<{ children: ReactNode }> = ({ child
     }
 
     return (
-        <SelectedOrderContext.Provider value={{ selectedOrder, setSelectedOrder, forceRefresh, doForceRefresh }}>
+        <SelectedOrderContext.Provider value={{ selectedOrderId, setSelectedOrderId, forceRefresh, doForceRefresh }}>
             {children}
         </SelectedOrderContext.Provider>
     );

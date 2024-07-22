@@ -21,7 +21,7 @@ interface ThProps {
 interface OrdersTable {
     view: string,
     onSelectRow?: (order: Order) => void,
-    selectedOrder?: Order,
+    selectedOrderId?: number,
     refreshInterval?: number,
     allowPagination?: boolean,
     showProgressIndicator?: boolean,
@@ -57,7 +57,7 @@ export function OrdersTable({
         view = 'default',
         refreshInterval = 10000,
         onSelectRow,
-        selectedOrder,
+        selectedOrderId,
         allowPagination = false,
         showProgressIndicator = false,
         autoRefresh = true,
@@ -129,7 +129,7 @@ export function OrdersTable({
     const rows = getOrdersApi.data?.content?.map((order: Order) => (
         <Table.Tr  style={{cursor: onSelectRow ? 'pointer' : ''}}
                    key={order.uuid}
-                   bg={order.uuid === selectedOrder?.uuid ? '#F3f3f3' : ""}
+                   bg={order.id === selectedOrderId ? '#F3f3f3' : ""}
                    onClick={() => onSelectRow && onSelectRow(order)}
         >
             {visibleColumns.map((column: ColumnConfig,  index: number) =>{

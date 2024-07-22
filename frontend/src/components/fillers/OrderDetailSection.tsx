@@ -4,7 +4,7 @@ import useApi from "src/hooks/useApi.tsx";
 import ordersApi from "src/services/ordersApi.tsx";
 import {Box, Button, Group, isNumberLike, LoadingOverlay, Paper, Text, Title} from "@mantine/core";
 import {useAuth0} from "@auth0/auth0-react";
-import {useParams} from "react-router-dom";
+import {useNavigate, useParams} from "react-router-dom";
 import { useSelectedOrder } from "src/contexts/SelectedOrderContext";
 
 export function OrderDetailSection({}) {
@@ -15,6 +15,7 @@ export function OrderDetailSection({}) {
     const updateStateApi = useApi(ordersApi.updateOrderStatus);
 
     const { id } = useParams();
+    const navigate = useNavigate();
 
     useEffect(() => {
         if (id && isNumberLike(id)) {
@@ -39,7 +40,10 @@ export function OrderDetailSection({}) {
 
     const startFilling = () => {
         if (!assignedToMe) {
-            assignToMe().then()
+            assignToMe().then(() =>
+                navigate(`/dashboard/filler/fill/${id}`));
+        } else {
+            navigate(`/dashboard/filler/fill/${id}`);
         }
 
     }

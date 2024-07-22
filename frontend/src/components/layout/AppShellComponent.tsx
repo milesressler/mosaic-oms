@@ -13,14 +13,11 @@ import {LogoutButton} from "src/components/auth0/LogoutButton.tsx";
 import LoginButton from "src/components/auth0/LoginButton.tsx";
 import AsideContent from "src/components/layout/aside/AsideContent.tsx";
 import UserApi from "src/services/userApi.tsx";
-import {IconArrowsMaximize, IconArrowsMinimize, IconLayoutNavbarExpand} from "@tabler/icons-react";
-import {SelectedOrderContextProvider, SelectedOrderProvider} from "src/contexts/SelectedOrderContext.tsx";
-const audience = import.meta.env.VITE_AUTH0_AUDIENCE;
-const domain = import.meta.env.VITE_AUTH0_DOMAIN;
-const clientId = import.meta.env.VITE_AUTH0_CLIENT_ID;
+import {IconArrowsMaximize, IconArrowsMinimize} from "@tabler/icons-react";
+import { SelectedOrderProvider} from "src/contexts/SelectedOrderContext.tsx";
+
 
 const mappedRoutes = routes.flatMap((route: any) => route.children || [route]).map((route) => {
-    // const Element = route.element;
     const Element = route.public
         ? route.element
         : () => <AuthenticationGuard component={route.element} />;
@@ -48,9 +45,10 @@ export function AppShellComponent() {
     const [asideOpened, asideHandler] = useDisclosure(false);
     const location = useLocation();
     const syncUserWithToken = useApi(UserApi.syncUserWithToken);
-    const { user, getIdTokenClaims, getAccessTokenSilently, isAuthenticated } = useAuth0();
+    const { user, getIdTokenClaims, isAuthenticated } = useAuth0();
     const [headerHeight, setHeaderHeight] = useState(DEFAULT_HEADER_HEIGHT);
     const [fullscreen, setFullscreen] = useState(false);
+    const [activeRoute, setActiveRoute] = useState(routes[0])
 
     useEffect(() => {
         const fetchIdToken = async () => {
@@ -61,17 +59,40 @@ export function AppShellComponent() {
         fetchIdToken();
     }, [isAuthenticated, getIdTokenClaims, user]);
 
+    useEffect(() => {
 
-    // Get active route
-    const activeRoute = routes
-        .flatMap((route: any) => route.children || [route])
-        .find((route: any) => matchPath(route.path, location.pathname)) || {};
+        const allRoutes =  routes
+            .flatMap((topLevelLinkOrGroup: any) => {
+                if (topLevelLinkOrGroup.children) {
+                    let mainlinks = topLevelLinkOrGroup.children;
+                    mainlinks.forEach((mainlink: any) => {
+                        if (mainlink.children) {
+                            const childrenWithInheritedProps = mainlink.children.map((child: any) => {
+                                child.fullPath = mainlink.path + "/" + child.path;
+                                const inheritedProps = {
+                                    navBarHidden: mainlink.navBarHidden,
+                                    showInNavBar: mainlink.showInNavBar,
+                                    asideHidden: mainlink.asideHidden,
+                                    minimalHeader: mainlink.minimalHeader,
+                                    headerHidden: mainlink.headerHidden,
+                                }
+                                return {...inheritedProps, ...child};
+                            })
+                            mainlinks = mainlinks.concat(childrenWithInheritedProps);
+                        }
+                    })
+                    return mainlinks;
+                } else {
+                    return [topLevelLinkOrGroup];
+                }
+            });
+        const matchingRoute = allRoutes
+            .find((route: any) => matchPath(route.fullPath ?? route.path, location.pathname)) || {};
+        setActiveRoute(matchingRoute);
+    }, [location]);
 
     useEffect(() => {
         close();
-    }, [activeRoute]);
-
-    useEffect(() => {
         setHeaderHeight(activeRoute.headerHidden ? 0 : DEFAULT_HEADER_HEIGHT);
     }, [activeRoute]);
 

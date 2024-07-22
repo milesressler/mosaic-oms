@@ -64,8 +64,8 @@ const routes = [
                 errorElement: ErrorPage,
                 navBarHidden: true,
                 headerHidden: false,
-                title: 'Order Filler',
                 showInNavBar: true,
+                title: 'Order Filler',
                 children: [
                     {
                         key: 'filler-dashboard-view',
@@ -74,7 +74,7 @@ const routes = [
                     },
                     {
                         key: 'filler-dashboard-fill',
-                        path: 'order/:id',
+                        path: 'fill/:id',
                         element: OrderFormPage
                     }
                 ]
