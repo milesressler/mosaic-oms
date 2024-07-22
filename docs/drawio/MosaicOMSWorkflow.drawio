@@ -1,0 +1,106 @@
+<mxfile host="app.diagrams.net" modified="2024-07-22T14:03:16.033Z" agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36" etag="GzB7wsYzXUhOEiVI136K" version="24.7.1" type="google">
+  <diagram name="Page-1" id="5M4zHc-uWJ6hl42Y27PR">
+    <mxGraphModel dx="1804" dy="615" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="ijFCYhFOQf2MVRpxXwz0-10" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=1;entryDx=0;entryDy=0;exitX=0.25;exitY=0;exitDx=0;exitDy=0;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" source="ijFCYhFOQf2MVRpxXwz0-1" target="ijFCYhFOQf2MVRpxXwz0-9" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ijFCYhFOQf2MVRpxXwz0-12" value="Returned for missing info" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="ijFCYhFOQf2MVRpxXwz0-10" vertex="1" connectable="0">
+          <mxGeometry x="-0.1" y="-1" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ijFCYhFOQf2MVRpxXwz0-14" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" source="ijFCYhFOQf2MVRpxXwz0-1" target="ijFCYhFOQf2MVRpxXwz0-13" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ijFCYhFOQf2MVRpxXwz0-15" value="Order is valid" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="ijFCYhFOQf2MVRpxXwz0-14" vertex="1" connectable="0">
+          <mxGeometry x="-0.05" y="-1" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ijFCYhFOQf2MVRpxXwz0-1" value="Pending Acceptance" style="whiteSpace=wrap;html=1;aspect=fixed;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1" parent="1" vertex="1">
+          <mxGeometry x="360" y="140" width="80" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="ijFCYhFOQf2MVRpxXwz0-6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;fillColor=#ffe6cc;strokeColor=#d79b00;" parent="1" source="ijFCYhFOQf2MVRpxXwz0-3" target="ijFCYhFOQf2MVRpxXwz0-1" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ijFCYhFOQf2MVRpxXwz0-7" value="Creates a new order" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" parent="ijFCYhFOQf2MVRpxXwz0-6" vertex="1" connectable="0">
+          <mxGeometry x="0.2636" y="3" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ijFCYhFOQf2MVRpxXwz0-3" value="Order Taker&lt;div&gt;&lt;br&gt;&lt;/div&gt;" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#ffe6cc;strokeColor=#d79b00;" parent="1" vertex="1">
+          <mxGeometry x="10" y="150" width="30" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="ijFCYhFOQf2MVRpxXwz0-11" value="Completes additional info in&lt;div&gt;&amp;nbsp;comments or item desc&lt;/div&gt;" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.75;entryY=0;entryDx=0;entryDy=0;fillColor=#ffe6cc;strokeColor=#d79b00;" parent="1" source="ijFCYhFOQf2MVRpxXwz0-9" target="ijFCYhFOQf2MVRpxXwz0-1" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ijFCYhFOQf2MVRpxXwz0-9" value="Needs Info" style="whiteSpace=wrap;html=1;aspect=fixed;fillColor=#ffe6cc;strokeColor=#d79b00;fontStyle=1" parent="1" vertex="1">
+          <mxGeometry x="20" y="20" width="80" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="ijFCYhFOQf2MVRpxXwz0-17" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" source="ijFCYhFOQf2MVRpxXwz0-13" target="ijFCYhFOQf2MVRpxXwz0-23" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ijFCYhFOQf2MVRpxXwz0-13" value="Accepted&lt;div&gt;&lt;span style=&quot;font-weight: 400;&quot;&gt;[assignee set automatically]&lt;/span&gt;&lt;br&gt;&lt;/div&gt;" style="whiteSpace=wrap;html=1;aspect=fixed;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1" parent="1" vertex="1">
+          <mxGeometry x="520" y="140" width="80" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="ijFCYhFOQf2MVRpxXwz0-20" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" parent="1" source="ijFCYhFOQf2MVRpxXwz0-16" target="ijFCYhFOQf2MVRpxXwz0-19" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ijFCYhFOQf2MVRpxXwz0-16" value="Ready for pickup&lt;div&gt;&lt;span style=&quot;font-weight: normal;&quot;&gt;[assignee cleared]&lt;/span&gt;&lt;/div&gt;" style="whiteSpace=wrap;html=1;aspect=fixed;fillColor=#e1d5e7;strokeColor=#9673a6;fontStyle=1" parent="1" vertex="1">
+          <mxGeometry x="640" y="280" width="80" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="ijFCYhFOQf2MVRpxXwz0-25" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=1;entryY=0.5;entryDx=0;entryDy=0;fillColor=#e1d5e7;strokeColor=#9673a6;exitX=0;exitY=0.5;exitDx=0;exitDy=0;" parent="1" source="ijFCYhFOQf2MVRpxXwz0-19" target="ijFCYhFOQf2MVRpxXwz0-22" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ijFCYhFOQf2MVRpxXwz0-19" value="en-route" style="whiteSpace=wrap;html=1;aspect=fixed;dashed=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontStyle=1" parent="1" vertex="1">
+          <mxGeometry x="640" y="410" width="80" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="ijFCYhFOQf2MVRpxXwz0-28" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;fillColor=#ffff88;strokeColor=#36393d;" parent="1" source="ijFCYhFOQf2MVRpxXwz0-22" target="ijFCYhFOQf2MVRpxXwz0-27" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ijFCYhFOQf2MVRpxXwz0-22" value="Ready for Pickup&lt;div&gt;&lt;span style=&quot;font-weight: 400;&quot;&gt;[assignee cleared]&lt;/span&gt;&lt;br&gt;&lt;/div&gt;" style="whiteSpace=wrap;html=1;aspect=fixed;fillColor=#ffff88;strokeColor=#36393d;fontStyle=1" parent="1" vertex="1">
+          <mxGeometry x="100" y="410" width="80" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="ijFCYhFOQf2MVRpxXwz0-24" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" source="ijFCYhFOQf2MVRpxXwz0-23" target="ijFCYhFOQf2MVRpxXwz0-16" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ijFCYhFOQf2MVRpxXwz0-23" value="&lt;b&gt;Filling&lt;/b&gt;&lt;div&gt;(Locked for other users)&lt;/div&gt;" style="whiteSpace=wrap;html=1;aspect=fixed;dashed=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" vertex="1">
+          <mxGeometry x="640" y="140" width="80" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="ijFCYhFOQf2MVRpxXwz0-27" value="Completed" style="whiteSpace=wrap;html=1;aspect=fixed;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1" parent="1" vertex="1">
+          <mxGeometry x="-15" y="410" width="80" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="ijFCYhFOQf2MVRpxXwz0-29" value="&lt;b&gt;Rejected&lt;/b&gt;&lt;div&gt;for some reason, the order can&#39;t be fulfilled&amp;nbsp;&lt;/div&gt;" style="whiteSpace=wrap;html=1;aspect=fixed;fillColor=#f8cecc;strokeColor=#b85450;" parent="1" vertex="1">
+          <mxGeometry x="360" y="290" width="80" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="ijFCYhFOQf2MVRpxXwz0-30" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.5;entryY=0;entryDx=0;entryDy=0;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" source="ijFCYhFOQf2MVRpxXwz0-1" target="ijFCYhFOQf2MVRpxXwz0-29" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ijFCYhFOQf2MVRpxXwz0-31" value="&lt;b&gt;Cancelled&lt;/b&gt;&lt;br&gt;Can be by customer or volunteer at any point&amp;nbsp;" style="whiteSpace=wrap;html=1;aspect=fixed;fillColor=#f8cecc;strokeColor=#b85450;" parent="1" vertex="1">
+          <mxGeometry x="160" y="240" width="80" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="ijFCYhFOQf2MVRpxXwz0-33" value="Filler" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" vertex="1">
+          <mxGeometry x="530" y="60" width="30" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="ijFCYhFOQf2MVRpxXwz0-34" value="Runner" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#e1d5e7;strokeColor=#9673a6;" parent="1" vertex="1">
+          <mxGeometry x="770" y="350" width="30" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="ijFCYhFOQf2MVRpxXwz0-35" value="Distributor&lt;div&gt;&lt;br&gt;&lt;/div&gt;" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#ffff88;strokeColor=#36393d;" parent="1" vertex="1">
+          <mxGeometry x="125" y="500" width="30" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="ijFCYhFOQf2MVRpxXwz0-45" value="Customer" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;" parent="1" vertex="1">
+          <mxGeometry x="-45" y="300" width="30" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="ijFCYhFOQf2MVRpxXwz0-46" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=1;entryY=0.3333333333333333;entryDx=0;entryDy=0;entryPerimeter=0;exitX=0.25;exitY=0;exitDx=0;exitDy=0;fillColor=#fff2cc;strokeColor=#d6b656;" parent="1" source="ijFCYhFOQf2MVRpxXwz0-22" target="ijFCYhFOQf2MVRpxXwz0-45" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ijFCYhFOQf2MVRpxXwz0-47" value="** From Accepted -&amp;gt; Ready for pickup, customer will only see&amp;nbsp;" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" parent="1" vertex="1">
+          <mxGeometry x="710" y="30" width="140" height="100" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
