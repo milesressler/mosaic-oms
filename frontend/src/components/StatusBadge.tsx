@@ -6,23 +6,27 @@ export function StatusBadge({ orderStatus }: { orderStatus: OrderStatus }) {
     let text = orderStatus.toUpperCase();
 
     switch (orderStatus) {
-        case OrderStatus.CREATED:
+        case OrderStatus.PENDING_ACCEPTANCE:
             color = 'blue';
+            text = "PENDING";
             break;
         case OrderStatus.ACCEPTED:
             color = 'cyan';
             break;
-        case OrderStatus.ASSIGNED:
-            color = 'cyan';
+        case OrderStatus.NEEDS_INFO:
+            color = 'yellow';
+            text = "NEEDS INFO";
             break;
-        case OrderStatus.FILLED:
+        case OrderStatus.PACKED:
             color = 'lightblue';
             break;
-        case OrderStatus.NEED_INFO:
-            color = 'yellow';
-            text = "NEED INFO";
+        case OrderStatus.PACKING:
+            color = 'lightblue';
             break;
-        case OrderStatus.READY_FOR_PICKUP:
+        case OrderStatus.IN_TRANSIT:
+            color = 'purple';
+            break;
+        case OrderStatus.READY_FOR_CUSTOMER_PICKUP:
             color = 'green';
             text = "READY FOR PICKUP";
             break;
@@ -30,11 +34,10 @@ export function StatusBadge({ orderStatus }: { orderStatus: OrderStatus }) {
             color = 'purple';
             break;
         case OrderStatus.CANCELLED:
-            color = 'red';
+            color = 'gray';
             break;
-        case OrderStatus.IN_PROGRESS:
-            color = 'cyan';
-            text = 'IN PROGRESS'
+        case OrderStatus.REJECTED:
+            color = 'orange';
             break;
         default:
             color = 'gray'; // Default color for any unknown statuses

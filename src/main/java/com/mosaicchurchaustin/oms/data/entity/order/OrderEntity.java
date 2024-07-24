@@ -3,6 +3,7 @@ package com.mosaicchurchaustin.oms.data.entity.order;
 import com.mosaicchurchaustin.oms.data.entity.BaseUuidEntity;
 import com.mosaicchurchaustin.oms.data.entity.CustomerEntity;
 import com.mosaicchurchaustin.oms.data.entity.OrderItemEntity;
+import com.mosaicchurchaustin.oms.data.entity.user.UserEntity;
 import com.mosaicchurchaustin.oms.services.audit.AuditLogListener;
 import com.mosaicchurchaustin.oms.services.audit.Auditable;
 import jakarta.persistence.Column;
@@ -11,6 +12,7 @@ import jakarta.persistence.EntityListeners;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
@@ -27,6 +29,7 @@ import org.hibernate.annotations.JoinFormula;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Entity
 @Table(name = "orders")
@@ -42,6 +45,10 @@ public class OrderEntity extends BaseUuidEntity implements Auditable {
 
     @ManyToOne(optional = false)
     CustomerEntity customer;
+
+    @ManyToOne(optional = true)
+    @JoinColumn(name = "assignee")
+    UserEntity assignee;
 
     @Column(name = "opt_in_notifications", nullable = false)
     Boolean optInNotifications;
@@ -90,7 +97,7 @@ public class OrderEntity extends BaseUuidEntity implements Auditable {
     @Override
     protected void onCreate() {
         super.onCreate();
-        this.orderStatus = OrderStatus.CREATED;
+        this.orderStatus = OrderStatus.PENDING_ACCEPTANCE;
     }
 
     @Override
@@ -104,6 +111,7 @@ public class OrderEntity extends BaseUuidEntity implements Auditable {
         return Map.of(
                 "specialInstructions", StringUtils.defaultIfBlank(specialInstructions, ""),
                 "orderStatus", orderStatus.name(),
+                "assignee", Optional.ofNullable(assignee).map(UserEntity::getExternalId).orElse(""),
                 "cardId", StringUtils.defaultIfBlank(cartId, "")
         );
     }

@@ -29,7 +29,7 @@ export function TransitInfoComponent({transitInfo}: TransitInfoComponentProps) {
         return () => clearInterval(interval);
     }, []);
 
-    return (<Paper radius={'md'} shadow="xs" p={30} mb={5} bg={'#f8f8f8'}>
+    return (<Paper radius={'md'} shadow="xs" p={30} mb={5} bg={'#f8f8f8'} key={transitInfo.stopId}>
         <Group justify={"space-between"}>
 
             <div>

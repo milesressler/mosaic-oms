@@ -14,9 +14,11 @@ import com.mosaicchurchaustin.oms.services.OrderService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -28,6 +30,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api")
@@ -36,11 +39,15 @@ public class OrderController {
 
     final OrderService orderService;
 
+    @Autowired
+    private SimpMessagingTemplate template;
+
     @ResponseBody
     @PostMapping(path = "/order", produces = MediaType.APPLICATION_JSON_VALUE)
     public OrderDetailResponse submitOrder(@Valid @RequestBody CreateOrderRequest createOrderRequest) {
         // Better validation/error handler
         final OrderEntity orderEntity = orderService.createOrder(createOrderRequest);
+        template.convertAndSend("/topic/orders", Map.of("orderCreated", orderEntity.getId()));
         return OrderDetailResponse.from(orderEntity);
     }
 
@@ -55,13 +62,13 @@ public class OrderController {
     }
 
     @ResponseBody
-    @GetMapping(path = "/order/{uuid}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(path = "/order/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public OrderDetailResponse getOrderDetail(
-            @PathVariable("uuid") String orderUuid
+            @PathVariable("id") String orderId
     ) {
-        final OrderEntity orderEntity = StringUtils.isNumeric(orderUuid) ?
-                orderService.getOrder(Long.valueOf(orderUuid)) :
-                orderService.getOrder(orderUuid);
+        final OrderEntity orderEntity = StringUtils.isNumeric(orderId) ?
+                orderService.getOrder(Long.valueOf(orderId)) :
+                orderService.getOrder(orderId);
 
         return OrderDetailResponse.from(orderEntity);
     }
@@ -83,6 +90,18 @@ public class OrderController {
             @PathVariable("state") String orderState
     ){
         final OrderEntity orderEntity = orderService.updateOrderStatus(orderUuid, orderState);
+        return OrderDetailResponse.from(orderEntity);
+    }
+
+    @ResponseBody
+    @PutMapping(path = "/order/{uuid}/assign", produces = MediaType.APPLICATION_JSON_VALUE)
+    public OrderDetailResponse assignToMe(
+            @RequestParam(value = "unassign", required = false, defaultValue = "false") Boolean unassign,
+            @PathVariable("uuid") String orderUuid
+    ){
+        final OrderEntity orderEntity = unassign
+                ? orderService.unassignOrder(orderUuid)
+                : orderService.assignOrder(orderUuid);
         return OrderDetailResponse.from(orderEntity);
     }
 

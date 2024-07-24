@@ -5,7 +5,7 @@ import ordersApi from "src/services/ordersApi.tsx";
 import {Box, Button, Group, isNumberLike, LoadingOverlay, Paper, Text, Title} from "@mantine/core";
 import {useAuth0} from "@auth0/auth0-react";
 import {useNavigate, useParams} from "react-router-dom";
-import { useSelectedOrder } from "src/contexts/SelectedOrderContext";
+import {useSelectedOrder} from "src/contexts/SelectedOrderContext";
 
 export function OrderDetailSection({}) {
 
@@ -13,6 +13,8 @@ export function OrderDetailSection({}) {
     const {user} = useAuth0();
     const orderDetailApi = useApi(ordersApi.getOrderById);
     const updateStateApi = useApi(ordersApi.updateOrderStatus);
+    const changeAssigneeApi = useApi(ordersApi.changeAssignee);
+
 
     const { id } = useParams();
     const navigate = useNavigate();
@@ -22,21 +24,21 @@ export function OrderDetailSection({}) {
             doForceRefresh();
             orderDetailApi.request(+id);
         }
-    }, [id, updateStateApi.data]);
+    }, [id, updateStateApi.data, changeAssigneeApi.data]);
 
 
-    const assignedToMe = orderDetailApi.data?.orderStatus === OrderStatus.ASSIGNED &&
-        orderDetailApi.data?.lastStatusChange?.assigneeExt === user?.sub;
+    const assignedToMe = orderDetailApi.data?.assignee?.externalId === user?.sub;
 
     const assignToMe = () => {
         if (assignedToMe) {
             return unassign();
         } else {
-            return updateStateApi.request(orderDetailApi.data!.uuid, OrderStatus.ASSIGNED);
+            return changeAssigneeApi.request(orderDetailApi.data!.uuid, false);
         }
     }
-    const unassign = () => updateStateApi.request(orderDetailApi.data!.uuid, OrderStatus.CREATED);
-
+    const unassign = () => changeAssigneeApi.request(orderDetailApi.data!.uuid, true);
+    const acceptOrder = () => updateStateApi.request(orderDetailApi.data!.uuid, OrderStatus.ACCEPTED);
+    const returnOrder = () => updateStateApi.request(orderDetailApi.data!.uuid, OrderStatus.PENDING_ACCEPTANCE);
 
     const startFilling = () => {
         if (!assignedToMe) {
@@ -63,13 +65,20 @@ export function OrderDetailSection({}) {
         <Group justify={'space-between'} pr={10} mb={10}>
             <Title>Order: {orderDetailApi.data?.id}</Title>
             <Button onClick={assignToMe} disabled={
+                changeAssigneeApi.loading ||
                 orderDetailApi.loading ||
-                orderDetailApi.data === null ||
                 updateStateApi.loading ||
-                ([OrderStatus.CREATED, OrderStatus.ASSIGNED].indexOf(orderDetailApi.data?.orderStatus) === -1 &&
-                !assignedToMe)
+                orderDetailApi.data === null ||
+                orderDetailApi.data?.orderStatus !== OrderStatus.ACCEPTED
             }
             >{assignedToMe ? "Unassign" : "Assign to Me"}</Button>
+            <Button onClick={acceptOrder} disabled={
+                changeAssigneeApi.loading ||
+                orderDetailApi.loading ||
+                updateStateApi.loading ||
+                orderDetailApi.data === null ||
+                orderDetailApi.data?.orderStatus !== OrderStatus.PENDING_ACCEPTANCE
+            }>Accept</Button>
         </Group>
         {/*<Divider></Divider>*/}
         <Paper  shadow="xs" p="xl">
@@ -78,8 +87,7 @@ export function OrderDetailSection({}) {
             </Text>
             <Text>
                 <Text span fw={500}>Assigned:</Text>
-                { orderDetailApi.data?.orderStatus === OrderStatus.ASSIGNED ?
-                    orderDetailApi.data?.lastStatusChange?.user ?? "[unassigned]" : "[unassigned]"}
+                { orderDetailApi.data?.assignee?.name ?? "[unassigned]"}
             </Text>
             { orderDetailApi.data?.specialInstructions && <Text>
                 <Text span fw={700} c={'green'}>Notes:</Text>
@@ -87,9 +95,9 @@ export function OrderDetailSection({}) {
             </Text> }
         </Paper>
 
-            { (orderDetailApi.data?.orderStatus === OrderStatus.CREATED || assignedToMe) && <Group grow my={10}>
+            { (orderDetailApi.data?.orderStatus === OrderStatus.ACCEPTED || assignedToMe) && <Group grow my={10}>
                 <Button onClick={startFilling}>
-                    {orderDetailApi.data?.orderStatus === OrderStatus.CREATED && 'Assign and '} Start Filling
+                    Start Filling
                 </Button>
             </Group>
             }

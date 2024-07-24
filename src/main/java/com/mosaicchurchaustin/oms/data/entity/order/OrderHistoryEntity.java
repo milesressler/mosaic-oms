@@ -37,6 +37,10 @@ public class OrderHistoryEntity {
     OrderStatus orderStatus;
 
     @Enumerated(EnumType.STRING)
+    @Column(name = "previous_order_status", nullable = false)
+    OrderStatus previousOrderStatus;
+
+    @Enumerated(EnumType.STRING)
     @Column(name = "type", nullable = false)
     OrderEventType eventType;
 

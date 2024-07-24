@@ -6,16 +6,16 @@ import java.util.Arrays;
 
 public enum OrderStatus {
 
-    CANCELLED,
-    CREATED,
     PENDING_ACCEPTANCE,
+    NEEDS_INFO,
     ACCEPTED,
-    ASSIGNED,
-    FILLED,
+    PACKING,
+    PACKED,
     IN_TRANSIT,
-    READY_FOR_PICKUP,
+    READY_FOR_CUSTOMER_PICKUP,
     REJECTED,
-    DELIVERED;
+    CANCELLED,
+    COMPLETED;
 
 
     public static OrderStatus from(final String orderStatusString) {

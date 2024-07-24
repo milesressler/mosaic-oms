@@ -15,7 +15,9 @@ import AsideContent from "src/components/layout/aside/AsideContent.tsx";
 import UserApi from "src/services/userApi.tsx";
 import {IconArrowsMaximize, IconArrowsMinimize} from "@tabler/icons-react";
 import { SelectedOrderProvider} from "src/contexts/SelectedOrderContext.tsx";
-
+import { useSubscription} from "react-stomp-hooks";
+import {useAuthContext} from "src/contexts/AuthContext.tsx";
+import NotificationsHandler from "src/components/notifications/NotificationsHandler.tsx";
 
 const mappedRoutes = routes.flatMap((route: any) => route.children || [route]).map((route) => {
     const Element = route.public
@@ -45,19 +47,20 @@ export function AppShellComponent() {
     const [asideOpened, asideHandler] = useDisclosure(false);
     const location = useLocation();
     const syncUserWithToken = useApi(UserApi.syncUserWithToken);
-    const { user, getIdTokenClaims, isAuthenticated } = useAuth0();
+    const { user, isAuthenticated } = useAuth0();
     const [headerHeight, setHeaderHeight] = useState(DEFAULT_HEADER_HEIGHT);
     const [fullscreen, setFullscreen] = useState(false);
     const [activeRoute, setActiveRoute] = useState(routes[0])
 
+
+
     useEffect(() => {
-        const fetchIdToken = async () => {
-            if (isAuthenticated && user) {
-                    await syncUserWithToken.request();
-            }
-        };
-        fetchIdToken();
-    }, [isAuthenticated, getIdTokenClaims, user]);
+        if (isAuthenticated && user) {
+            syncUserWithToken.request();
+
+        }
+    }, [isAuthenticated, user]);
+
 
     useEffect(() => {
 
@@ -135,6 +138,8 @@ export function AppShellComponent() {
                                 <img src={mosaicLogo} className="m-logo" alt="Mosaic Church logo"/>
                             </Link>
                         </Group>
+                        <NotificationsHandler/>
+
                         { !isAuthenticated &&
                             <Group hiddenFrom={'md'}>
                                 <LoginButton></LoginButton>

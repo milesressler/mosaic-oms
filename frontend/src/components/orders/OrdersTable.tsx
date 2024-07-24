@@ -55,7 +55,7 @@ function Th({ children, reversed, sorted, onSort }: ThProps) {
 
 export function OrdersTable({
         view = 'default',
-        refreshInterval = 10000,
+        refreshInterval = 30000,
         onSelectRow,
         selectedOrderId,
         allowPagination = false,
@@ -76,6 +76,8 @@ export function OrdersTable({
     const [reverseSortDirection, setReverseSortDirection] = useState(true);
 
     const visibleColumns = columns.filter(column => column.views?.includes(view));
+
+
 
     const refreshOrders: () => void = () =>
         getOrdersApi.request({
@@ -118,12 +120,12 @@ export function OrdersTable({
     };
 
     const getObfusgatedStatus = (status: OrderStatus) => {
-        if ([OrderStatus.COMPLETED, OrderStatus.CREATED, OrderStatus.CANCELLED, OrderStatus.NEED_INFO,
-        OrderStatus.READY_FOR_PICKUP].indexOf(status) != -1) {
-            return status;
-        } else {
-            return OrderStatus.IN_PROGRESS;
-        }
+        const inProgressStatuses = [
+            OrderStatus.ACCEPTED, OrderStatus.PACKING, OrderStatus.PACKING,
+            OrderStatus.IN_TRANSIT,
+        ]
+
+        return inProgressStatuses.indexOf(status) == -1 ? status : OrderStatus.ACCEPTED;
     }
 
     const rows = getOrdersApi.data?.content?.map((order: Order) => (

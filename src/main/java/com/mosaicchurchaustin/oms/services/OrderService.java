@@ -102,15 +102,27 @@ public class OrderService {
 
         return orderItemRepository.save(orderItemEntity);
     }
+    public OrderEntity assignOrder(final String orderUuid) {
+        final OrderEntity orderEntity = getOrder(orderUuid);
+        orderEntity.setAssignee(userService.currentUser());
+        return orderRepository.save(orderEntity);
+    }
+    public OrderEntity unassignOrder(final String orderUuid) {
+        final OrderEntity orderEntity = getOrder(orderUuid);
+        orderEntity.setAssignee(null);
+        return orderRepository.save(orderEntity);
+    }
 
-    @Transactional
+        @Transactional
     public OrderEntity updateOrderStatus(final String orderUuid, final String orderState) {
         final OrderEntity orderEntity = getOrder(orderUuid);
+        final OrderStatus currentOrderStatus = orderEntity.getOrderStatus();
         final OrderStatus orderStatus = OrderStatus.from(orderState);
         orderEntity.setOrderStatus(orderStatus);
         final OrderHistoryEntity orderHistoryEntity = orderHistoryRepository.save(OrderHistoryEntity.builder()
                 .orderEntity(orderEntity)
                 .orderStatus(orderStatus)
+                .previousOrderStatus(currentOrderStatus)
                 .userEntity(userService.currentUser())
                 .eventType(OrderEventType.STATUS_CHANGE)
                 .build());
@@ -174,14 +186,14 @@ public class OrderService {
                         ? null : request.specialInstructions().trim())
                 .phoneNumber(StringUtils.isBlank(request.customerPhone())
                         ? null : request.customerPhone())
-                .orderStatus(OrderStatus.CREATED)
+                .orderStatus(OrderStatus.PENDING_ACCEPTANCE)
                 .build());
 
         addItemsToOrder(orderEntity, request.items());
 
         final OrderHistoryEntity createHistoryItem = orderHistoryRepository.save(
                 OrderHistoryEntity.builder()
-                        .orderStatus(OrderStatus.CREATED)
+                        .orderStatus(OrderStatus.PENDING_ACCEPTANCE)
                         .orderEntity(orderEntity)
                         .eventType(OrderEventType.STATUS_CHANGE)
                         .userEntity(userEntity)

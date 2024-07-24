@@ -15,11 +15,13 @@ export function ActivityFeed() {
 
     const actionToString = (feedItem: OrderFeedItem) => {
         switch (feedItem.orderStatus) {
-            case OrderStatus.CREATED:
+            case OrderStatus.PENDING_ACCEPTANCE:
                 return (<><Text span fw={600}>created</Text> order #{feedItem.orderId}</>)
-            case OrderStatus.READY_FOR_PICKUP:
+            case OrderStatus.READY_FOR_CUSTOMER_PICKUP:
                 return (<>marked order #{feedItem.orderId} ready for pickup</>)
-            case OrderStatus.ASSIGNED:
+            case OrderStatus.NEEDS_INFO:
+                return (<>needs more info for order #{feedItem.orderId}</>)
+            case OrderStatus.ACCEPTED:
                 return (<>assigned order #{feedItem.orderId}</>)
             default:
                 return (
@@ -33,11 +35,12 @@ export function ActivityFeed() {
     return (
         <Stack>
             {feedApi.data?.map((feedItem) => {
-                return (<><div key={feedItem.timestamp}>
+                return (<div key={feedItem.orderId+":"+feedItem.timestamp}>
                     <Text>{feedItem.user.name} {actionToString(feedItem)}</Text>
                     <Text c="dimmed" size="sm">{DateTime.fromMillis(feedItem.timestamp).toRelative()}</Text>
                     <AppShell.Section/>
-                </div><Divider/></>)
+                    <Divider/>
+                </div>)
             })}
         </Stack>);
 }

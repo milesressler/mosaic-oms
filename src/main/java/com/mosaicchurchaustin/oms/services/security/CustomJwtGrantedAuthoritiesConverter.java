@@ -1,4 +1,4 @@
-package com.mosaicchurchaustin.oms.services;
+package com.mosaicchurchaustin.oms.services.security;
 
 import com.mosaicchurchaustin.oms.data.constants.MosaicAuthority;
 import org.springframework.core.convert.converter.Converter;

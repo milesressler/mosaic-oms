@@ -14,6 +14,7 @@ export interface Order extends BaseObject {
 
 export interface OrderDetails extends Order {
     items: OrderItem[];
+    assignee: BasicUser;
     lastStatusChange: {
         user: string;
         assigneeExt: string
@@ -30,6 +31,12 @@ export interface OrderDetails extends Order {
 
 export interface Customer {
     name: string
+}
+
+export interface BasicUser {
+    name: string,
+    uuid: string,
+    externalId: string
 }
 
 export interface User {
@@ -71,18 +78,16 @@ export interface TransitInfo {
 
 
 export enum OrderStatus {
-    CREATED = "CREATED",
+    PENDING_ACCEPTANCE = "PENDING_ACCEPTANCE",
+    NEEDS_INFO = "NEEDS_INFO",
     ACCEPTED = "ACCEPTED",
-    NEED_INFO = "NEED_INFO",
-    IN_PROGRESS = "IN_PROGRESS",
-    FILLED = "FILLED",
-    READY_FOR_PICKUP = "READY_FOR_PICKUP",
-
-    ASSIGNED = "ASSIGNED",
-    COMPLETED = "COMPLETED",
-
-
+    PACKING = "PACKING",
+    PACKED = "PACKED",
+    IN_TRANSIT = "IN_TRANSIT",
+    READY_FOR_CUSTOMER_PICKUP = "READY_FOR_CUSTOMER_PICKUP",
+    REJECTED = "REJECTED",
     CANCELLED = "CANCELLED",
+    COMPLETED = "COMPLETED",
 }
 
 export interface ItemRequest {

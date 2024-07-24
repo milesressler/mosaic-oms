@@ -10,6 +10,7 @@ import lombok.experimental.SuperBuilder;
 
 import java.util.Calendar;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @SuperBuilder
@@ -20,6 +21,7 @@ public class OrderDetailResponse extends OrderResponse {
     private History lastStatusChange;
     private List<History> history;
     private String specialInstructions;
+    private UserResponse assignee;
 
 
     public static OrderDetailResponse from(final OrderEntity orderEntity) {
@@ -33,6 +35,9 @@ public class OrderDetailResponse extends OrderResponse {
                         OrderResponse.Customer.builder()
                                 .name(orderEntity.getCustomer().getName())
                                 .build()
+                )
+                .assignee(
+                        Optional.ofNullable(orderEntity.getAssignee()).map(UserResponse::from).orElse(null)
                 )
                 .history(orderEntity.getOrderHistoryEntityList().stream().map(History::from).toList())
                 .lastStatusChange(History.from(orderEntity.getLastStatusChange()))
@@ -54,11 +59,13 @@ public class OrderDetailResponse extends OrderResponse {
         private String user;
         private String assigneeExt;
         private OrderStatus status;
+        private OrderStatus previousStatus;
         private Calendar timestamp;
 
         public static History from(final OrderHistoryEntity orderHistoryEntity) {
             return History.builder()
                     .status(orderHistoryEntity.getOrderStatus())
+                    .previousStatus(orderHistoryEntity.getPreviousOrderStatus())
                     .user(orderHistoryEntity.getUserEntity().getName())
                     .assigneeExt(orderHistoryEntity.getUserEntity().getExternalId())
                     .timestamp(orderHistoryEntity.getTimestamp())

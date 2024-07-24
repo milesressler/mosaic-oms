@@ -35,7 +35,7 @@ export function OrderFillerDashboard() {
 
     const iconStyle = { width: rem(12), height: rem(12) };
     const orderTable = <OrdersTable
-        statusFilter={[OrderStatus.ASSIGNED, OrderStatus.CREATED]}
+        statusFilter={[OrderStatus.ACCEPTED, OrderStatus.PENDING_ACCEPTANCE, OrderStatus.PACKING]}
         view={"default"}
         onSelectRow={onSelectOrder}
         showProgressIndicator={true}
