@@ -30,6 +30,7 @@ interface OrdersTable {
     forceRefresh?: boolean,
     statusFilter?: OrderStatus[],
     sorting?: boolean,
+    maxNumberOfRecords?: number
 }
 
 function Th({ children, reversed, sorted, onSort }: ThProps) {
@@ -59,6 +60,7 @@ export function OrdersTable({
         onSelectRow,
         selectedOrderId,
         allowPagination = false,
+        maxNumberOfRecords,
         showProgressIndicator = false,
         autoRefresh = true,
         showFilters = false,
@@ -79,11 +81,17 @@ export function OrdersTable({
 
 
 
-    const refreshOrders: () => void = () =>
-        getOrdersApi.request({
+    const refreshOrders: () => void = () => {
+        let params: any = {
             status: statusFilter?.join(","),
             sort: `${sortBy},${reverseSortDirection ? 'desc' : 'asc'}`
-        });
+        };
+        if (maxNumberOfRecords) {
+            params = {...params, size: maxNumberOfRecords};
+        }
+
+        getOrdersApi.request(params);
+    }
 
 
 

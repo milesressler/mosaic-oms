@@ -115,19 +115,26 @@ public class OrderService {
 
         @Transactional
     public OrderEntity updateOrderStatus(final String orderUuid, final String orderState) {
+        final UserEntity currentUser = userService.currentUser();
         final OrderEntity orderEntity = getOrder(orderUuid);
         final OrderStatus currentOrderStatus = orderEntity.getOrderStatus();
         final OrderStatus orderStatus = OrderStatus.from(orderState);
         orderEntity.setOrderStatus(orderStatus);
+
         final OrderHistoryEntity orderHistoryEntity = orderHistoryRepository.save(OrderHistoryEntity.builder()
                 .orderEntity(orderEntity)
                 .orderStatus(orderStatus)
                 .previousOrderStatus(currentOrderStatus)
-                .userEntity(userService.currentUser())
+                .userEntity(currentUser)
                 .eventType(OrderEventType.STATUS_CHANGE)
                 .build());
         orderEntity.getOrderHistoryEntityList().add(orderHistoryEntity);
         orderEntity.setLastStatusChange(orderHistoryEntity);
+
+        if (orderStatus == OrderStatus.ACCEPTED && currentOrderStatus == OrderStatus.PENDING_ACCEPTANCE) {
+            orderEntity.setAssignee(currentUser);
+        }
+
         return orderRepository.save(orderEntity);
     }
 

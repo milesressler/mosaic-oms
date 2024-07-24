@@ -41,6 +41,7 @@ export function OrderFillerDashboard() {
         showProgressIndicator={true}
         forceRefresh={forceRefresh}
         selectedOrderId={selectedOrderId}
+        maxNumberOfRecords={10}
     ></OrdersTable>;
 
     return (
@@ -63,7 +64,7 @@ export function OrderFillerDashboard() {
             </Tabs.Panel>
 
             <Tabs.Panel value="messages">
-                { selectedOrder && outlet}
+                {  outlet}
             </Tabs.Panel>
 
             <Tabs.Panel value="settings">

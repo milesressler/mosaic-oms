@@ -16,7 +16,6 @@ import UserApi from "src/services/userApi.tsx";
 import {IconArrowsMaximize, IconArrowsMinimize} from "@tabler/icons-react";
 import { SelectedOrderProvider} from "src/contexts/SelectedOrderContext.tsx";
 import { useSubscription} from "react-stomp-hooks";
-import {useAuthContext} from "src/contexts/AuthContext.tsx";
 import NotificationsHandler from "src/components/notifications/NotificationsHandler.tsx";
 
 const mappedRoutes = routes.flatMap((route: any) => route.children || [route]).map((route) => {

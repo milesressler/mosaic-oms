@@ -18,6 +18,8 @@ export function OrderDetailSection({}) {
 
     const { id } = useParams();
     const navigate = useNavigate();
+    const buttonStyle = {width: "130px"}
+
 
     useEffect(() => {
         if (id && isNumberLike(id)) {
@@ -26,10 +28,24 @@ export function OrderDetailSection({}) {
         }
     }, [id, updateStateApi.data, changeAssigneeApi.data]);
 
+    const getButton = () => {
+        const loading = changeAssigneeApi.loading ||
+            orderDetailApi.loading ||
+            updateStateApi.loading;
+        switch (orderDetailApi.data?.orderStatus) {
+            case OrderStatus.PACKED:
+                return <Button style={buttonStyle} loading={loading} disabled={loading} onClick={acceptOrder}>Accept Order</Button>
+            case OrderStatus.ACCEPTED:
+                return <Button style={buttonStyle} loading={loading} disabled={loading} onClick={toggleAssigned} >{assignedToMe ? "Unassign" : "Assign to Me"}</Button>
+            default:
+                return <></>
+        }
+    }
+
 
     const assignedToMe = orderDetailApi.data?.assignee?.externalId === user?.sub;
 
-    const assignToMe = () => {
+    const toggleAssigned = () => {
         if (assignedToMe) {
             return unassign();
         } else {
@@ -42,7 +58,7 @@ export function OrderDetailSection({}) {
 
     const startFilling = () => {
         if (!assignedToMe) {
-            assignToMe().then(() =>
+            toggleAssigned().then(() =>
                 navigate(`/dashboard/filler/fill/${id}`));
         } else {
             navigate(`/dashboard/filler/fill/${id}`);
@@ -64,21 +80,7 @@ export function OrderDetailSection({}) {
                         overlayProps={{ radius: "sm", blur: 2 }} />
         <Group justify={'space-between'} pr={10} mb={10}>
             <Title>Order: {orderDetailApi.data?.id}</Title>
-            <Button onClick={assignToMe} disabled={
-                changeAssigneeApi.loading ||
-                orderDetailApi.loading ||
-                updateStateApi.loading ||
-                orderDetailApi.data === null ||
-                orderDetailApi.data?.orderStatus !== OrderStatus.ACCEPTED
-            }
-            >{assignedToMe ? "Unassign" : "Assign to Me"}</Button>
-            <Button onClick={acceptOrder} disabled={
-                changeAssigneeApi.loading ||
-                orderDetailApi.loading ||
-                updateStateApi.loading ||
-                orderDetailApi.data === null ||
-                orderDetailApi.data?.orderStatus !== OrderStatus.PENDING_ACCEPTANCE
-            }>Accept</Button>
+            { getButton() }
         </Group>
         {/*<Divider></Divider>*/}
         <Paper  shadow="xs" p="xl">
@@ -95,9 +97,9 @@ export function OrderDetailSection({}) {
             </Text> }
         </Paper>
 
-            { (orderDetailApi.data?.orderStatus === OrderStatus.ACCEPTED || assignedToMe) && <Group grow my={10}>
-                <Button onClick={startFilling}>
-                    Start Filling
+            { (orderDetailApi.data?.orderStatus === OrderStatus.ACCEPTED) && <Group grow my={10}>
+                <Button onClick={startFilling} disabled={!assignedToMe}>
+                    Begin Filling
                 </Button>
             </Group>
             }
