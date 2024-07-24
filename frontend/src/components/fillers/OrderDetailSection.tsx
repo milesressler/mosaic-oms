@@ -33,8 +33,10 @@ export function OrderDetailSection({}) {
             orderDetailApi.loading ||
             updateStateApi.loading;
         switch (orderDetailApi.data?.orderStatus) {
-            case OrderStatus.PACKED:
-                return <Button style={buttonStyle} loading={loading} disabled={loading} onClick={acceptOrder}>Accept Order</Button>
+            case OrderStatus.PENDING_ACCEPTANCE:
+                return <>
+                    <Button style={buttonStyle} loading={loading} disabled={loading} onClick={acceptOrder}>Accept Order</Button>
+                    </>
             case OrderStatus.ACCEPTED:
                 return <Button style={buttonStyle} loading={loading} disabled={loading} onClick={toggleAssigned} >{assignedToMe ? "Unassign" : "Assign to Me"}</Button>
             default:
