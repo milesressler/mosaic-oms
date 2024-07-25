@@ -10,7 +10,7 @@ import {AppShellComponent} from "src/components/layout/AppShellComponent.tsx";
 import { StompSessionProvider} from "react-stomp-hooks";
 import { CookiesProvider, useCookies} from "react-cookie";
 import {useAuth0} from "@auth0/auth0-react";
-const SERVER_URL = import.meta.env.VITE_API_SERVER_URL;
+const WS_URL = import.meta.env.VITE_API_WEBSOCKET_URL;
 
 function Interior({}) {
     const {token} = useAuthContext();
@@ -20,10 +20,9 @@ function Interior({}) {
     return <StompSessionProvider
         enabled={isAuthenticated}
         // url={`${SERVER_URL}/ws`}
-        url={`${SERVER_URL.replace("http", "ws")}/ws`}
+        url={WS_URL}
         connectHeaders={{
             Authorization: `${token}`,
-            // 'X-CSRF-TOKEN': cookies["XSRF-TOKEN"],
             'X-XSRF-TOKEN': cookies["XSRF-TOKEN"],
         }}
         // debug={(str) => {
