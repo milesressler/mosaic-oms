@@ -51,6 +51,7 @@ export function AppShellComponent() {
     const [fullscreen, setFullscreen] = useState(false);
     const [activeRoute, setActiveRoute] = useState(routes[0])
 
+    const fullscreenAvailable = document.fullscreenEnabled;
 
 
     useEffect(() => {
@@ -131,8 +132,8 @@ export function AppShellComponent() {
                             { isAuthenticated && (!asideOpened || activeRoute.minimalHeader) && <Burger opened={opened} onClick={toggle} size="sm"
                                     hiddenFrom={!activeRoute.navBarHidden ? "md" : ""}
                             /> }
-                            {!fullscreen && <IconArrowsMaximize cursor={'pointer'} onClick={() => document.body.requestFullscreen()}></IconArrowsMaximize> }
-                            {fullscreen && <IconArrowsMinimize cursor={'pointer'} onClick={() => document.exitFullscreen()}></IconArrowsMinimize> }
+                            {fullscreenAvailable && !fullscreen && <IconArrowsMaximize cursor={'pointer'} onClick={() => document.body.requestFullscreen()}></IconArrowsMaximize> }
+                            {fullscreenAvailable && fullscreen && <IconArrowsMinimize cursor={'pointer'} onClick={() => document.exitFullscreen()}></IconArrowsMinimize> }
                             <Link to={"/"}>
                                 <img src={mosaicLogo} className="m-logo" alt="Mosaic Church logo"/>
                             </Link>
