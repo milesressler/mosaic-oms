@@ -10,7 +10,7 @@ import {useNavigate, useOutlet, useParams} from "react-router-dom";
 import {useSelectedOrder} from "src/contexts/SelectedOrderContext.tsx";
 
 export function OrderFillerDashboard() {
-    const isMobile = useMediaQuery(`(max-width: ${DEFAULT_THEME.breakpoints.md})`);
+    const isMobile = useMediaQuery(`(max-width: ${DEFAULT_THEME.breakpoints.lg})`);
     const outlet = useOutlet()
     const navigate = useNavigate();
     const { id } = useParams();
@@ -36,7 +36,7 @@ export function OrderFillerDashboard() {
     const iconStyle = { width: rem(12), height: rem(12) };
     const orderTable = <OrdersTable
         statusFilter={[OrderStatus.ACCEPTED, OrderStatus.PENDING_ACCEPTANCE, OrderStatus.PACKING]}
-        view={"default"}
+        view={"filler"}
         onSelectRow={onSelectOrder}
         showProgressIndicator={true}
         forceRefresh={forceRefresh}
@@ -73,10 +73,10 @@ export function OrderFillerDashboard() {
         </Tabs> }
             {!isMobile &&
         <Grid gutter={25}>
-            <GridCol span={{base: 12, md:  outlet ? 6 : 12}}>
+            <GridCol span={{base: 12, lg:  outlet ? 6 : 12}}>
                 {orderTable}
             </GridCol>
-            <GridCol span={6} visibleFrom={'md'}>
+            <GridCol span={6} visibleFrom={'lg'}>
                 {  outlet}
             </GridCol>
             {/*<GridCol span={6}>*/}

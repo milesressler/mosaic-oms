@@ -37,15 +37,16 @@ export interface BasicUser {
     name: string,
     uuid: string,
     externalId: string
+    avatar: string
 }
 
-export interface User {
-    name: string,
+export interface User extends BasicUser{
     nickname: string,
     picture: string,
     userId: string,
     emailVerified: boolean,
     created: number,
+    lastLogin: number,
 }
 
 export interface OrderAction {
@@ -88,6 +89,7 @@ export enum OrderStatus {
     REJECTED = "REJECTED",
     CANCELLED = "CANCELLED",
     COMPLETED = "COMPLETED",
+    IN_PROGRESS = "IN_PROGRESS",
 }
 
 export interface ItemRequest {

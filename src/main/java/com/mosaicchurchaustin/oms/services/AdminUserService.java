@@ -12,6 +12,7 @@ import com.mosaicchurchaustin.oms.data.response.AdminUserDetailResponse;
 import com.mosaicchurchaustin.oms.data.response.AdminUserResponse;
 import com.mosaicchurchaustin.oms.repositories.OrderHistoryRepository;
 import org.apache.commons.lang3.NotImplementedException;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -30,6 +31,7 @@ public class AdminUserService {
     public AdminUserResponse addUser(final CreateUserRequest request) throws Auth0Exception {
         final User user = new User("Username-Password-Authentication");
         user.setEmail(request.email());
+        user.setPassword(RandomStringUtils.randomAlphanumeric(32).toCharArray());
         return AdminUserResponse.from(managementAPI.users().create(user).execute().getBody());
     }
 

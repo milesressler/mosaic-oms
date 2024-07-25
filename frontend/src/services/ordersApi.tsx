@@ -3,6 +3,8 @@ import {Order, OrderDetails, OrderFeedItem, OrderRequest, OrderStatus, Page} fro
 
 const createOrder = (data: OrderRequest) => client.post("/order", data);
 const getOrders = (params?: {}) => client.get<Page<Order>>("/order", {params});
+const getOrdersDashboardView = (params?: {}) => client.get<Order[]>("/order/view/dashboard", {params});
+const getOrdersWithDetails = (params?: any) => client.get<Page<OrderDetails>>("/order", {params: {...params, detailed: true}});
 const getOrderById = (id: number) => client.get<OrderDetails>(`/order/${id}`);
 const getOrderByUuid = (uuid: string) => client.get(`/order/${uuid}`);
 const updateOrderStatus = (uuid: string, state: OrderStatus) => client.put<Order>(`/order/${uuid}/state/${state}`);
@@ -23,4 +25,6 @@ export default {
     getOrderHistory,
     getFeed,
     changeAssignee,
+    getOrdersWithDetails,
+    getOrdersDashboardView,
 };

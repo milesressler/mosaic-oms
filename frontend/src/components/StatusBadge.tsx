@@ -10,6 +10,10 @@ export function StatusBadge({ orderStatus }: { orderStatus: OrderStatus }) {
             color = 'blue';
             text = "PENDING";
             break;
+        case OrderStatus.IN_PROGRESS:
+            color = 'cyan';
+            text = "IN PROGRESS"
+            break;
         case OrderStatus.ACCEPTED:
             color = 'cyan';
             break;

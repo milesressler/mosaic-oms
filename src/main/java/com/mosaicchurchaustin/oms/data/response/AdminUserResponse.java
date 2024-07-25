@@ -17,6 +17,7 @@ public class AdminUserResponse {
     private String userId;
     private Boolean emailVerified;
     private String nickname;
+    private Long lastLogin;
     private List<MosaicRole> roles;
 
     public static AdminUserResponse from(final User user) {
@@ -27,7 +28,7 @@ public class AdminUserResponse {
                 .userId(user.getId())
                 .emailVerified(user.isEmailVerified())
                 .nickname(user.getNickname())
+                .lastLogin(user.getLastLogin().getTime())
                 .build();
-
     }
 }

@@ -6,6 +6,7 @@ import {Box, Button, Group, isNumberLike, LoadingOverlay, Paper, Text, Title} fr
 import {useAuth0} from "@auth0/auth0-react";
 import {useNavigate, useParams} from "react-router-dom";
 import {useSelectedOrder} from "src/contexts/SelectedOrderContext";
+import FillerOrderActionButton from "src/components/fillers/actionButton/FillerOrderActionButton.tsx";
 
 export function OrderDetailSection({}) {
 
@@ -18,7 +19,6 @@ export function OrderDetailSection({}) {
 
     const { id } = useParams();
     const navigate = useNavigate();
-    const buttonStyle = {width: "130px"}
 
 
     useEffect(() => {
@@ -28,21 +28,9 @@ export function OrderDetailSection({}) {
         }
     }, [id, updateStateApi.data, changeAssigneeApi.data]);
 
-    const getButton = () => {
-        const loading = changeAssigneeApi.loading ||
-            orderDetailApi.loading ||
-            updateStateApi.loading;
-        switch (orderDetailApi.data?.orderStatus) {
-            case OrderStatus.PENDING_ACCEPTANCE:
-                return <>
-                    <Button style={buttonStyle} loading={loading} disabled={loading} onClick={acceptOrder}>Accept Order</Button>
-                    </>
-            case OrderStatus.ACCEPTED:
-                return <Button style={buttonStyle} loading={loading} disabled={loading} onClick={toggleAssigned} >{assignedToMe ? "Unassign" : "Assign to Me"}</Button>
-            default:
-                return <></>
-        }
-    }
+    const loading = changeAssigneeApi.loading ||
+        orderDetailApi.loading ||
+        updateStateApi.loading;
 
 
     const assignedToMe = orderDetailApi.data?.assignee?.externalId === user?.sub;
@@ -54,9 +42,16 @@ export function OrderDetailSection({}) {
             return changeAssigneeApi.request(orderDetailApi.data!.uuid, false);
         }
     }
+
+    const changeState = (orderStatus: OrderStatus) => {
+        if (orderStatus === OrderStatus.ACCEPTED
+            || orderStatus === OrderStatus.REJECTED
+            || orderStatus === OrderStatus.CANCELLED
+            || orderStatus === OrderStatus.NEEDS_INFO) {
+            updateStateApi.request(orderDetailApi.data!.uuid, orderStatus)
+        }
+    }
     const unassign = () => changeAssigneeApi.request(orderDetailApi.data!.uuid, true);
-    const acceptOrder = () => updateStateApi.request(orderDetailApi.data!.uuid, OrderStatus.ACCEPTED);
-    const returnOrder = () => updateStateApi.request(orderDetailApi.data!.uuid, OrderStatus.PENDING_ACCEPTANCE);
 
     const startFilling = () => {
         if (!assignedToMe) {
@@ -82,7 +77,12 @@ export function OrderDetailSection({}) {
                         overlayProps={{ radius: "sm", blur: 2 }} />
         <Group justify={'space-between'} pr={10} mb={10}>
             <Title>Order: {orderDetailApi.data?.id}</Title>
-            { getButton() }
+             <FillerOrderActionButton
+                 onStateChange={changeState}
+                 toggleAssigned={toggleAssigned}
+                 order={orderDetailApi.data ?? null}
+                 loading={loading} />
+
         </Group>
         {/*<Divider></Divider>*/}
         <Paper  shadow="xs" p="xl">
@@ -99,7 +99,7 @@ export function OrderDetailSection({}) {
             </Text> }
         </Paper>
 
-            { (orderDetailApi.data?.orderStatus === OrderStatus.ACCEPTED) && <Group grow my={10}>
+            { orderDetailApi.data?.orderStatus === OrderStatus.ACCEPTED && <Group grow my={10}>
                 <Button onClick={startFilling} disabled={!assignedToMe}>
                     Begin Filling
                 </Button>

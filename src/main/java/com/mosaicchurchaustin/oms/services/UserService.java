@@ -62,6 +62,9 @@ public class UserService {
         userEntity.setName(
                 user.getName()
         );
+        userEntity.setAvatar(
+                user.getPicture()
+        );
         userEntity.setUsername(user.getEmail());
     }
 

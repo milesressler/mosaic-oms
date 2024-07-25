@@ -34,6 +34,9 @@ public class UserEntity extends BaseUuidEntity implements Auditable {
     @Column(name = "name")
     String name;
 
+    @Column(name = "avatar")
+    String avatar;
+
     @Column(name = "username", unique = true)
     String username;
 

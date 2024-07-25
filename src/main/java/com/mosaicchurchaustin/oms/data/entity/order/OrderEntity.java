@@ -46,7 +46,7 @@ public class OrderEntity extends BaseUuidEntity implements Auditable {
     @ManyToOne(optional = false)
     CustomerEntity customer;
 
-    @ManyToOne(optional = true)
+    @ManyToOne()
     @JoinColumn(name = "assignee")
     UserEntity assignee;
 
@@ -112,7 +112,7 @@ public class OrderEntity extends BaseUuidEntity implements Auditable {
                 "specialInstructions", StringUtils.defaultIfBlank(specialInstructions, ""),
                 "orderStatus", orderStatus.name(),
                 "assignee", Optional.ofNullable(assignee).map(UserEntity::getExternalId).orElse(""),
-                "cardId", StringUtils.defaultIfBlank(cartId, "")
+                "cartId", StringUtils.defaultIfBlank(cartId, "")
         );
     }
 }

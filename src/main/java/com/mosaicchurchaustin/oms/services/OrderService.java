@@ -72,10 +72,18 @@ public class OrderService {
                 statusFilters.stream().map(OrderStatus::from).toList() :
                 Arrays.stream(OrderStatus.values()).toList();
 
-        return orderRepository.findAllByOrderStatusIn(
+        final Page<OrderEntity> results =  orderRepository.findAllByOrderStatusIn(
                 pageable,
                 orderStatusList);
+        return results;
     }
+
+    public List<OrderEntity> getDashboardOrders(final Pageable pageable) {
+
+        return orderRepository.findOrdersForDashboard().stream().limit(pageable.getPageSize()).toList();
+    }
+
+
 
     public OrderEntity getOrder(final String orderUuid) {
         return orderRepository.findByUuid(orderUuid).orElseThrow(() ->
@@ -133,6 +141,13 @@ public class OrderService {
 
         if (orderStatus == OrderStatus.ACCEPTED && currentOrderStatus == OrderStatus.PENDING_ACCEPTANCE) {
             orderEntity.setAssignee(currentUser);
+        } else if (
+                // Clear assignee for everything except these status
+                !Set.of(
+                        OrderStatus.PACKING,
+                        OrderStatus.IN_TRANSIT
+                ).contains(orderStatus)) {
+            orderEntity.setAssignee(null);
         }
 
         return orderRepository.save(orderEntity);

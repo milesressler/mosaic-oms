@@ -1,9 +1,9 @@
-import {Order, OrderStatus} from "src/models/types.tsx";
+import {Order, OrderDetails, OrderStatus} from "src/models/types.tsx";
 import useApi from "src/hooks/useApi.tsx";
 import ordersApi from "src/services/ordersApi.tsx";
 import {useEffect, useState} from "react";
 import {useInterval} from "@mantine/hooks";
-import {Center, Group, rem, RingProgress, Table, Text, UnstyledButton} from "@mantine/core";
+import {Avatar, Center, Group, rem, RingProgress, Table, Text, UnstyledButton} from "@mantine/core";
 import {DateTime} from "luxon";
 import StatusBadge from "src/components/StatusBadge.tsx";
 import {IconChevronDown, IconChevronUp, IconSelector} from "@tabler/icons-react";
@@ -70,7 +70,8 @@ export function OrdersTable({
 }: OrdersTable){
     const refreshPercent = refreshInterval/100;
 
-    const getOrdersApi = useApi(ordersApi.getOrders);
+    const getOrdersApi =
+        view === 'public' ? useApi(ordersApi.getOrdersDashboardView) : useApi(ordersApi.getOrdersWithDetails);
     const [counter, setCounter] = useState(0);
     const [progress, setProgress] = useState(0);
 
@@ -133,10 +134,11 @@ export function OrdersTable({
             OrderStatus.IN_TRANSIT,
         ]
 
-        return inProgressStatuses.indexOf(status) == -1 ? status : OrderStatus.ACCEPTED;
+        return inProgressStatuses.indexOf(status) == -1 ? status : OrderStatus.IN_PROGRESS;
     }
 
-    const rows = getOrdersApi.data?.content?.map((order: Order) => (
+    const data = view === 'public' ? getOrdersApi.data : getOrdersApi.data?.content;
+    const rows = data?.map((order: Order) => (
         <Table.Tr  style={{cursor: onSelectRow ? 'pointer' : ''}}
                    key={order.uuid}
                    bg={order.id === selectedOrderId ? '#F3f3f3' : ""}
@@ -144,14 +146,20 @@ export function OrdersTable({
         >
             {visibleColumns.map((column: ColumnConfig,  index: number) =>{
                 const key = column.id ?? column.label;
+                const assigned = ((order as OrderDetails)?.assignee);
              return (
                 <Table.Td key={key} colSpan={index === visibleColumns.length - 1 ? 2 : 1}>
+                    {key === 'assigned' && <><Group justify={'flex-start'} gap={5}>
+                        <Avatar src={assigned?.avatar}  color={assigned && !assigned.avatar ? 'indigo' : ''}  size={'sm'} />
+                        <Text size={'sm'} c={assigned ? '' : 'dimmed'}>
+                            {assigned?.name ?? 'Unassigned'}
+                        </Text></Group></>}
                     {key === 'Order #' && order.id}
                     {key === 'Created' && <>
                         <Text>{DateTime.fromISO(order.created).toLocaleString(DateTime.TIME_SIMPLE)}</Text>
                         <Text c={"dimmed"} size={'xs'}>{DateTime.fromISO(order.created).toLocaleString(DateTime.DATE_FULL)}</Text>
                     </>}
-                    {key === 'Updated' && <Text c={'dimmed'}>{DateTime.fromISO(order.lastStatusUpdate).toRelative()}</Text>}
+                    {key === 'Updated' && <Text c={'dimmed'}>{DateTime.fromISO(order.lastStatusChange?.timestamp).toRelative()}</Text>}
                     {key === 'Status' && <StatusBadge orderStatus={order.orderStatus} />}
                     {key === 'Customer' && order.customer?.name}
                     {key === 'statusObfuscated' && <StatusBadge orderStatus={getObfusgatedStatus(order.orderStatus)}/> }

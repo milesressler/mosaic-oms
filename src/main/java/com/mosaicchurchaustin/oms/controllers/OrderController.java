@@ -1,14 +1,11 @@
 package com.mosaicchurchaustin.oms.controllers;
 
-import com.mosaicchurchaustin.oms.data.entity.OrderItemEntity;
 import com.mosaicchurchaustin.oms.data.entity.order.OrderEntity;
 import com.mosaicchurchaustin.oms.data.entity.order.OrderHistoryEntity;
 import com.mosaicchurchaustin.oms.data.request.CreateOrderRequest;
-import com.mosaicchurchaustin.oms.data.request.UpdateOrderItemRequest;
 import com.mosaicchurchaustin.oms.data.request.UpdateOrderRequest;
 import com.mosaicchurchaustin.oms.data.response.OrderDetailResponse;
 import com.mosaicchurchaustin.oms.data.response.OrderFeedResponse;
-import com.mosaicchurchaustin.oms.data.response.OrderItemResponse;
 import com.mosaicchurchaustin.oms.data.response.OrderResponse;
 import com.mosaicchurchaustin.oms.services.OrderService;
 import jakarta.validation.Valid;
@@ -51,14 +48,25 @@ public class OrderController {
         return OrderDetailResponse.from(orderEntity);
     }
 
+
+    @ResponseBody
+    @GetMapping(path = "/order/view/dashboard", produces = MediaType.APPLICATION_JSON_VALUE)
+    public List<OrderResponse> getDashboardOrders(final Pageable pageable) {
+        return orderService.getDashboardOrders(pageable).stream().map(OrderResponse::from).toList();
+    }
     @ResponseBody
     @GetMapping(path = "/order", produces = MediaType.APPLICATION_JSON_VALUE)
     public Page<OrderResponse> getOrders(final Pageable pageable,
                                          @RequestParam(value = "status", required = false)
-                                             final List<String> statuses) {
-        return  orderService.getOrders(pageable, statuses)
-                .map(OrderResponse::from);
-
+                                         final List<String> statuses,
+                                         @RequestParam(value = "detailed", required = false)
+                                         final boolean detailed) {
+        final Page<OrderEntity> results = orderService.getOrders(pageable, statuses);
+        if (detailed) {
+            return results.map(OrderDetailResponse::from);
+        } else {
+            return results.map(OrderResponse::from);
+        }
     }
 
     @ResponseBody
@@ -105,15 +113,6 @@ public class OrderController {
         return OrderDetailResponse.from(orderEntity);
     }
 
-    @ResponseBody
-    @PutMapping(path = "/orderitem/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public OrderItemResponse updateOrderItem(
-            @PathVariable("id") Long orderItemId,
-            @Valid @RequestBody UpdateOrderItemRequest request
-            ){
-        final OrderItemEntity orderItemEntity = orderService.updateOrderItem(orderItemId, request);
-        return OrderItemResponse.from(orderItemEntity);
-    }
 
     @ResponseBody
     @GetMapping(path ="/order/history", produces = MediaType.APPLICATION_JSON_VALUE)

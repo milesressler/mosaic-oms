@@ -6,6 +6,7 @@ services:
       - 'MYSQL_PASSWORD=Uwv1cTzGs0ReGO5A'
       - 'MYSQL_ROOT_PASSWORD=xiOrJxAjFDhP8aZkUFFjToyOr9g='
       - 'MYSQL_USER=mosaic-oms-api'
+      - 'TZ=UTC'
     ports:
       - '3306'
       - '33060:3306'

@@ -10,12 +10,14 @@ public class UserResponse {
     private String name;
     private String uuid;
     private String externalId;
+    private String avatar;
 
     public static UserResponse from(final UserEntity userEntity) {
         return UserResponse.builder()
                 .name(userEntity.getName())
                 .uuid(userEntity.getUuid())
                 .externalId(userEntity.getExternalId())
+                .avatar(userEntity.getAvatar())
                 .build();
     }
 }
