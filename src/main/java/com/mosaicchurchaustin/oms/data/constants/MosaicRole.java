@@ -6,7 +6,12 @@ import java.util.Arrays;
 import java.util.Optional;
 
 public enum MosaicRole {
-    ADMIN("Admin");
+    ADMIN("Admin"),
+    DISTRIBUTOR("Distributor"),
+    ORDER_FILLER("Order Filler"),
+    RUNNER("Runner"),
+    ORDER_TAKER("Order Taker"),
+    ;
 
     @Getter
     private final String roleName;

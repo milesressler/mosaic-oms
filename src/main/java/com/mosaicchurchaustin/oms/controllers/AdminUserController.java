@@ -2,6 +2,7 @@ package com.mosaicchurchaustin.oms.controllers;
 
 import com.auth0.exception.Auth0Exception;
 import com.mosaicchurchaustin.oms.data.request.CreateUserRequest;
+import com.mosaicchurchaustin.oms.data.request.UpdateUserRequest;
 import com.mosaicchurchaustin.oms.data.response.AdminUserDetailResponse;
 import com.mosaicchurchaustin.oms.data.response.AdminUserResponse;
 import com.mosaicchurchaustin.oms.services.AdminUserService;
@@ -40,8 +41,9 @@ public class AdminUserController {
 
     @ResponseBody
     @PutMapping(path = "/user/{id}",produces = MediaType.APPLICATION_JSON_VALUE)
-    public AdminUserDetailResponse updateUser(@PathVariable("id") final String id) throws Auth0Exception {
-        return adminUserService.updateUser(id);
+    public AdminUserDetailResponse updateUser(@PathVariable("id") final String id,
+                                              @RequestBody final UpdateUserRequest request) throws Auth0Exception {
+        return adminUserService.updateUser(id,request);
     }
 
 

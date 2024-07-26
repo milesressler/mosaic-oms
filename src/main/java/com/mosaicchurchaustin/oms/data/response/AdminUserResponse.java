@@ -2,12 +2,10 @@ package com.mosaicchurchaustin.oms.data.response;
 
 
 import com.auth0.json.mgmt.users.User;
-import com.mosaicchurchaustin.oms.data.constants.MosaicRole;
 import lombok.Getter;
 import lombok.experimental.SuperBuilder;
 
 import java.util.Date;
-import java.util.List;
 import java.util.Optional;
 
 @Getter
@@ -20,7 +18,6 @@ public class AdminUserResponse {
     private Boolean emailVerified;
     private String nickname;
     private Long lastLogin;
-    private List<MosaicRole> roles;
 
     public static AdminUserResponse from(final User user) {
         return AdminUserResponse.builder()

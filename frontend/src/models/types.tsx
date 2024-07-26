@@ -52,10 +52,11 @@ export interface User extends BasicUser{
 export interface OrderAction {
     timestamp: number,
     action: string,
+    orderId: number
 }
 export interface UserDetail extends User {
     roles: string[]
-    recentActions: OrderAction[];
+    userActions: OrderAction[];
 }
 
 export enum Location {

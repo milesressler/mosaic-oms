@@ -1,5 +1,5 @@
 import {
-    Avatar,
+    Avatar, Box,
     Button,
     Grid,
     GridCol,
@@ -15,9 +15,11 @@ import useApi from "src/hooks/useApi.tsx";
 import React, {useEffect, useState} from "react";
 import AdminUserApi from "src/services/adminUserApi.tsx";
 import {DateTime} from "luxon";
-import {IconCheck, IconPencil, IconSquareX} from "@tabler/icons-react";
+import {IconCheck, IconPencil} from "@tabler/icons-react";
 import {User} from "src/models/types.tsx";
 import EmailInputForm from "src/components/auth0/EmailInputForm.tsx";
+import UserRoleManagement from "src/components/admin/user/UserRoleManagement.tsx";
+import UserHistory from "src/components/admin/user/UserHistory.tsx";
 
 export function UserManagementPage() {
     const PAGE_SIZE = 25;
@@ -56,7 +58,7 @@ export function UserManagementPage() {
             <Table.Td>{DateTime.fromMillis(user.created).toLocaleString(DateTime.DATETIME_SHORT)}</Table.Td>
             <Table.Td>{user.lastLogin && DateTime.fromMillis(user.lastLogin).toLocaleString(DateTime.DATETIME_SHORT)}</Table.Td>
             <Table.Td>{user.emailVerified && <IconCheck color={'green'} size={20}/>}</Table.Td>
-            <Table.Td><IconPencil color={'grey'} onClick={() => console.log("Edit")}/></Table.Td>
+            {/*<Table.Td><IconPencil color={'grey'} onClick={() => console.log("Edit")}/></Table.Td>*/}
         </Table.Tr>
     ));
 
@@ -73,7 +75,7 @@ export function UserManagementPage() {
                                 <Table.Th>Created</Table.Th>
                                 <Table.Th>Last Logged In</Table.Th>
                                 <Table.Th>Email Verified</Table.Th>
-                                <Table.Th></Table.Th>
+                                {/*<Table.Th></Table.Th>*/}
                             </Table.Tr>
                         </Table.Thead>
                         <Table.Tbody>
@@ -95,9 +97,12 @@ export function UserManagementPage() {
                 { (getUsersApi.data?.totalPages ?? 0) > 1 && <Pagination value={activePage} onChange={setPage} total={getUsersApi.data?.totalPages ?? 0} /> }
                 </GridCol>
 
-                { selectedUser && <GridCol span={4}>
-                    Roles: { getUserDetailApi?.data?.roles }
-                    History: {getUserDetailApi?.data?.history }
+                { selectedUser && <GridCol span={4}><Box pos={'relative'}>
+
+                    <LoadingOverlay visible={getUserDetailApi.loading}/>
+                    <UserRoleManagement selectedUser={getUserDetailApi.data} loading={getUserDetailApi.loading}></UserRoleManagement>
+                    <UserHistory selectedUser={getUserDetailApi.data} loading={getUserDetailApi.loading}></UserHistory>
+                </Box>
                 </GridCol>}
             </Grid>
             <Modal opened={inviteModal} onClose={() => setInviteModal(false)}>

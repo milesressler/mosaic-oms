@@ -14,7 +14,7 @@ import java.util.Optional;
 @Getter
 @SuperBuilder
 public class AdminUserDetailResponse extends AdminUserResponse {
-    private List<MosaicRole> roles;
+    private List<String> roles;
     private List<AdminUserAction> userActions;
 
     public static AdminUserDetailResponse from(final User user, final RolesPage rolesPage, final List<OrderHistoryEntity> actions) {
@@ -29,8 +29,9 @@ public class AdminUserDetailResponse extends AdminUserResponse {
                         .map(i -> MosaicRole.fromString(i.getName()))
                         .filter(Optional::isPresent)
                         .map(Optional::get)
+                        .map(MosaicRole::getRoleName)
                         .toList())
-                .userActions(actions.stream().map(history -> new AdminUserAction(history.getOrderStatus().name(), history.getTimestamp().getTimeInMillis())).toList())
+                .userActions(actions.stream().map(history -> new AdminUserAction(history.getOrderStatus().name(), history.getTimestamp().getTimeInMillis(), history.getOrderEntity().getId())).toList())
                 .build();
 
     }
