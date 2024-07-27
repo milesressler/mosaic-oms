@@ -35,6 +35,7 @@ public class AdminUserService {
     public AdminUserResponse addUser(final CreateUserRequest request) throws Auth0Exception {
         final User user = new User("Username-Password-Authentication");
         user.setEmail(request.email());
+        user.setName(request.name());
         user.setPassword(RandomStringUtils.randomAlphanumeric(32).toCharArray());
         return AdminUserResponse.from(managementAPI.users().create(user).execute().getBody());
     }

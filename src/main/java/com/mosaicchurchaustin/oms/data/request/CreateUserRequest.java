@@ -13,6 +13,8 @@ public record CreateUserRequest(
         @NotBlank(message = "email cannot be blank")
         @Email
         String email,
+        @NotBlank(message = "name cannot be blank")
+        String name,
 
         @NotEmpty List<@NotBlank String> roles) {
 }

@@ -13,6 +13,7 @@ import AdminOrdersPage from "src/pages/admin/AdminOrdersPage.tsx";
 import ReportPlaceholder from "src/pages/reports/ReportPlaceholder.tsx";
 import OrderDetailSection from "src/components/fillers/OrderDetailSection.tsx";
 import UserManagementPage from "src/pages/admin/UserManagementPage.tsx";
+import PackingView from "src/components/fillers/PackingView.tsx";
 
 
 const routes = [
@@ -75,7 +76,7 @@ const routes = [
                     {
                         key: 'filler-dashboard-fill',
                         path: 'fill/:id',
-                        element: OrderFormPage
+                        element: PackingView
                     }
                 ]
             },

@@ -56,7 +56,7 @@ export function UserManagementPage() {
             <Table.Td> <Avatar src={user.picture} alt="Avatar" /></Table.Td>
             <Table.Td>{user.name}</Table.Td>
             <Table.Td>{DateTime.fromMillis(user.created).toLocaleString(DateTime.DATETIME_SHORT)}</Table.Td>
-            <Table.Td>{user.lastLogin && DateTime.fromMillis(user.lastLogin).toLocaleString(DateTime.DATETIME_SHORT)}</Table.Td>
+            <Table.Td>{user.lastLogin && DateTime.fromMillis(user.lastLogin).toRelative()}</Table.Td>
             <Table.Td>{user.emailVerified && <IconCheck color={'green'} size={20}/>}</Table.Td>
             {/*<Table.Td><IconPencil color={'grey'} onClick={() => console.log("Edit")}/></Table.Td>*/}
         </Table.Tr>
