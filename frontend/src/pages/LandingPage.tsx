@@ -1,6 +1,14 @@
 import msmBg from "../assets/mosaic-street-ministry-bg.png";
+import {useNavigate} from "react-router-dom";
+import {useAuth0} from "@auth0/auth0-react";
 
 function LandingPage() {
+    const navigate = useNavigate();
+    const { isAuthenticated} = useAuth0();
+    if (isAuthenticated) {
+        navigate("/dashboard/public")
+    }
+
     return (
         <>
             <div style={{height: '3000px',
