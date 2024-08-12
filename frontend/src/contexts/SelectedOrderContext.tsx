@@ -1,25 +1,52 @@
-import React, {createContext, ReactNode, useContext, useState} from "react";
+import React, {createContext, ReactNode, useContext, useEffect, useState} from "react";
+import {OrderDetails} from "src/models/types.tsx";
+import {useParams} from "react-router-dom";
+import useApi from "src/hooks/useApi.tsx";
+import ordersApi from "src/services/ordersApi.tsx";
 
 export interface SelectedOrderContextType {
-    selectedOrderId: number | null;
-    setSelectedOrderId: (orderId: number | null) => void;
+    selectedOrder: OrderDetails | null
     forceRefresh: boolean;
     doForceRefresh: () => void;
+    loading: boolean;
 }
 // Create the context
 const SelectedOrderContext = createContext<SelectedOrderContextType|undefined   >(undefined);
 
 // Create the provider component
 export const SelectedOrderProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-    const [selectedOrderId, setSelectedOrderId] = useState<number | null>(null);
-    const [forceRefresh, setForceRefresh] = useState(false);
+    // const [selectedOrderId, setSelectedOrderId] = useState<number | null>(null);
+    const [selectedOrder, setSelectedOrder] = useState<OrderDetails|null>(null);
+    const orderDetailApi = useApi(ordersApi.getOrderById);
 
+
+    const { id } = useParams();
     const doForceRefresh = () => {
-        setForceRefresh(prevForceRefresh => !prevForceRefresh); // Toggle force refresh
+        if (!!id) {
+            orderDetailApi.request(+id);
+        }
+        // setForceRefresh(prevForceRefresh => !prevForceRefresh); // Toggle force refresh
     }
 
+    useEffect(() => {
+        console.log("context provider doing a fetch");
+        if (!!id) {
+            orderDetailApi.request(+id);
+        } else {
+            setSelectedOrder(null);
+        }
+    }, [id]);
+
+    useEffect(() => {
+        if (orderDetailApi.data) {
+            setSelectedOrder(orderDetailApi.data);
+        }
+    }, [orderDetailApi.data]);
+
+
+
     return (
-        <SelectedOrderContext.Provider value={{ selectedOrderId, setSelectedOrderId, forceRefresh, doForceRefresh }}>
+        <SelectedOrderContext.Provider value={{ selectedOrder, doForceRefresh, loading: orderDetailApi.loading }}>
             {children}
         </SelectedOrderContext.Provider>
     );

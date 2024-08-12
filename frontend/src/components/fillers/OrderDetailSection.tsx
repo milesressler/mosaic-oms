@@ -4,39 +4,36 @@ import useApi from "src/hooks/useApi.tsx";
 import ordersApi from "src/services/ordersApi.tsx";
 import {Box, isNumberLike, LoadingOverlay, Paper, Text} from "@mantine/core";
 import {useAuth0} from "@auth0/auth0-react";
-import {Outlet, useParams} from "react-router-dom";
-import {useSelectedOrder} from "src/contexts/SelectedOrderContext";
+import { useNavigate } from "react-router-dom";
+import { useSelectedOrder} from "src/contexts/SelectedOrderContext";
 import OrderInfoBlock from "src/components/orders/OrderInfoBlock.tsx";
+import ItemQuantitySelector from "src/components/fillers/ItemQuantitySelector.tsx";
 
 export function OrderDetailSection({}) {
 
-    const { doForceRefresh } = useSelectedOrder();
+    const { doForceRefresh, loading, selectedOrder } = useSelectedOrder();
     const {user} = useAuth0();
-    const orderDetailApi = useApi(ordersApi.getOrderById);
     const updateStateApi = useApi(ordersApi.updateOrderStatus);
     const changeAssigneeApi = useApi(ordersApi.changeAssignee);
-    const { id } = useParams();
+    const navigate = useNavigate();
 
 
     useEffect(() => {
-        if (id && isNumberLike(id)) {
-            doForceRefresh();
-            orderDetailApi.request(+id);
-        }
-    }, [id, updateStateApi.data, changeAssigneeApi.data]);
+        doForceRefresh();
+    }, [updateStateApi.data, changeAssigneeApi.data]);
 
     const isLoading = changeAssigneeApi.loading ||
-        orderDetailApi.loading ||
+        loading ||
         updateStateApi.loading;
 
 
-    const assignedToMe = orderDetailApi.data?.assignee?.externalId === user?.sub;
+    const assignedToMe = selectedOrder?.assignee?.externalId === user?.sub;
 
     const toggleAssigned = () => {
         if (assignedToMe) {
             return unassign();
         } else {
-            return changeAssigneeApi.request(orderDetailApi.data!.uuid, false);
+            return changeAssigneeApi.request(selectedOrder!.uuid, false);
         }
     }
 
@@ -45,16 +42,21 @@ export function OrderDetailSection({}) {
             || orderStatus === OrderStatus.REJECTED
             || orderStatus === OrderStatus.CANCELLED
             || orderStatus === OrderStatus.NEEDS_INFO) {
-            updateStateApi.request(orderDetailApi.data!.uuid, orderStatus)
+            updateStateApi.request(selectedOrder!.uuid, orderStatus)
+        }
+        if (orderStatus !==  OrderStatus.ACCEPTED ) {
+            doForceRefresh();
+            navigate("/dashboard/filler");
         }
     }
-    const unassign = () => changeAssigneeApi.request(orderDetailApi.data!.uuid, true);
+    const unassign = () => changeAssigneeApi.request(selectedOrder!.uuid, true);
 
 
     useEffect(() => {
-        if (!updateStateApi.loading && !updateStateApi.error && orderDetailApi.data?.id) {
+        if (!updateStateApi.loading && !updateStateApi.error && selectedOrder?.id) {
             // onModified();
-            orderDetailApi.request(orderDetailApi.data!.id);
+            // orderDetailApi.request(orderDetailApi.data!.id);
+            doForceRefresh();
         }
     }, [updateStateApi.data]);
 
@@ -65,21 +67,24 @@ export function OrderDetailSection({}) {
                         overlayProps={{ radius: "sm", blur: 2 }} />
         <OrderInfoBlock
             loading={isLoading}
-            orderDetails={orderDetailApi.data}
+            orderDetails={selectedOrder}
             toggleAssigned={toggleAssigned}
             changeState={changeState}
         ></OrderInfoBlock>
         <Paper  shadow="xs">
-            <ul>
-            {orderDetailApi.data?.items?.map((item) => {
-                return <li key={item.id}>
+            {/*<ul>*/}
+            {selectedOrder?.items?.map((item) => {
+                return(
+                // <li key={item.id}>
                         <div key={item.id}>
                             <Text span fw={500}> {item.quantityRequested}</Text> {item.description}
                             <Text c={'dimmed'}>{item.notes}</Text>
+                            <ItemQuantitySelector max={item.quantityRequested}></ItemQuantitySelector>
                         </div>
-                    </li>
+                    // </li>
+                )
             })}
-            </ul>
+            {/*</ul>*/}
         </Paper>
         </Box>
     </>);

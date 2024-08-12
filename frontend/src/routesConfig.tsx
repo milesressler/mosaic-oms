@@ -76,7 +76,7 @@ const routes = [
                     {
                         key: 'filler-dashboard-fill',
                         path: 'fill/:id',
-                        element: PackingView
+                        element: OrderDetailSection
                     }
                 ]
             },
