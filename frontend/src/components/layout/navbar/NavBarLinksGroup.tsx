@@ -24,7 +24,7 @@ export function LinksGroup({ icon: Icon, label, initiallyOpened, links, link }: 
         .find((route: any) => matchPath(route.path, location.pathname)) || {};
 
     const hasLinks = Array.isArray(links);
-    const [opened, setOpened] = useState(initiallyOpened || false);
+    const [opened, setOpened] = useState(true);
     const items = (hasLinks ? links : []).map((link) => (
         <Link className={classes.link} key={link.key} to={link.link}
               data-active={link.key === activeRoute.key || undefined}

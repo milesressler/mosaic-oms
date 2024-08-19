@@ -1,43 +1,141 @@
-import {Box, isNumberLike, LoadingOverlay} from "@mantine/core";
-import OrderInfoBlock from "src/components/orders/OrderInfoBlock.tsx";
+import {Button, Divider, Group, Paper, Text} from "@mantine/core";
 import {useSelectedOrder} from "src/contexts/SelectedOrderContext.tsx";
-import {useAuth0} from "@auth0/auth0-react";
+import ItemQuantitySelector from "src/components/fillers/ItemQuantitySelector.tsx";
 import useApi from "src/hooks/useApi.tsx";
 import ordersApi from "src/services/ordersApi.tsx";
-import {useParams} from "react-router-dom";
-import {useEffect} from "react";
+import {useEffect, useState} from "react";
+import {OrderItem, OrderStatus} from "src/models/types.tsx";
+import {useNavigate} from "react-router-dom";
 
 function PackingView({}) {
-    const {user} = useAuth0();
-    const orderDetailApi = useApi(ordersApi.getOrderById);
-    const updateStateApi = useApi(ordersApi.updateOrderStatus);
-    const changeAssigneeApi = useApi(ordersApi.changeAssignee);
-    const { id } = useParams();
-
+    const {selectedOrder, doForceRefresh} = useSelectedOrder();
+    const updateStatus = useApi(ordersApi.updateOrderStatus);
+    const updateQuantities = useApi(ordersApi.updateOrderItems);
+    const [draftItems, setDraftItems] = useState<OrderItem[]>([]);
+    const navigate = useNavigate();
 
     useEffect(() => {
-        if (id && isNumberLike(id)) {
-            orderDetailApi.request(+id);
+        if (updateStatus.data && updateStatus.data.orderStatus === OrderStatus.PACKED) {
+            navigate("dashboard/filler");
         }
-    }, [id, updateStateApi.data, changeAssigneeApi.data]);
+    }, [updateStatus.data]);
 
-    const isLoading = changeAssigneeApi.loading ||
-        orderDetailApi.loading ||
-        updateStateApi.loading;
+    useEffect(() => {
+        if (updateQuantities.data) {
+            doForceRefresh();
+        }
+    }, [updateQuantities.data]);
 
-    return(<>
+    useEffect(() => {
+        if (!selectedOrder) return;
 
-        <Box pos="relative" p={10}>
-            <LoadingOverlay visible={isLoading}
-                            zIndex={1000}
-                            overlayProps={{ radius: "sm", blur: 2 }} />
-            <OrderInfoBlock
-                loading={isLoading}
-                orderDetails={orderDetailApi.data}
-                // toggleAssigned={toggleAssigned}
-                // changeState={changeState}
-            ></OrderInfoBlock>
-        </Box>
-        </>)
+        setDraftItems((prevDraftItems) => {
+            // Map selectedOrder items to maintain consistency with draftItems
+            return selectedOrder.items.map((orderItem: OrderItem) => {
+                const existingDraftItem = prevDraftItems.find(draftItem => draftItem.id === orderItem.id);
+
+                return {
+                    ...orderItem,
+                    quantityFulfilled: existingDraftItem ? existingDraftItem.quantityFulfilled : orderItem.quantityFulfilled
+                };
+            });
+        });
+    }, [selectedOrder]);
+
+    const updateDraftItemQuantityFulfilled = (id: number, newQuantityFulfilled: number) => {
+        console.log(`updateDraftItemQuantityFulfilled ${id} to ${newQuantityFulfilled}`)
+        setDraftItems((prevDraftItems) =>
+            prevDraftItems.map((item) =>
+                item.id === id
+                    ? { ...item, quantityFulfilled: newQuantityFulfilled }
+                    : item
+            )
+        );
+    };
+
+    const clearAll = () => {
+        setDraftItems((prevDraftItems: OrderItem[]) => {
+            return prevDraftItems.map((item) => ({ ...item, quantityFulfilled: 0 }));
+        });
+    };
+
+    const fillAll = () => {
+        setDraftItems((previous) =>
+            previous.map((i) => {
+                i.quantityFulfilled = i.quantityRequested;
+                return i;
+            })
+        );
+    }
+
+    const saveProgress = () => {
+        const quantities = draftItems.reduce((acc, item) => {
+            acc[item.id] = item.quantityFulfilled;
+            return acc;
+        }, {} as Record<number, number>);
+
+        return updateQuantities.request({
+            orderUuid: selectedOrder?.uuid,
+            quantities
+        });
+    }
+
+    const moveToWagon = () => {
+        updateStatus.request(selectedOrder?.uuid, OrderStatus.PACKED);
+    }
+    const hasStateChanged =
+        draftItems.some((draftItem) => {
+            const correspondingItem = selectedOrder?.items.find(
+                (orderItem) => orderItem.id === draftItem.id
+            );
+
+            // If there's no corresponding item, or the quantities differ, return true
+            return !correspondingItem || correspondingItem.quantityFulfilled !== draftItem.quantityFulfilled;
+        });
+
+
+    return (<>
+        <Paper shadow="xs" mt={5}>
+            {draftItems?.map((item) => {
+                return (
+                    <div key={item.id}>
+                        <Group justify={"space-between"}>
+                            <div>
+                                <Text span fw={500}> {item.quantityRequested}</Text> {item.description} &nbsp;
+                                <Text span c={'dimmed'}>{item.notes}</Text>
+                            </div>
+                            { item.quantityRequested === item.quantityFulfilled &&
+                                <Text>
+                                    Complete
+                                </Text>
+                            }
+                            { item.quantityRequested !== item.quantityFulfilled &&
+                            <Text>
+                                {item.quantityFulfilled} filled / {item.quantityRequested - item.quantityFulfilled} remaining
+                            </Text>
+                            }
+                        </Group>
+                        <ItemQuantitySelector quantitySelected={item.quantityFulfilled}
+                                              onValueChange={(value) => {
+                            updateDraftItemQuantityFulfilled(item.id, value);
+                        }} max={item.quantityRequested}></ItemQuantitySelector>
+                    </div>
+                )
+            })}
+        </Paper>
+        <Divider my={20}></Divider>
+        <Group justify={'space-between'}>
+            <Group>
+                <Button variant={"default"} onClick={clearAll}>Clear All</Button>
+                <Button variant={"default"} onClick={fillAll}>Fill All</Button>
+
+            </Group>
+            <Group justify={'flex-end'}>
+                {hasStateChanged && <Button variant={"primary"} onClick={() => saveProgress()}>Save</Button>}
+                {!hasStateChanged && <Button variant={"primary"} onClick={() => moveToWagon()}>Placed in Wagon</Button>}
+            </Group>
+        </Group>
+    </>)
 }
+
 export default PackingView;

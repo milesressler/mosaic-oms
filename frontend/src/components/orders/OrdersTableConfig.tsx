@@ -5,12 +5,21 @@ export interface ColumnConfig {
     views?: string[];
 }
 
+enum OrdersView {
+    FILLER = 'filler',
+    ADMIN = 'admin',
+    RUNNER = 'runner',
+    DEFAULT = 'default',
+    PUBLIC = 'public',
+}
+
 export const columns: ColumnConfig[] = [
-    { label: 'Assigned', id:'assigned', sortField: 'assignee.name', views: [ 'filler', 'admin'] },
-    { label: 'Order #', sortField: 'id', views: ['default', 'admin', 'public', 'filler'] },
-    { label: 'Created', sortField: 'created', views: ['default', 'admin', 'public', 'filler'] },
-    { label: 'Updated', sortField: 'updated', views: ['default', 'admin', 'filler'] },
-    { label: 'Status', sortField: 'orderStatus', views: ['default', 'admin', 'filler'] },
-    { label: 'Status', id:'statusObfuscated', sortField: 'orderStatus', views: [ 'public'] },
-    { label: 'Customer', sortField: 'customer.name', views: ['default', 'admin', 'public', 'filler'] },
+    { label: 'Assigned', id:'assigned', sortField: 'assignee.name', views: [OrdersView.FILLER, OrdersView.ADMIN, OrdersView.RUNNER] },
+    { label: 'Order #', sortField: 'id', views: [OrdersView.DEFAULT, OrdersView.ADMIN, OrdersView.PUBLIC, OrdersView.FILLER, OrdersView.RUNNER] },
+    { label: 'Created', sortField: 'created', views: [OrdersView.DEFAULT, OrdersView.ADMIN, OrdersView.PUBLIC, OrdersView.FILLER, OrdersView.RUNNER] },
+    { label: 'Updated', sortField: 'updated', views: [] },
+    { label: 'Status', sortField: 'orderStatus', views: [OrdersView.DEFAULT, OrdersView.ADMIN, OrdersView.FILLER, OrdersView.RUNNER] },
+    { label: 'Status', id:'statusObfuscated', sortField: 'orderStatus', views: [ OrdersView.PUBLIC] },
+    { label: 'Cart', id: 'cart', sortField: 'cart', views: [ OrdersView.RUNNER] },
+    { label: 'Customer', sortField: 'customer.name', views: [OrdersView.DEFAULT, OrdersView.ADMIN, OrdersView.PUBLIC, OrdersView.FILLER ]},
 ];

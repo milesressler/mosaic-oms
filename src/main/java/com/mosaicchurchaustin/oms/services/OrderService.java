@@ -30,6 +30,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -109,6 +110,17 @@ public class OrderService {
         }
 
         return orderItemRepository.save(orderItemEntity);
+    }
+    @Transactional
+    public OrderEntity updateOrderItemQuantities(final String orderUuid, final Map<Long, Integer> quantities) {
+        final OrderEntity orderEntity = getOrder(orderUuid);
+        orderEntity.getOrderItemList().forEach(item -> {
+                    final Integer newQuantity = quantities.getOrDefault(item.getId(), item.getQuantityFulfilled());
+                    item.setQuantityFulfilled(newQuantity);
+                    orderItemRepository.save(item);
+                }
+        );
+        return orderEntity;
     }
     public OrderEntity assignOrder(final String orderUuid) {
         final OrderEntity orderEntity = getOrder(orderUuid);

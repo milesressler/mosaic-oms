@@ -6,7 +6,7 @@ const LoginButton = () => {
     const handleLogin = async () => {
         await loginWithRedirect({
             appState: {
-                returnTo: "/orders",
+                returnTo: "/dashboard/filler",
             },
         });
     };

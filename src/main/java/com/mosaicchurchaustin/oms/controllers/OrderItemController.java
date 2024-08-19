@@ -2,8 +2,11 @@ package com.mosaicchurchaustin.oms.controllers;
 
 import com.mosaicchurchaustin.oms.data.entity.OrderItemEntity;
 import com.mosaicchurchaustin.oms.data.request.UpdateOrderItemRequest;
+import com.mosaicchurchaustin.oms.data.request.UpdateOrderItemsFilledRequest;
+import com.mosaicchurchaustin.oms.data.response.OrderDetailResponse;
 import com.mosaicchurchaustin.oms.data.response.OrderItemResponse;
 import com.mosaicchurchaustin.oms.services.OrderService;
+import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +26,17 @@ public class OrderItemController {
 
     @Autowired
     private OrderService orderService;
+
+    @ResponseBody
+    @PutMapping(path = "/orderitem/quantity/bulk", produces = MediaType.APPLICATION_JSON_VALUE)
+    @Transactional
+    public OrderDetailResponse updateOrderItemQuantityFilledBulk(
+             @RequestBody @Valid UpdateOrderItemsFilledRequest request
+    ){
+        return OrderDetailResponse.from(
+                orderService.updateOrderItemQuantities(request.orderUuid(), request.quantities()));
+    }
+
     @ResponseBody
     @PutMapping(path = "/orderitem/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public OrderItemResponse updateOrderItem(
@@ -32,6 +46,7 @@ public class OrderItemController {
         final OrderItemEntity orderItemEntity = orderService.updateOrderItem(orderItemId, request);
         return OrderItemResponse.from(orderItemEntity);
     }
+
 //    @ResponseBody
 //    @PutMapping(path = "/orderitem/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
 //    public OrderItemResponse updateOrderItem(

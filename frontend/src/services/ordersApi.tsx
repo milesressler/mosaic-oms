@@ -11,6 +11,7 @@ const updateOrderStatus = (uuid: string, state: OrderStatus) => client.put<Order
 const changeAssignee = (uuid: string, unassign: boolean) => client.put<Order>(`/order/${uuid}/assign?unassign=${unassign}`);
 const updateOrderDetails = (uuid: string) => client.put(`/order/${uuid}`);
 const updateOrderItem = (id: number) => client.put(`/orderitem/${id}`);
+const updateOrderItems = (data) => client.put(`/orderitem/quantity/bulk`, data);
 
 const getOrderHistory = (orderId: number) => client.get<OrderFeedItem[]>(`/order/history?orderId=${orderId}`);
 const getFeed = () => client.get<OrderFeedItem[]>(`/order/history`);
@@ -22,6 +23,7 @@ export default {
     updateOrderStatus,
     updateOrderDetails,
     updateOrderItem,
+    updateOrderItems,
     getOrderHistory,
     getFeed,
     changeAssignee,

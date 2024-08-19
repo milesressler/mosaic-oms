@@ -11,9 +11,11 @@ import OrderTakerDashboard from "src/pages/dashboards/OrderTakerDashboard.tsx";
 import OrderFillerDashboard from "src/pages/dashboards/OrderFillerDashboard.tsx";
 import AdminOrdersPage from "src/pages/admin/AdminOrdersPage.tsx";
 import ReportPlaceholder from "src/pages/reports/ReportPlaceholder.tsx";
-import OrderDetailSection from "src/components/fillers/OrderDetailSection.tsx";
 import UserManagementPage from "src/pages/admin/UserManagementPage.tsx";
 import PackingView from "src/components/fillers/PackingView.tsx";
+import OrderItemListView from "src/components/fillers/OrderItemListView.tsx";
+import {SelectedOrderProvider} from "src/contexts/SelectedOrderContext.tsx";
+import RunnerDashboard from "src/pages/dashboards/RunnerDashboard.tsx";
 
 
 const routes = [
@@ -22,8 +24,6 @@ const routes = [
         path: '/',
         element: LandingPage,
         errorElement: ErrorPage,
-        navBarHidden: false,
-        headerHidden: false,
         public: true,
         title: 'Home',
         icon: IconHome,
@@ -33,18 +33,13 @@ const routes = [
         key: 'dashboards',
         icon: IconDashboard,
         group: 'Dashboards',
-        initiallyOpened: true,
         children: [
             {
                 key: 'public-dashboard',
                 path: '/dashboard/public',
                 element: CustomerDashboard,
                 errorElement: ErrorPage,
-                navBarHidden: true,
-                headerHidden: false,
-                minimalHeader: true,
-                asideHidden: true,
-                public: true,
+                isMonitor: true,
                 title: 'Customer Monitor',
                 showInNavBar: true,
             },
@@ -53,32 +48,36 @@ const routes = [
                 path: '/dashboard/taker',
                 element: OrderTakerDashboard,
                 errorElement: ErrorPage,
-                navBarHidden: true,
-                headerHidden: false,
                 title: 'Order Taker',
                 showInNavBar: true,
             },
             {
                 key: 'filler-dashboard',
                 path: '/dashboard/filler',
-                element: OrderFillerDashboard,
+                element: () => <SelectedOrderProvider><OrderFillerDashboard/></SelectedOrderProvider>,
                 errorElement: ErrorPage,
-                navBarHidden: true,
-                headerHidden: false,
                 showInNavBar: true,
                 title: 'Order Filler',
                 children: [
                     {
                         key: 'filler-dashboard-view',
                         path: 'order/:id',
-                        element: OrderDetailSection
+                        element: OrderItemListView
                     },
                     {
                         key: 'filler-dashboard-fill',
                         path: 'fill/:id',
-                        element: OrderDetailSection
+                        element: PackingView
                     }
                 ]
+            },
+            {
+                key: 'runner-dashboard',
+                path: '/dashboard/runner',
+                element: () => <SelectedOrderProvider><RunnerDashboard/></SelectedOrderProvider>,
+                errorElement: ErrorPage,
+                showInNavBar: true,
+                title: 'Runner'
             },
             // Add other dashboard routes here
         ],
@@ -88,7 +87,6 @@ const routes = [
         icon: IconUser,
         group: 'Admin',
         requiredRole: 'admin',
-        initiallyOpened: false,
         children: [
             {
                 key: 'orders',
@@ -112,18 +110,11 @@ const routes = [
                 showInNavBar: true,
             },
             {
-                key: 'order-create',
-                path: '/order/create',
-                element: OrderFormPage,
-                title: 'Create Order',
-                showInNavBar: true,
-            },
-            {
                 key: 'audit',
                 path: '/audit',
                 element: OrderFormPage,
                 title: 'Audit Log',
-                showInNavBar: true,
+                showInNavBar: false,
             },
             {
                 key: 'order-details',

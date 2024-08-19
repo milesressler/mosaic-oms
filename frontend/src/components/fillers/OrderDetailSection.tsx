@@ -1,13 +1,12 @@
 import {OrderStatus} from "src/models/types.tsx";
-import {useEffect, useState} from "react";
+import { useEffect } from "react";
 import useApi from "src/hooks/useApi.tsx";
 import ordersApi from "src/services/ordersApi.tsx";
-import {Box, isNumberLike, LoadingOverlay, Paper, Text} from "@mantine/core";
+import {Box, LoadingOverlay, } from "@mantine/core";
 import {useAuth0} from "@auth0/auth0-react";
-import { useNavigate } from "react-router-dom";
+import {Outlet, useNavigate} from "react-router-dom";
 import { useSelectedOrder} from "src/contexts/SelectedOrderContext";
 import OrderInfoBlock from "src/components/orders/OrderInfoBlock.tsx";
-import ItemQuantitySelector from "src/components/fillers/ItemQuantitySelector.tsx";
 
 export function OrderDetailSection({}) {
 
@@ -16,6 +15,8 @@ export function OrderDetailSection({}) {
     const updateStateApi = useApi(ordersApi.updateOrderStatus);
     const changeAssigneeApi = useApi(ordersApi.changeAssignee);
     const navigate = useNavigate();
+
+    const assignedToMe = selectedOrder?.assignee?.externalId === user?.sub;
 
 
     useEffect(() => {
@@ -26,8 +27,6 @@ export function OrderDetailSection({}) {
         loading ||
         updateStateApi.loading;
 
-
-    const assignedToMe = selectedOrder?.assignee?.externalId === user?.sub;
 
     const toggleAssigned = () => {
         if (assignedToMe) {
@@ -62,30 +61,16 @@ export function OrderDetailSection({}) {
 
     return (<>
         <Box pos="relative" p={10}>
-        <LoadingOverlay visible={isLoading}
-                        zIndex={1000}
-                        overlayProps={{ radius: "sm", blur: 2 }} />
-        <OrderInfoBlock
-            loading={isLoading}
-            orderDetails={selectedOrder}
-            toggleAssigned={toggleAssigned}
-            changeState={changeState}
-        ></OrderInfoBlock>
-        <Paper  shadow="xs">
-            {/*<ul>*/}
-            {selectedOrder?.items?.map((item) => {
-                return(
-                // <li key={item.id}>
-                        <div key={item.id}>
-                            <Text span fw={500}> {item.quantityRequested}</Text> {item.description}
-                            <Text c={'dimmed'}>{item.notes}</Text>
-                            <ItemQuantitySelector max={item.quantityRequested}></ItemQuantitySelector>
-                        </div>
-                    // </li>
-                )
-            })}
-            {/*</ul>*/}
-        </Paper>
+            <LoadingOverlay visible={isLoading}
+                            zIndex={1000}
+                            overlayProps={{ radius: "sm", blur: 2 }} />
+            <OrderInfoBlock
+                loading={isLoading}
+                orderDetails={selectedOrder}
+                toggleAssigned={toggleAssigned}
+                changeState={changeState}
+            ></OrderInfoBlock>
+            <Outlet/>
         </Box>
     </>);
 }

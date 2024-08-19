@@ -1,4 +1,5 @@
 import { withAuthenticationRequired } from "@auth0/auth0-react";
+import {LoadingOverlay} from "@mantine/core";
 
 interface AuthenticationGuardProps {
     component: React.ComponentType<any>;
@@ -7,7 +8,7 @@ export const AuthenticationGuard: React.FC<AuthenticationGuardProps>  = ({ compo
     const Component = withAuthenticationRequired(component, {
         onRedirecting: () => (
             <div className="page-layout">
-                <div>Loading...</div>
+                <LoadingOverlay></LoadingOverlay>
             </div>
         ),
     });

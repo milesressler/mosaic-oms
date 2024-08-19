@@ -52,6 +52,7 @@ export function AppShellComponent() {
     const [activeRoute, setActiveRoute] = useState(routes[0])
 
     const fullscreenAvailable = document.fullscreenEnabled;
+    const headerIsVisible = (!fullscreen || !activeRoute.isMonitor);
 
 
     useEffect(() => {
@@ -73,11 +74,8 @@ export function AppShellComponent() {
                             const childrenWithInheritedProps = mainlink.children.map((child: any) => {
                                 child.fullPath = mainlink.path + "/" + child.path;
                                 const inheritedProps = {
-                                    navBarHidden: mainlink.navBarHidden,
                                     showInNavBar: mainlink.showInNavBar,
-                                    asideHidden: mainlink.asideHidden,
-                                    minimalHeader: mainlink.minimalHeader,
-                                    headerHidden: mainlink.headerHidden,
+                                    isMonitor: mainlink.isMonitor,
                                 }
                                 return {...inheritedProps, ...child};
                             })
@@ -95,28 +93,26 @@ export function AppShellComponent() {
     }, [location]);
 
     useEffect(() => {
-        close();
-        setHeaderHeight(activeRoute.headerHidden ? 0 : DEFAULT_HEADER_HEIGHT);
-    }, [activeRoute]);
+        setHeaderHeight(headerIsVisible ? DEFAULT_HEADER_HEIGHT : 0);
+    }, [activeRoute, fullscreen]);
 
     useEffect(() => {
         function onFullscreenChange() {
-            setFullscreen(Boolean(document.fullscreenElement));
+            const fullScreened = Boolean(document.fullscreenElement);
+            setFullscreen(fullScreened);
         }
-
         document.addEventListener('fullscreenchange', onFullscreenChange);
-
         return () => document.removeEventListener('fullscreenchange', onFullscreenChange);
     }, []);
 
 
     return (
         <AppShell
-            header={{ height: activeRoute.headerHidden ? 0 : headerHeight }}
-            navbar={{ width: isAuthenticated ? 250 : 0, breakpoint: 'md', collapsed: { mobile: !opened, desktop: activeRoute.navBarHidden ? !opened : false} }}
-            aside={{ width: isAuthenticated ? { base: 200, md: 250, lg: 300, xl: 350 } : 0, breakpoint: 'md', collapsed: { mobile: !asideOpened, desktop: !asideOpened || activeRoute.headerHidden || activeRoute.minimalHeader },  }}
+            header={{ height: headerIsVisible ? headerHeight : 0 }}
+            navbar={{ width: isAuthenticated ? 250 : 0, breakpoint: 'md', collapsed: { mobile: !opened, desktop: !opened || activeRoute.isMonitor} }}
+            aside={{ width: isAuthenticated ? { base: 200, md: 250, lg: 300, xl: 350 } : 0, breakpoint: 'md', collapsed: { mobile: !asideOpened, desktop: !asideOpened || activeRoute.isMonitor },  }}
         >
-            { !activeRoute.headerHidden && <AppShell.Header>
+            { headerIsVisible &&  <AppShell.Header>
                     <div
                         style={{
                             display: 'flex',
@@ -129,11 +125,7 @@ export function AppShellComponent() {
                         }}
                     >
                         <Group>
-                            { isAuthenticated && (!asideOpened || activeRoute.minimalHeader) && <Burger opened={opened} onClick={toggle} size="sm"
-                                    hiddenFrom={!activeRoute.navBarHidden ? "md" : ""}
-                            /> }
-                            {fullscreenAvailable && !fullscreen && <IconArrowsMaximize cursor={'pointer'} onClick={() => document.body.requestFullscreen()}></IconArrowsMaximize> }
-                            {fullscreenAvailable && fullscreen && <IconArrowsMinimize cursor={'pointer'} onClick={() => document.exitFullscreen()}></IconArrowsMinimize> }
+                            { isAuthenticated && !activeRoute.isMonitor &&  <Burger opened={opened} onClick={() => { toggle(); asideHandler.close();}} size="sm"/> }
                             <Link to={"/"}>
                                 <img src={mosaicLogo} className="m-logo" alt="Mosaic Church logo"/>
                             </Link>
@@ -145,15 +137,27 @@ export function AppShellComponent() {
                                 <LoginButton></LoginButton>
                             </Group>
                         }
-                        {!activeRoute.minimalHeader &&
+                        {activeRoute.isMonitor &&
+                            <Group mr={0} gap={5} visibleFrom={'md'}>
+                            {fullscreenAvailable && !fullscreen && <IconArrowsMaximize cursor={'pointer'} onClick={() => document.body.requestFullscreen()}></IconArrowsMaximize> }
+                        {fullscreenAvailable && fullscreen && <IconArrowsMinimize cursor={'pointer'} onClick={() => document.exitFullscreen()}></IconArrowsMinimize> }
+                            </Group>
+                        }
+                        {!activeRoute.isMonitor &&
                         <Group mr={0} gap={5} visibleFrom={'md'}>
                                 {isAuthenticated && <UserCard />}
                                 {isAuthenticated && <LogoutButton></LogoutButton>}
                                 {!isAuthenticated && <LoginButton></LoginButton>}
 
-                            { isAuthenticated && <Burger opened={asideOpened} onClick={asideHandler.toggle} size="sm" /> }
+                            { isAuthenticated && <Burger opened={asideOpened} size="sm"   onClick={() => {
+                                asideHandler.toggle()
+                                close();
+                            }}/> }
                         </Group> }
-                        { isAuthenticated && !activeRoute.minimalHeader  && !opened && <Burger opened={asideOpened} onClick={asideHandler.toggle} size="sm" hiddenFrom={'md'} /> }
+                        { isAuthenticated && <Burger opened={asideOpened} onClick={() => {
+                            asideHandler.toggle()
+                            close();
+                        }} size="sm" hiddenFrom={'md'} /> }
 
 
 

@@ -49,6 +49,12 @@ function OrderFormPage() {
         },
     });
 
+    useEffect(() => {
+        if (createOrderAPI.data) {
+            form.reset();
+        }
+    }, [createOrderAPI.data]);
+
 
     const submitOrder = (values: any) => {
         form.validate();

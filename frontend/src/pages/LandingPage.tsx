@@ -6,7 +6,7 @@ function LandingPage() {
     const navigate = useNavigate();
     const { isAuthenticated} = useAuth0();
     if (isAuthenticated) {
-        navigate("/dashboard/public")
+        navigate("/dashboard/filler")
     }
 
     return (

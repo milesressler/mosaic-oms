@@ -15,6 +15,7 @@ interface ThProps {
     children: React.ReactNode;
     reversed: boolean;
     sorted: boolean;
+    sortingEnabled: boolean;
     onSort?(): void;
 }
 
@@ -28,21 +29,21 @@ interface OrdersTable {
     autoRefresh?: boolean,
     showFilters?: boolean,
     forceRefresh?: boolean,
+    disableSorting?: boolean,
     statusFilter?: OrderStatus[],
-    sorting?: boolean,
     maxNumberOfRecords?: number
 }
 
-function Th({ children, reversed, sorted, onSort }: ThProps) {
+function Th({ children, reversed, sorted, onSort, sortingEnabled }: ThProps) {
     const Icon = sorted ? (reversed ? IconChevronUp : IconChevronDown) : IconSelector;
     return (
         <Table.Th className={classes.th}>
-            <UnstyledButton onClick={onSort} className={classes.control}>
+            <UnstyledButton onClick={() => { if (sortingEnabled && onSort) { onSort() }}} className={classes.control}>
                 <Group justify="space-between">
                     <Text fw={500} fz="sm">
                         {children}
                     </Text>
-                    { onSort &&
+                    { sortingEnabled && onSort &&
                     <Center className={classes.icon}>
                         <Icon style={{ width: rem(16), height: rem(16) }} stroke={1.5} />
                     </Center>
@@ -66,7 +67,7 @@ export function OrdersTable({
         showFilters = false,
         statusFilter = [],
         forceRefresh,
-        sorting,
+        disableSorting = false,
 }: OrdersTable){
     const refreshPercent = refreshInterval/100;
 
@@ -130,7 +131,7 @@ export function OrdersTable({
 
     const getObfusgatedStatus = (status: OrderStatus) => {
         const inProgressStatuses = [
-            OrderStatus.ACCEPTED, OrderStatus.PACKING, OrderStatus.PACKING,
+            OrderStatus.ACCEPTED, OrderStatus.PACKING, OrderStatus.PACKED,
             OrderStatus.IN_TRANSIT,
         ]
 
@@ -157,10 +158,13 @@ export function OrdersTable({
                     {key === 'Order #' && order.id}
                     {key === 'Created' && <>
                         <Text>{DateTime.fromISO(order.created).toLocaleString(DateTime.TIME_SIMPLE)}</Text>
-                        <Text c={"dimmed"} size={'xs'}>{DateTime.fromISO(order.created).toLocaleString(DateTime.DATE_FULL)}</Text>
+                        <Text c={"dimmed"} size={'xs'}>{DateTime.fromISO(order.created).toLocaleString(DateTime.DATE_MED)}</Text>
                     </>}
                     {key === 'Updated' && <Text c={'dimmed'}>{DateTime.fromISO(order.lastStatusChange?.timestamp).toRelative()}</Text>}
-                    {key === 'Status' && <StatusBadge orderStatus={order.orderStatus} />}
+                    {key === 'Status' && <div>
+                        <StatusBadge orderStatus={order.orderStatus} />
+                        <Text c={'dimmed'} size={'xs'}>{DateTime.fromISO(order.lastStatusChange?.timestamp).toRelative()}</Text>
+                    </div>}
                     {key === 'Customer' && order.customer?.name}
                     {key === 'statusObfuscated' && <StatusBadge orderStatus={getObfusgatedStatus(order.orderStatus)}/> }
                 </Table.Td>
@@ -175,6 +179,7 @@ export function OrdersTable({
                     <Table.Tr>
                         {visibleColumns.map((column: ColumnConfig) => (
                             <Th
+                                sortingEnabled={!disableSorting}
                                 key={column.id ?? column.label }
                                 sorted={sortBy === column.sortField}
                                 reversed={reverseSortDirection}
