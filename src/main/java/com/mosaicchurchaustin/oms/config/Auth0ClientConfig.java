@@ -1,6 +1,7 @@
 package com.mosaicchurchaustin.oms.config;
 
 import com.auth0.client.mgmt.ManagementAPI;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -32,7 +33,6 @@ public class Auth0ClientConfig {
     @Value("${auth0.managementAudience}")
     String managementAudience;
 
-
     private RestTemplate restTemplate = new RestTemplate();
 
     private String getManagementApiToken() {
@@ -61,11 +61,19 @@ public class Auth0ClientConfig {
                 .build();
     }
 
-    // Expires in 86400 seconds
-    @Scheduled(fixedRate = 20, timeUnit = TimeUnit.HOURS)
-    void updateToken(ManagementAPI managementAPI) {
+    @Configuration
+    class TokenProvider {
 
-        managementAPI.setApiToken(getManagementApiToken());
+        @Autowired
+        ManagementAPI managementAPI;
+
+        // Expires in 86400 seconds
+        @Scheduled(fixedRate = 20, timeUnit = TimeUnit.HOURS)
+        void updateToken() {
+
+            managementAPI.setApiToken(getManagementApiToken());
+        }
+
     }
 
 }
