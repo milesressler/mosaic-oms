@@ -8,11 +8,15 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.EnableScheduling;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
+@EnableScheduling
 @Configuration
 public class Auth0ClientConfig {
 
@@ -37,17 +41,17 @@ public class Auth0ClientConfig {
         final HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
 
-        Map<String, String> body = new HashMap<>();
-        body.put("client_id", clientId);
-        body.put("client_secret", clientSecret);
-        body.put("audience", managementAudience);
-        body.put("grant_type", "client_credentials");
+        Map<String, String> request = new HashMap<>();
+        request.put("client_id", clientId);
+        request.put("client_secret", clientSecret);
+        request.put("audience", managementAudience);
+        request.put("grant_type", "client_credentials");
 
-        HttpEntity<Map<String, String>> entity = new HttpEntity<>(body, headers);
+        HttpEntity<Map<String, String>> entity = new HttpEntity<>(request, headers);
 
         ResponseEntity<Map> response = restTemplate.postForEntity(tokenUrl, entity, Map.class);
-
-        return (String) response.getBody().get("access_token");
+        Map<String, Object> body = response.getBody();
+        return (String) body.get("access_token");
     }
     @Bean
     ManagementAPI managementAPI() {
@@ -57,5 +61,11 @@ public class Auth0ClientConfig {
                 .build();
     }
 
+    // Expires in 86400 seconds
+    @Scheduled(fixedRate = 20, timeUnit = TimeUnit.HOURS)
+    void updateToken(ManagementAPI managementAPI) {
+
+        managementAPI.setApiToken(getManagementApiToken());
+    }
 
 }
