@@ -2,13 +2,12 @@ import {DEFAULT_THEME, Grid, GridCol, rem, Tabs} from "@mantine/core";
 import {Order, OrderStatus} from "src/models/types.tsx";
 import OrdersTable from "src/components/orders/OrdersTable.tsx";
 import {useMediaQuery} from "@mantine/hooks";
-import {IconMessageCircle, IconPhoto, IconSettings} from "@tabler/icons-react";
 import {useNavigate, useParams} from "react-router-dom";
 import {SelectedOrderProvider, useSelectedOrder} from "src/contexts/SelectedOrderContext.tsx";
 import OrderDetailSection from "src/components/fillers/OrderDetailSection.tsx";
 import {OrdersView} from "src/components/orders/OrdersTableConfig.tsx";
 
-export function OrderFillerDashboard() {
+export function RunnerDashboard() {
     const isMobile = useMediaQuery(`(max-width: ${DEFAULT_THEME.breakpoints.lg})`);
     const navigate = useNavigate();
     const { id } = useParams();
@@ -17,22 +16,21 @@ export function OrderFillerDashboard() {
 
     const onSelectOrder = (order: Order) => {
         if (id && order.id === +id) {
-            navigate(`/dashboard/filler/`)
+            navigate(`/dashboard/distributor/`)
         } else {
-            navigate(`/dashboard/filler/order/${order.id}`)
+            navigate(`/dashboard/distributor/order/${order.id}`)
         }
     }
 
     const iconStyle = { width: rem(12), height: rem(12) };
     const orderTable = <OrdersTable
-        statusFilter={[OrderStatus.ACCEPTED, OrderStatus.PENDING_ACCEPTANCE, OrderStatus.PACKING]}
-        view={OrdersView.FILLER}
+        statusFilter={[OrderStatus.READY_FOR_CUSTOMER_PICKUP, OrderStatus.IN_TRANSIT]}
+        view={OrdersView.DISTRIBUTOR}
         onSelectRow={onSelectOrder}
         showProgressIndicator={true}
         forceRefresh={forceRefresh}
         selectedOrderIds={id ? [+id] : null}
         maxNumberOfRecords={10}
-        disableSorting={true}
     ></OrdersTable>;
 
     const orderDetailSection = <OrderDetailSection/>;
@@ -41,17 +39,6 @@ export function OrderFillerDashboard() {
         <SelectedOrderProvider>
             <>
                 { isMobile && <Tabs defaultValue="gallery">
-                <Tabs.List>
-                    <Tabs.Tab value="gallery" leftSection={<IconPhoto style={iconStyle} />}>
-                        Orders List
-                    </Tabs.Tab>
-                    <Tabs.Tab value="messages" leftSection={<IconMessageCircle style={iconStyle} />}>
-                        Order Detail
-                    </Tabs.Tab>
-                    <Tabs.Tab value="settings" leftSection={<IconSettings style={iconStyle} />}>
-                        Filling
-                    </Tabs.Tab>
-                </Tabs.List>
 
                 <Tabs.Panel value="gallery">
                     {orderTable}
@@ -75,15 +62,10 @@ export function OrderFillerDashboard() {
                     {/*{  outlet}*/}
                     {selectedOrder && orderDetailSection}
                 </GridCol>
-                {/*<GridCol span={6}>*/}
-                {/*    { !!selectedOrder && <AssignedOrderSection order={selectedOrder}></AssignedOrderSection> }*/}
-                {/*</GridCol>*/}
-
-
             </Grid>
                 }
         </>
     </SelectedOrderProvider>
     )
 }
-export default OrderFillerDashboard;
+export default RunnerDashboard;

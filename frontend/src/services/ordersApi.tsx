@@ -4,9 +4,11 @@ import {Order, OrderDetails, OrderFeedItem, OrderRequest, OrderStatus, Page} fro
 const createOrder = (data: OrderRequest) => client.post("/order", data);
 const getOrders = (params?: {}) => client.get<Page<Order>>("/order", {params});
 const getOrdersDashboardView = (params?: {}) => client.get<Order[]>("/order/view/dashboard", {params});
+// const getOrdersRunnersView = (params?: {}) => client.get<Order[]>("/order/view/runner", {params});
 const getOrdersWithDetails = (params?: any) => client.get<Page<OrderDetails>>("/order", {params: {...params, detailed: true}});
 const getOrderById = (id: number) => client.get<OrderDetails>(`/order/${id}`);
 const getOrderByUuid = (uuid: string) => client.get(`/order/${uuid}`);
+const updateOrderStatusBulk = (uuids: string[], state: OrderStatus) => client.put<Order>(`/order/bulk/state/${state}`, {orderUuids: uuids});
 const updateOrderStatus = (uuid: string, state: OrderStatus) => client.put<Order>(`/order/${uuid}/state/${state}`);
 const changeAssignee = (uuid: string, unassign: boolean) => client.put<Order>(`/order/${uuid}/assign?unassign=${unassign}`);
 const updateOrderDetails = (uuid: string) => client.put(`/order/${uuid}`);
@@ -21,6 +23,7 @@ export default {
     getOrders,
     getOrderById,
     updateOrderStatus,
+    updateOrderStatusBulk,
     updateOrderDetails,
     updateOrderItem,
     updateOrderItems,

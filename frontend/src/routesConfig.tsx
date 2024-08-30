@@ -16,6 +16,7 @@ import PackingView from "src/components/fillers/PackingView.tsx";
 import OrderItemListView from "src/components/fillers/OrderItemListView.tsx";
 import {SelectedOrderProvider} from "src/contexts/SelectedOrderContext.tsx";
 import RunnerDashboard from "src/pages/dashboards/RunnerDashboard.tsx";
+import DistributorDashboard from "src/pages/dashboards/DistributorDashboard.tsx";
 
 
 const routes = [
@@ -77,7 +78,29 @@ const routes = [
                 element: () => <SelectedOrderProvider><RunnerDashboard/></SelectedOrderProvider>,
                 errorElement: ErrorPage,
                 showInNavBar: true,
-                title: 'Runner'
+                title: 'Runner',
+                children: [
+                    {
+                        key: 'runner-dashboard-view',
+                        path: 'order/:id',
+                        element: OrderItemListView
+                    }
+                ]
+            },
+            {
+                key: 'distributor-dashboard',
+                path: '/dashboard/distributor',
+                element: () => <SelectedOrderProvider><DistributorDashboard/></SelectedOrderProvider>,
+                errorElement: ErrorPage,
+                showInNavBar: true,
+                title: 'Distributor',
+                children: [
+                    {
+                        key: 'distributor-dashboard-view',
+                        path: 'order/:id',
+                        element: OrderItemListView
+                    }
+                ]
             },
             // Add other dashboard routes here
         ],

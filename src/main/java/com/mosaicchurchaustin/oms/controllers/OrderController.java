@@ -4,10 +4,13 @@ import com.mosaicchurchaustin.oms.data.entity.order.OrderEntity;
 import com.mosaicchurchaustin.oms.data.entity.order.OrderHistoryEntity;
 import com.mosaicchurchaustin.oms.data.request.CreateOrderRequest;
 import com.mosaicchurchaustin.oms.data.request.UpdateOrderRequest;
+import com.mosaicchurchaustin.oms.data.request.UpdateOrderStatusBulkRequest;
 import com.mosaicchurchaustin.oms.data.response.OrderDetailResponse;
 import com.mosaicchurchaustin.oms.data.response.OrderFeedResponse;
 import com.mosaicchurchaustin.oms.data.response.OrderResponse;
+import com.mosaicchurchaustin.oms.data.sockets.OrderNotification;
 import com.mosaicchurchaustin.oms.services.OrderService;
+import com.mosaicchurchaustin.oms.services.sockets.OrderNotifier;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
@@ -15,7 +18,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -27,7 +29,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api")
@@ -37,14 +38,14 @@ public class OrderController {
     final OrderService orderService;
 
     @Autowired
-    private SimpMessagingTemplate template;
+    private OrderNotifier orderNotifier;
 
     @ResponseBody
     @PostMapping(path = "/order", produces = MediaType.APPLICATION_JSON_VALUE)
     public OrderDetailResponse submitOrder(@Valid @RequestBody CreateOrderRequest createOrderRequest) {
         // Better validation/error handler
         final OrderEntity orderEntity = orderService.createOrder(createOrderRequest);
-        template.convertAndSend("/topic/orders", Map.of("orderCreated", orderEntity.getId()));
+        orderNotifier.notifyOrderCreated(new OrderNotification(orderEntity.getId()));
         return OrderDetailResponse.from(orderEntity);
     }
 
@@ -89,6 +90,16 @@ public class OrderController {
     ) {
         final OrderEntity orderEntity = orderService.updateOrder(orderUuid, updateOrderRequest);
         return OrderDetailResponse.from(orderEntity);
+    }
+
+    @ResponseBody
+    @PutMapping(path = "/order/bulk/state/{state}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public List<OrderDetailResponse> updateOrderStateBulk(
+            @PathVariable("state") String orderState,
+            @RequestBody UpdateOrderStatusBulkRequest request
+            ){
+        final List<OrderEntity> updatedOrders = orderService.updateOrderStatusBulk(request.orderUuids(), orderState);
+        return updatedOrders.stream().map(OrderDetailResponse::from).toList();
     }
 
     @ResponseBody

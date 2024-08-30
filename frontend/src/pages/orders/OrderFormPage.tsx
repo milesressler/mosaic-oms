@@ -11,7 +11,7 @@ import { useForm } from '@mantine/form';
 import {useEffect, useState} from "react";
 import itemsApi from "src/services/itemsApi.tsx";
 import {randomId} from "@mantine/hooks";
-import {OrderRequest} from "src/models/types.tsx";
+import {Order, OrderDetails, OrderRequest} from "src/models/types.tsx";
 import OrderItemForm from "src/components/orderform/OrderItemForm.tsx";
 import OrderItemDisplay from "src/components/orderform/OrderItemDisplay.tsx";
 
@@ -22,15 +22,39 @@ export interface FormItem {
     itemkey?: string,
 }
 
-function OrderFormPage() {
+interface props {
+    order?: Order
+}
+
+function OrderForm({order}: props) {
     const createOrderAPI = useApi(ordersApi.createOrder);
     const suggestedItemsApi = useApi(itemsApi.getSuggestedItems);
     const [updatingItem, setUpdatingItem] = useState<FormItem|null>(null);
+    const orderDetailApi = useApi(ordersApi.getOrderById);
 
+    function propsIsDetailed(input: Order): input is OrderDetails {
+        return (input as OrderDetails) !== undefined;
+    }
+    const orderDetailInput = (order && propsIsDetailed(order)) ? (order as OrderDetails) : null;
+    const [ orderDetail, setOrderDetail] = useState<OrderDetails|null>(orderDetailInput);
 
     useEffect(() => {
         suggestedItemsApi.request();
     }, [true]);
+
+    useEffect(() => {
+        if (order && orderDetail == null) {
+            // get order detail
+            orderDetailApi.request(order.id);
+        }
+    }, [orderDetail, order]);
+
+    useEffect(() => {
+        if (orderDetailApi.data) {
+            setOrderDetail(orderDetailApi.data);
+        }
+    }, [orderDetailApi.data]);
+
 
 
 
@@ -173,4 +197,4 @@ function OrderFormPage() {
     </>);
 }
 
-export default OrderFormPage;
+export default OrderForm;

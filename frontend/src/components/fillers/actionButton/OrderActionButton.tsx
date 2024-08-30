@@ -1,0 +1,106 @@
+import {ActionIcon, Button, Group, Menu, rem, useMantineTheme} from '@mantine/core';
+import {IconChevronDown, IconNotes, IconSquareX, IconTrash} from '@tabler/icons-react';
+import classes from './filler-order-action-button.module.css';
+import {OrderDetails, OrderStatus} from "src/models/types.tsx";
+import {useAuth0} from "@auth0/auth0-react";
+
+interface OrderActionButtonProps {
+    loading?: boolean,
+    order: (OrderDetails|null),
+    toggleAssigned: () => void
+    onStateChange: (orderStatus: OrderStatus) => void
+}
+
+export function OrderActionButton({ loading, order, onStateChange, toggleAssigned }: OrderActionButtonProps) {
+
+
+    const theme = useMantineTheme();
+    const buttonStyle = {width: "146px"}
+    const {user} = useAuth0();
+    const assignedToMe = order?.assignee?.externalId === user?.sub;
+
+
+    const disabled = order?.orderStatus === OrderStatus.COMPLETED ||
+        order?.orderStatus === OrderStatus.CANCELLED ||
+        order?.orderStatus === OrderStatus.REJECTED;
+
+    const getButton = () => {
+        switch (order?.orderStatus) {
+            case OrderStatus.PENDING_ACCEPTANCE:
+                return <>
+                    <Button style={buttonStyle} loading={loading} onClick={() => onStateChange(OrderStatus.ACCEPTED)}>Accept Order</Button>
+                </>
+            case OrderStatus.READY_FOR_CUSTOMER_PICKUP:
+                return <>
+                    <Button style={buttonStyle} loading={loading} onClick={() => onStateChange(OrderStatus.COMPLETED)}>Complete Order</Button>
+                </>
+            default:
+                return <Button style={buttonStyle} loading={loading} onClick={toggleAssigned} >{assignedToMe ? "Unassign" : "Assign to Me"}</Button>
+        }
+    }
+
+    const options = [
+        {
+            label: "Cancel",
+            icon: IconTrash,
+            action: () => onStateChange(OrderStatus.CANCELLED)
+        },
+    ];
+
+    const rejectOption = {
+        label: "Reject",
+        icon: IconSquareX,
+        action: () => onStateChange(OrderStatus.REJECTED)
+    };
+
+    if (order?.orderStatus === OrderStatus.PENDING_ACCEPTANCE) {
+        options.push(
+            {
+                label: "Request Info",
+                icon: IconNotes,
+                action: () => onStateChange(OrderStatus.NEEDS_INFO)
+            });
+        options.push(rejectOption);
+    } else if (order?.orderStatus === OrderStatus.ACCEPTED) {
+        options.push(rejectOption);
+    }
+
+    if (disabled) {
+        return  (<></>);
+    }
+
+    return (
+        <Group wrap="nowrap" gap={0}>
+            {getButton()}
+            <Menu transitionProps={{ transition: 'pop' }} position="bottom-end" withinPortal>
+                <Menu.Target >
+                    <ActionIcon
+                        variant="filled"
+                        color={theme.primaryColor}
+                        size={36}
+                        className={classes.menuControl}
+                    >
+                        <IconChevronDown style={{ width: rem(16), height: rem(16) }} stroke={1.5} />
+                    </ActionIcon>
+                </Menu.Target>
+                <Menu.Dropdown>
+                    {
+                        options.map((option) =>
+                                <Menu.Item onClick={option.action}
+                                           leftSection={
+                                    <option.icon
+                                        style={{ width: rem(16), height: rem(16) }}
+                                        stroke={1.5}
+                                        color={theme.colors.blue[5]}
+                                    />
+                                }>{option.label}
+                        </Menu.Item >
+                        )
+                    }
+                </Menu.Dropdown>
+            </Menu>
+        </Group>
+    );
+}
+
+export default OrderActionButton;

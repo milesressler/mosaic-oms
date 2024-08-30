@@ -13,6 +13,8 @@ import java.util.Optional;
 
 @Repository
 public interface OrderRepository extends JpaRepository<OrderEntity, Long> {
+    List<OrderEntity> findAllByUuidIn(List<String> uuids);
+
     Optional<OrderEntity> findByUuid(String uuid);
     Page<OrderEntity> findAllByOrderStatusIn(Pageable pageable, List<OrderStatus> orderStatusList);
 
@@ -23,9 +25,10 @@ public interface OrderRepository extends JpaRepository<OrderEntity, Long> {
             "CASE " +
             "  WHEN o.orderStatus = 'NEEDS_INFO' THEN 1 " +
             "  WHEN o.orderStatus IN ('CANCELLED', 'REJECTED') THEN 2 " +
-            "  WHEN o.orderStatus = 'PENDING_ACCEPTANCE' THEN 4 " +
-            "  WHEN o.orderStatus IN ('COMPLETED') THEN 5 " +
-            "  ELSE 3 " +
+            "  WHEN o.orderStatus = 'READY_FOR_CUSTOMER_PICKUP' THEN 3 " +
+            "  WHEN o.orderStatus = 'PENDING_ACCEPTANCE' THEN 5 " +
+            "  WHEN o.orderStatus IN ('COMPLETED') THEN 6 " +
+            "  ELSE 4 " +
             "END, " +
             "o.created ASC")
     List<OrderEntity> findOrdersForDashboard();

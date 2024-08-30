@@ -1,13 +1,19 @@
 import msmBg from "../assets/mosaic-street-ministry-bg.png";
 import {useNavigate} from "react-router-dom";
 import {useAuth0} from "@auth0/auth0-react";
+import {useEffect} from "react";
 
 function LandingPage() {
     const navigate = useNavigate();
     const { isAuthenticated} = useAuth0();
-    if (isAuthenticated) {
-        navigate("/dashboard/filler")
-    }
+
+
+    useEffect(() => {
+        if (isAuthenticated) {
+            navigate("/dashboard/filler")
+        }
+    }, []);
+
 
     return (
         <>

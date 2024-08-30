@@ -133,14 +133,26 @@ public class OrderService {
         return orderRepository.save(orderEntity);
     }
 
-        @Transactional
-    public OrderEntity updateOrderStatus(final String orderUuid, final String orderState) {
+    @Transactional
+    public List<OrderEntity> updateOrderStatusBulk(
+            final List<String> orderUuids,
+            final String orderState) {
+        final List<OrderEntity> orders = orderRepository.findAllByUuidIn(orderUuids);
+        final Set<String> foundUuids = orders.stream().map(OrderEntity::getUuid).collect(Collectors.toSet());
+        if (foundUuids.size() != orderUuids.size()) {
+            throw new EntityNotFoundException(OrderEntity.ENTITY_NAME, "bulk");
+        }
+
+        final List<OrderEntity> updatedOrders = orders.stream().map(i -> updateOrderStatus(i, orderState)).toList();
+        return orderRepository.saveAll(updatedOrders);
+    }
+
+    private OrderEntity updateOrderStatus(final OrderEntity orderEntity, final String orderState) {
         final UserEntity currentUser = userService.currentUser();
-        final OrderEntity orderEntity = getOrder(orderUuid);
+
         final OrderStatus currentOrderStatus = orderEntity.getOrderStatus();
         final OrderStatus orderStatus = OrderStatus.from(orderState);
         orderEntity.setOrderStatus(orderStatus);
-
         final OrderHistoryEntity orderHistoryEntity = orderHistoryRepository.save(OrderHistoryEntity.builder()
                 .orderEntity(orderEntity)
                 .orderStatus(orderStatus)
@@ -154,14 +166,20 @@ public class OrderService {
         if (orderStatus == OrderStatus.ACCEPTED && currentOrderStatus == OrderStatus.PENDING_ACCEPTANCE) {
             orderEntity.setAssignee(currentUser);
         } else if (
-                // Clear assignee for everything except these status
+            // Clear assignee for everything except these status
                 !Set.of(
                         OrderStatus.PACKING,
                         OrderStatus.IN_TRANSIT
                 ).contains(orderStatus)) {
             orderEntity.setAssignee(null);
         }
+        return orderEntity;
+    }
 
+    @Transactional
+    public OrderEntity updateOrderStatus(final String orderUuid, final String orderState) {
+        final OrderEntity orderEntity = getOrder(orderUuid);
+        updateOrderStatus(orderEntity, orderState);
         return orderRepository.save(orderEntity);
     }
 

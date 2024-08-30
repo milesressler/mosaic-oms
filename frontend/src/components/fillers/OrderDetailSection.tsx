@@ -8,13 +8,15 @@ import {Outlet, useNavigate} from "react-router-dom";
 import { useSelectedOrder} from "src/contexts/SelectedOrderContext";
 import OrderInfoBlock from "src/components/orders/OrderInfoBlock.tsx";
 
-export function OrderDetailSection({}) {
+interface OrderDetailsProps {
+    unselectOrder: () => void
+}
+export function OrderDetailSection({unselectOrder}: OrderDetailsProps) {
 
     const { doForceRefresh, loading, selectedOrder } = useSelectedOrder();
     const {user} = useAuth0();
     const updateStateApi = useApi(ordersApi.updateOrderStatus);
     const changeAssigneeApi = useApi(ordersApi.changeAssignee);
-    const navigate = useNavigate();
 
     const assignedToMe = selectedOrder?.assignee?.externalId === user?.sub;
 
@@ -29,26 +31,23 @@ export function OrderDetailSection({}) {
 
 
     const toggleAssigned = () => {
-        if (assignedToMe) {
-            return unassign();
-        } else {
-            return changeAssigneeApi.request(selectedOrder!.uuid, false);
-        }
+        return changeAssigneeApi.request(selectedOrder!.uuid, assignedToMe);
     }
 
     const changeState = (orderStatus: OrderStatus) => {
         if (orderStatus === OrderStatus.ACCEPTED
             || orderStatus === OrderStatus.REJECTED
             || orderStatus === OrderStatus.CANCELLED
-            || orderStatus === OrderStatus.NEEDS_INFO) {
+            || orderStatus === OrderStatus.NEEDS_INFO
+            || orderStatus === OrderStatus.COMPLETED) {
             updateStateApi.request(selectedOrder!.uuid, orderStatus)
         }
-        if (orderStatus !==  OrderStatus.ACCEPTED ) {
+        if (orderStatus === OrderStatus.REJECTED
+            || orderStatus === OrderStatus.CANCELLED ) {
             doForceRefresh();
-            navigate("/dashboard/filler");
+            unselectOrder();
         }
     }
-    const unassign = () => changeAssigneeApi.request(selectedOrder!.uuid, true);
 
 
     useEffect(() => {

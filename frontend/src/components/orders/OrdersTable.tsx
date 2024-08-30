@@ -8,7 +8,7 @@ import {DateTime} from "luxon";
 import StatusBadge from "src/components/StatusBadge.tsx";
 import {IconChevronDown, IconChevronUp, IconSelector} from "@tabler/icons-react";
 import classes from './TableSort.module.css';
-import {ColumnConfig, columns} from "src/components/orders/OrdersTableConfig.tsx";
+import {ColumnConfig, columns, OrdersView} from "src/components/orders/OrdersTableConfig.tsx";
 
 
 interface ThProps {
@@ -20,9 +20,9 @@ interface ThProps {
 }
 
 interface OrdersTable {
-    view: string,
+    view: OrdersView,
     onSelectRow?: (order: Order) => void,
-    selectedOrderId?: number,
+    selectedOrderIds?: number[],
     refreshInterval?: number,
     allowPagination?: boolean,
     showProgressIndicator?: boolean,
@@ -59,7 +59,7 @@ export function OrdersTable({
         view = 'default',
         refreshInterval = 30000,
         onSelectRow,
-        selectedOrderId,
+        selectedOrderIds,
         allowPagination = false,
         maxNumberOfRecords,
         showProgressIndicator = false,
@@ -72,14 +72,14 @@ export function OrdersTable({
     const refreshPercent = refreshInterval/100;
 
     const getOrdersApi =
-        view === 'public' ? useApi(ordersApi.getOrdersDashboardView) : useApi(ordersApi.getOrdersWithDetails);
+        view === OrdersView.PUBLIC ? useApi(ordersApi.getOrdersDashboardView) : useApi(ordersApi.getOrdersWithDetails);
     const [counter, setCounter] = useState(0);
     const [progress, setProgress] = useState(0);
 
     const [sortBy, setSortBy] = useState<string | null>('created');
     const [reverseSortDirection, setReverseSortDirection] = useState(true);
 
-    const visibleColumns = columns.filter(column => column.views?.includes(view));
+    const visibleColumns = columns.filter(column => column.views?.includes(view) || column.views?.includes(OrdersView.DEFAULT));
 
 
 
@@ -138,11 +138,11 @@ export function OrdersTable({
         return inProgressStatuses.indexOf(status) == -1 ? status : OrderStatus.IN_PROGRESS;
     }
 
-    const data = view === 'public' ? getOrdersApi.data : getOrdersApi.data?.content;
+    const data = view === OrdersView.PUBLIC ? getOrdersApi.data : getOrdersApi.data?.content;
     const rows = data?.map((order: Order) => (
         <Table.Tr  style={{cursor: onSelectRow ? 'pointer' : ''}}
                    key={order.uuid}
-                   bg={order.id === selectedOrderId ? '#F3f3f3' : ""}
+                   bg={selectedOrderIds && selectedOrderIds.indexOf(order.id) != -1 ? '#F3f3f3' : ""}
                    onClick={() => onSelectRow && onSelectRow(order)}
         >
             {visibleColumns.map((column: ColumnConfig,  index: number) =>{

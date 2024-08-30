@@ -1,43 +1,69 @@
-import {Grid, GridCol, rem, Tabs} from "@mantine/core";
+import {Box, Button, DEFAULT_THEME, Grid, GridCol, rem, Tabs} from "@mantine/core";
 import {Order, OrderStatus} from "src/models/types.tsx";
 import OrdersTable from "src/components/orders/OrdersTable.tsx";
-import { DEFAULT_THEME } from '@mantine/core';
 import {useMediaQuery} from "@mantine/hooks";
 import {useNavigate, useParams} from "react-router-dom";
 import {SelectedOrderProvider, useSelectedOrder} from "src/contexts/SelectedOrderContext.tsx";
 import OrderDetailSection from "src/components/fillers/OrderDetailSection.tsx";
+import {useState} from "react";
+import useApi from "src/hooks/useApi.tsx";
+import ordersApi from "src/services/ordersApi.tsx";
 
 export function RunnerDashboard() {
     const isMobile = useMediaQuery(`(max-width: ${DEFAULT_THEME.breakpoints.lg})`);
-    const navigate = useNavigate();
     const { id } = useParams();
     const { forceRefresh, selectedOrder } = useSelectedOrder();
-
+    const [ selectedOrders, setSelectedOrders ] = useState<number[]>([]);
+    const [ selectedOrderUuids, setSelectedOrderUuids ] = useState<string[]>([]);
+    const updateOrderStatusBulkApi = useApi(ordersApi.updateOrderStatusBulk);
 
     const onSelectOrder = (order: Order) => {
-        if (id && order.id === +id) {
-            navigate(`/dashboard/runner/`)
-        } else {
-            navigate(`/dashboard/runner/order/${order.id}`)
-        }
+        setSelectedOrders((prevSelectedOrders) => {
+            if (prevSelectedOrders.includes(order.id)) {
+                // Remove the order ID if it's already present
+                return prevSelectedOrders.filter(id => id !== order.id);
+            } else {
+                // Add the order ID if it's not present
+                return [...prevSelectedOrders, order.id];
+            }
+        });
+
+        setSelectedOrderUuids((prevSelectedOrders) => {
+            if (prevSelectedOrders.includes(order.uuid)) {
+                // Remove the order ID if it's already present
+                return prevSelectedOrders.filter(uuid => uuid !== order.uuid);
+            } else {
+                // Add the order ID if it's not present
+                return [...prevSelectedOrders, order.uuid];
+            }
+        });
+    }
+
+    function deliverSelected() {
+
+        updateOrderStatusBulkApi.request(selectedOrderUuids, OrderStatus.READY_FOR_CUSTOMER_PICKUP);
     }
 
     const iconStyle = { width: rem(12), height: rem(12) };
-    const orderTable = <OrdersTable
+    const orderTable = <><OrdersTable
         statusFilter={[OrderStatus.PACKED, OrderStatus.IN_TRANSIT]}
         view={"runner"}
         onSelectRow={onSelectOrder}
         showProgressIndicator={true}
         forceRefresh={forceRefresh}
-        selectedOrderId={id ? +id : null}
+        selectedOrderIds={selectedOrders}
         maxNumberOfRecords={10}
-    ></OrdersTable>;
+    ></OrdersTable>
+    { (selectedOrders?.length || 0 > 0) &&
+        <Button pos={"absolute"} radius={100} right={10} bottom={30} onClick={deliverSelected}>Mark Selected as Delivered</Button>}
+    </>;
+
 
     const orderDetailSection = <OrderDetailSection/>;
 
     return (
         <SelectedOrderProvider>
-            <>
+            <Box pos={"relative"}>
                 { isMobile && <Tabs defaultValue="gallery">
 
                 <Tabs.Panel value="gallery">
@@ -64,7 +90,7 @@ export function RunnerDashboard() {
                 </GridCol>
             </Grid>
                 }
-        </>
+        </Box>
     </SelectedOrderProvider>
     )
 }
