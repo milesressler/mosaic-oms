@@ -2,7 +2,7 @@ import {Box, Button, DEFAULT_THEME, Grid, GridCol, rem, Tabs} from "@mantine/cor
 import {Order, OrderStatus} from "src/models/types.tsx";
 import OrdersTable from "src/components/orders/OrdersTable.tsx";
 import {useMediaQuery} from "@mantine/hooks";
-import {useNavigate, useParams} from "react-router-dom";
+import { useParams} from "react-router-dom";
 import {SelectedOrderProvider, useSelectedOrder} from "src/contexts/SelectedOrderContext.tsx";
 import OrderDetailSection from "src/components/fillers/OrderDetailSection.tsx";
 import {useState} from "react";
@@ -12,11 +12,15 @@ import ordersApi from "src/services/ordersApi.tsx";
 export function RunnerDashboard() {
     const isMobile = useMediaQuery(`(max-width: ${DEFAULT_THEME.breakpoints.lg})`);
     const { id } = useParams();
+    const [ forceRefreshTable, setForceRefreshTable ] = useState(false);
     const { forceRefresh, selectedOrder } = useSelectedOrder();
     const [ selectedOrders, setSelectedOrders ] = useState<number[]>([]);
     const [ selectedOrderUuids, setSelectedOrderUuids ] = useState<string[]>([]);
     const updateOrderStatusBulkApi = useApi(ordersApi.updateOrderStatusBulk);
 
+    const triggerTableRefresh = () => {
+        setForceRefreshTable(prev => !prev);
+    }
     const onSelectOrder = (order: Order) => {
         setSelectedOrders((prevSelectedOrders) => {
             if (prevSelectedOrders.includes(order.id)) {
@@ -40,17 +44,15 @@ export function RunnerDashboard() {
     }
 
     function deliverSelected() {
-
         updateOrderStatusBulkApi.request(selectedOrderUuids, OrderStatus.READY_FOR_CUSTOMER_PICKUP);
     }
 
-    const iconStyle = { width: rem(12), height: rem(12) };
     const orderTable = <><OrdersTable
         statusFilter={[OrderStatus.PACKED, OrderStatus.IN_TRANSIT]}
         view={"runner"}
         onSelectRow={onSelectOrder}
         showProgressIndicator={true}
-        forceRefresh={forceRefresh}
+        forceRefresh={forceRefreshTable}
         selectedOrderIds={selectedOrders}
         maxNumberOfRecords={10}
     ></OrdersTable>
@@ -59,7 +61,7 @@ export function RunnerDashboard() {
     </>;
 
 
-    const orderDetailSection = <OrderDetailSection/>;
+    const orderDetailSection = <OrderDetailSection onUpdate={triggerTableRefresh}/>;
 
     return (
         <SelectedOrderProvider>

@@ -7,13 +7,19 @@ import {useNavigate, useParams} from "react-router-dom";
 import {SelectedOrderProvider, useSelectedOrder} from "src/contexts/SelectedOrderContext.tsx";
 import OrderDetailSection from "src/components/fillers/OrderDetailSection.tsx";
 import {OrdersView} from "src/components/orders/OrdersTableConfig.tsx";
+import {useState} from "react";
 
 export function OrderFillerDashboard() {
     const isMobile = useMediaQuery(`(max-width: ${DEFAULT_THEME.breakpoints.lg})`);
     const navigate = useNavigate();
     const { id } = useParams();
-    const { forceRefresh, selectedOrder } = useSelectedOrder();
+    const [ forceRefreshTable, setForceRefreshTable ] = useState(false);
+    const { forceRefresh, selectedOrder, doForceRefresh } = useSelectedOrder();
 
+
+    const triggerTableRefresh = () => {
+        setForceRefreshTable(prev => !prev);
+    }
 
     const onSelectOrder = (order: Order) => {
         if (id && order.id === +id) {
@@ -29,13 +35,13 @@ export function OrderFillerDashboard() {
         view={OrdersView.FILLER}
         onSelectRow={onSelectOrder}
         showProgressIndicator={true}
-        forceRefresh={forceRefresh}
+        forceRefresh={forceRefreshTable}
         selectedOrderIds={id ? [+id] : null}
         maxNumberOfRecords={10}
         disableSorting={true}
     ></OrdersTable>;
 
-    const orderDetailSection = <OrderDetailSection/>;
+    const orderDetailSection = <OrderDetailSection  onUpdate={triggerTableRefresh}/>;
 
     return (
         <SelectedOrderProvider>

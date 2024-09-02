@@ -5,7 +5,7 @@ import {
     Button,
     Group,
     Textarea,
-    Paper, Divider, LoadingOverlay, Text, Modal
+    Paper, Divider, LoadingOverlay, Text, Modal, Box
 } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import {useEffect, useState} from "react";
@@ -169,9 +169,9 @@ function OrderForm({order}: props) {
                 {itemFields.length === 0 && <Text c={'dimmed'}>No items added </Text> }
                 {itemFields}
 
-                <Group justify={"flex-end"} my="md">
-                    <Button onClick={addNewItem}>
-                        Add item
+                <Group grow justify={"stretch"} my="md" >
+                    <Button onClick={addNewItem} variant={"outline"}>
+                        <Text c={'dimmed'} size={'s'}>Add an item</Text>
                     </Button>
                 </Group>
 

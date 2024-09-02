@@ -6,6 +6,7 @@ import {useNavigate, useParams} from "react-router-dom";
 import {SelectedOrderProvider, useSelectedOrder} from "src/contexts/SelectedOrderContext.tsx";
 import OrderDetailSection from "src/components/fillers/OrderDetailSection.tsx";
 import {OrdersView} from "src/components/orders/OrdersTableConfig.tsx";
+import {useState} from "react";
 
 export function RunnerDashboard() {
     const isMobile = useMediaQuery(`(max-width: ${DEFAULT_THEME.breakpoints.lg})`);
@@ -21,19 +22,19 @@ export function RunnerDashboard() {
             navigate(`/dashboard/distributor/order/${order.id}`)
         }
     }
+    const [ forceRefreshTable, setForceRefreshTable ] = useState(false);
 
-    const iconStyle = { width: rem(12), height: rem(12) };
     const orderTable = <OrdersTable
         statusFilter={[OrderStatus.READY_FOR_CUSTOMER_PICKUP, OrderStatus.IN_TRANSIT]}
         view={OrdersView.DISTRIBUTOR}
         onSelectRow={onSelectOrder}
         showProgressIndicator={true}
-        forceRefresh={forceRefresh}
+        forceRefresh={forceRefreshTable}
         selectedOrderIds={id ? [+id] : null}
         maxNumberOfRecords={10}
     ></OrdersTable>;
 
-    const orderDetailSection = <OrderDetailSection/>;
+    const orderDetailSection = <OrderDetailSection onUpdate={() => setForceRefreshTable(p => !p)}/>;
 
     return (
         <SelectedOrderProvider>

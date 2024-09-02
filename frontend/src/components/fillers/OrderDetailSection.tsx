@@ -4,14 +4,15 @@ import useApi from "src/hooks/useApi.tsx";
 import ordersApi from "src/services/ordersApi.tsx";
 import {Box, LoadingOverlay, } from "@mantine/core";
 import {useAuth0} from "@auth0/auth0-react";
-import {Outlet, useNavigate} from "react-router-dom";
+import {Outlet} from "react-router-dom";
 import { useSelectedOrder} from "src/contexts/SelectedOrderContext";
 import OrderInfoBlock from "src/components/orders/OrderInfoBlock.tsx";
 
 interface OrderDetailsProps {
-    unselectOrder: () => void
+    unselectOrder?: () => void
+    onUpdate?: () => void
 }
-export function OrderDetailSection({unselectOrder}: OrderDetailsProps) {
+export function OrderDetailSection({unselectOrder,onUpdate}: OrderDetailsProps) {
 
     const { doForceRefresh, loading, selectedOrder } = useSelectedOrder();
     const {user} = useAuth0();
@@ -23,6 +24,9 @@ export function OrderDetailSection({unselectOrder}: OrderDetailsProps) {
 
     useEffect(() => {
         doForceRefresh();
+        if (onUpdate) {
+            onUpdate();
+        }
     }, [updateStateApi.data, changeAssigneeApi.data]);
 
     const isLoading = changeAssigneeApi.loading ||
@@ -45,7 +49,10 @@ export function OrderDetailSection({unselectOrder}: OrderDetailsProps) {
         if (orderStatus === OrderStatus.REJECTED
             || orderStatus === OrderStatus.CANCELLED ) {
             doForceRefresh();
-            unselectOrder();
+            if (unselectOrder) {
+                unselectOrder();
+            }
+            onUpdate();
         }
     }
 
