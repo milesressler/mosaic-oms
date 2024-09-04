@@ -43,6 +43,7 @@ const routes = [
                 isMonitor: true,
                 title: 'Customer Monitor',
                 showInNavBar: true,
+                hideNotifications: true,
             },
             {
                 key: 'taker-dashboard',

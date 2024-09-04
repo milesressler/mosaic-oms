@@ -9,13 +9,13 @@ import org.springframework.stereotype.Controller;
 @Controller
 public class NotificationController {
     @MessageMapping("/order")
-    @SendTo("/topic/orders")
+    @SendTo("/topic/orders/created")
     public OrderNotification send(final OrderNotification notification) {
         return notification;
     }
 
     @MessageMapping("/authorize")
-    @SendTo("/topic/orders")
+    @SendTo("/topic/orders/created")
     public String send(final String notification) {
         return "got it";
     }

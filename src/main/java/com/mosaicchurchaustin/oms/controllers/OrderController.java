@@ -8,7 +8,6 @@ import com.mosaicchurchaustin.oms.data.request.UpdateOrderStatusBulkRequest;
 import com.mosaicchurchaustin.oms.data.response.OrderDetailResponse;
 import com.mosaicchurchaustin.oms.data.response.OrderFeedResponse;
 import com.mosaicchurchaustin.oms.data.response.OrderResponse;
-import com.mosaicchurchaustin.oms.data.sockets.OrderNotification;
 import com.mosaicchurchaustin.oms.services.OrderService;
 import com.mosaicchurchaustin.oms.services.sockets.OrderNotifier;
 import jakarta.validation.Valid;
@@ -45,7 +44,7 @@ public class OrderController {
     public OrderDetailResponse submitOrder(@Valid @RequestBody CreateOrderRequest createOrderRequest) {
         // Better validation/error handler
         final OrderEntity orderEntity = orderService.createOrder(createOrderRequest);
-        orderNotifier.notifyOrderCreated(new OrderNotification(orderEntity.getId()));
+        orderNotifier.notifyOrderCreated(orderEntity);
         return OrderDetailResponse.from(orderEntity);
     }
 
@@ -99,6 +98,9 @@ public class OrderController {
             @RequestBody UpdateOrderStatusBulkRequest request
             ){
         final List<OrderEntity> updatedOrders = orderService.updateOrderStatusBulk(request.orderUuids(), orderState);
+        updatedOrders.forEach(order ->
+                orderNotifier.notifyOrderStatusChanged(order, order.getLastStatusChange().getUserEntity()));
+
         return updatedOrders.stream().map(OrderDetailResponse::from).toList();
     }
 
@@ -109,6 +111,7 @@ public class OrderController {
             @PathVariable("state") String orderState
     ){
         final OrderEntity orderEntity = orderService.updateOrderStatus(orderUuid, orderState);
+        orderNotifier.notifyOrderStatusChanged(orderEntity, orderEntity.getLastStatusChange().getUserEntity());
         return OrderDetailResponse.from(orderEntity);
     }
 
@@ -121,6 +124,7 @@ public class OrderController {
         final OrderEntity orderEntity = unassign
                 ? orderService.unassignOrder(orderUuid)
                 : orderService.assignOrder(orderUuid);
+        orderNotifier.notifyOrderAssigneeChanged(orderEntity);
         return OrderDetailResponse.from(orderEntity);
     }
 

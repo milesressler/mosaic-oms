@@ -9,7 +9,17 @@ export interface Order extends BaseObject {
     orderStatus: OrderStatus;
     customer: Customer;
     lastStatusUpdate: string;
+}
 
+export interface OrderNotification {
+    orderUuid: string;
+    orderId: number;
+    orderStatus: OrderStatus;
+    assigneeExtId: string;
+    assigneeName: string;
+    userName: string;
+    userExtId: string;
+    order: Order;
 }
 
 export interface OrderDetails extends Order {

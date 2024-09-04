@@ -1,4 +1,4 @@
-import {ScrollArea, AppShell, Stack} from '@mantine/core';
+import {ScrollArea, AppShell, Stack, Switch} from '@mantine/core';
 import classes from './NavbarNested.module.css';
 import {LinksGroup} from "src/components/layout/navbar/NavBarLinksGroup.tsx";
 import UserCard from "src/components/auth0/UserCard.tsx";
@@ -7,12 +7,15 @@ import {LogoutButton} from "src/components/auth0/LogoutButton.tsx";
 import {useAuth0} from "@auth0/auth0-react";
 import LoginButton from "src/components/auth0/LoginButton.tsx";
 import {getRolesFromAuth0User} from "src/components/auth0/Auth0Utils.tsx";
+import {usePreferences} from "src/contexts/PreferencesContext.tsx";
 
 
 export function NavbarNested() {
 
     const { isAuthenticated, user } = useAuth0();
     const userRoles = getRolesFromAuth0User(user); // Adjust namespace accordingly
+
+    const { notificationsEnabled, setNotificationsEnabled } = usePreferences();
     const hasRequiredRole = (requiredRole: string) => {
         if (!requiredRole) return true;
         return userRoles.includes(requiredRole.toLowerCase());
@@ -63,6 +66,14 @@ export function NavbarNested() {
                 <div className={classes.linksInner}>{links}</div>
             </ScrollArea>
 
+
+            <Switch
+                my={10}
+                label={'Notifications'}
+                checked={notificationsEnabled}
+                onChange={(event) =>
+                    setNotificationsEnabled(event.currentTarget.checked)}
+            ></Switch>
             <Stack className={classes.footer} hiddenFrom={ 'md'}>
                 { isAuthenticated && <UserCard /> }
                 { isAuthenticated && <LogoutButton/> }

@@ -46,7 +46,7 @@ export const SelectedOrderProvider: React.FC<{ children: ReactNode }> = ({ child
 
 
     return (
-        <SelectedOrderContext.Provider value={{ selectedOrder, doForceRefresh, loading: orderDetailApi.loading }}>
+        <SelectedOrderContext.Provider value={{  selectedOrder, doForceRefresh, loading: orderDetailApi.loading }}>
             {children}
         </SelectedOrderContext.Provider>
     );
