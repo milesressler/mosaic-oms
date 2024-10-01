@@ -5,6 +5,13 @@
   - Docker
   - Java
   - Node
+  - application.yml: add this file to the ./resources folder
+
+## Setup
+  - Make sure you have docker running
+  - ./gradlew bootRun 
+  - npm run dev from ./frontend to get a working app at http://localhost:5173
+
 
 
 ### Rebuilding proto files
