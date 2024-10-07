@@ -12,6 +12,8 @@ const getUsers = (page: number, size: number) =>
 
 const getUser = (id: string) =>
     client.get<UserDetail>(`/admin/user/${id}`);
+const resendInvite = (id: string) =>
+    client.post<any>(`/admin/user/${id}/invite`);
 
 
 export default {
@@ -19,4 +21,5 @@ export default {
     getUsers,
     getUser,
     updateUser,
+    resendInvite,
 };

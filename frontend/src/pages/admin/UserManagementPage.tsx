@@ -25,6 +25,7 @@ export function UserManagementPage() {
     const getUsersApi = useApi(AdminUserApi.getUsers);
     const getUserDetailApi = useApi(AdminUserApi.getUser);
     const createUserApi = useApi(AdminUserApi.createUser);
+    const resendInviteApi = useApi(AdminUserApi.resendInvite);
     const [activePage, setPage] = useState(1);
     const [selectedUser, setSelectedUser] = useState<User|null>(null)
     const [inviteModal, setInviteModal] = useState(false);
@@ -49,6 +50,9 @@ export function UserManagementPage() {
     const inviteUser = (email: string, name: string) => {
         createUserApi.request(email, name);
     }
+    const resendInvite = (user: User) => {
+        resendInviteApi.request(user.userId);
+    }
 
     const rows = getUsersApi.data?.content?.map((user) => (
         <Table.Tr style={{cursor: 'pointer'}} bg={selectedUser?.userId === user.userId ? "#F4f4f4" : ''} key={user.userId} onClick={() => selectedUser?.userId === user.userId ? setSelectedUser(null) : setSelectedUser(user)}>
@@ -56,7 +60,10 @@ export function UserManagementPage() {
             <Table.Td>{user.name}</Table.Td>
             <Table.Td>{DateTime.fromMillis(user.created).toLocaleString(DateTime.DATETIME_SHORT)}</Table.Td>
             <Table.Td><Text c='dimmed'>{user.lastLogin && DateTime.fromMillis(user.lastLogin).toRelative()}</Text></Table.Td>
-            <Table.Td>{user.emailVerified && <IconCheck color={'green'} size={20}/>}</Table.Td>
+            <Table.Td>
+                {user.emailVerified && <IconCheck color={'green'} size={20}/>}
+                { !user.emailVerified && <Button size={'xs'} variant={'outline'} loading={resendInviteApi.loading} onClick={() => resendInvite(user)} >Resend</Button> }
+            </Table.Td>
             {/*<Table.Td><IconPencil color={'grey'} onClick={() => console.log("Edit")}/></Table.Td>*/}
         </Table.Tr>
     ));

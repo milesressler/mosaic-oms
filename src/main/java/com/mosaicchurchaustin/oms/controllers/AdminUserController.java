@@ -48,6 +48,13 @@ public class AdminUserController {
 
 
     @ResponseBody
+    @PostMapping(path = "/user/{id}/invite",produces = MediaType.APPLICATION_JSON_VALUE)
+    public void sendInvite(@PathVariable("id") final String id) throws Auth0Exception {
+        adminUserService.sendInvite(id);
+    }
+
+
+    @ResponseBody
     @GetMapping(path = "/user/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public AdminUserDetailResponse getUserDetails(@PathVariable("id") final String id) throws Auth0Exception {
         return adminUserService.getUser(id);
