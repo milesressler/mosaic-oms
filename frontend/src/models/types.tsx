@@ -33,7 +33,7 @@ export interface OrderDetails extends Order {
     };
     specialInstructions: string;
     history: {
-        user: string;
+        user: BasicUser;
         status: OrderStatus;
         timestamp: string;
     }[];

@@ -56,8 +56,7 @@ public class OrderDetailResponse extends OrderResponse {
     @Builder
     @Data
     public static class History {
-        private String user;
-        private String assigneeExt;
+        private UserResponse user;
         private OrderStatus status;
         private OrderStatus previousStatus;
         private Calendar timestamp;
@@ -66,8 +65,7 @@ public class OrderDetailResponse extends OrderResponse {
             return History.builder()
                     .status(orderHistoryEntity.getOrderStatus())
                     .previousStatus(orderHistoryEntity.getPreviousOrderStatus())
-                    .user(orderHistoryEntity.getUserEntity().getName())
-                    .assigneeExt(orderHistoryEntity.getUserEntity().getExternalId())
+                    .user(UserResponse.from(orderHistoryEntity.getUserEntity()))
                     .timestamp(orderHistoryEntity.getTimestamp())
                     .build();
 
