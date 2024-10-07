@@ -60,7 +60,8 @@ function OrderForm({order}: props) {
 
     const form = useForm({
         initialValues: {
-            customerName: '',
+            customerFirstName: '',
+            customerLastName: '',
             phoneNumber: '',
             optInNotifications: false,
             specialInstructions: '',
@@ -68,7 +69,8 @@ function OrderForm({order}: props) {
         },
 
         validate: {
-            customerName: (value) => !value ? 'Customer name is required' : null,
+            customerFirstName: (value) => !value ? 'First name is required' : null,
+            customerLastName: (value) => !value ? 'Last name is required' : null,
             items: (value) => value.length === 0 ? 'At least one item is required' : null,
         },
     });
@@ -83,7 +85,8 @@ function OrderForm({order}: props) {
     const submitOrder = (values: any) => {
         form.validate();
         const request: OrderRequest = {
-            customerName: values.customerName,
+            customerFirstName: values.customerFirstName,
+            customerLastName: values.customerLastName,
             customerPhone: values.customerPhone,
             specialInstructions: values.specialInstructions,
             optInNotifications: values.optInNotifications,
@@ -147,10 +150,16 @@ function OrderForm({order}: props) {
             </Modal> }
             <form onSubmit={form.onSubmit((values) => submitOrder(values))}>
                 <TextInput
-                    label="Customer Name"
-                    placeholder="First name and last initial"
+                    label="First Name"
+                    placeholder="First name"
                     required
-                    {...form.getInputProps('customerName')}
+                    {...form.getInputProps('customerFirstName')}
+                />
+                <TextInput
+                    label="Last Name"
+                    placeholder="Last initial"
+                    required
+                    {...form.getInputProps('customerLastName')}
                 />
                 <Divider my="md" />
                 {/*<TextInput*/}

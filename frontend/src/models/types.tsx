@@ -110,7 +110,8 @@ export interface ItemRequest {
 }
 
 export interface OrderRequest {
-    customerName: string;
+    customerFirstName: string;
+    customerLastName: string;
     customerPhone?: string;
     specialInstructions?: string;
     optInNotifications?: boolean;

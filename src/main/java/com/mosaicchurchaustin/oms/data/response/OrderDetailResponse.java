@@ -33,7 +33,7 @@ public class OrderDetailResponse extends OrderResponse {
                 .orderStatus(orderEntity.getOrderStatus())
                 .customer(
                         OrderResponse.Customer.builder()
-                                .name(orderEntity.getCustomer().getName())
+                                .name(orderEntity.getCustomerFirstName() + orderEntity.getCustomerLastName())
                                 .build()
                 )
                 .assignee(
