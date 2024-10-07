@@ -1,11 +1,15 @@
 package com.mosaicchurchaustin.oms.data.response;
 
+import java.util.Calendar;
+
 import com.mosaicchurchaustin.oms.data.entity.order.OrderEntity;
 import com.mosaicchurchaustin.oms.data.entity.order.OrderStatus;
-import lombok.*;
-import lombok.experimental.SuperBuilder;
 
-import java.util.Calendar;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.Getter;
+import lombok.experimental.SuperBuilder;
 
 @Data
 @SuperBuilder
@@ -29,7 +33,7 @@ public class OrderResponse {
                 .orderStatus(orderEntity.getOrderStatus())
                 .customer(
                         Customer.builder()
-                                .name(orderEntity.getCustomer().getName())
+                                .name(orderEntity.getCustomerFirstName() + orderEntity.getCustomerLastName())
                                 .build()
                 )
                 .build();

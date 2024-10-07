@@ -1,9 +1,23 @@
 package com.mosaicchurchaustin.oms.services;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.stereotype.Service;
+
 import com.mosaicchurchaustin.oms.data.entity.BaseEntity;
-import com.mosaicchurchaustin.oms.data.entity.CustomerEntity;
 import com.mosaicchurchaustin.oms.data.entity.ItemEntity;
 import com.mosaicchurchaustin.oms.data.entity.OrderItemEntity;
+import static com.mosaicchurchaustin.oms.data.entity.OrderItemEntity.ENTITY_NAME;
 import com.mosaicchurchaustin.oms.data.entity.order.OrderEntity;
 import com.mosaicchurchaustin.oms.data.entity.order.OrderEventType;
 import com.mosaicchurchaustin.oms.data.entity.order.OrderHistoryEntity;
@@ -19,22 +33,8 @@ import com.mosaicchurchaustin.oms.repositories.ItemRepository;
 import com.mosaicchurchaustin.oms.repositories.OrderHistoryRepository;
 import com.mosaicchurchaustin.oms.repositories.OrderItemRepository;
 import com.mosaicchurchaustin.oms.repositories.OrderRepository;
+
 import jakarta.transaction.Transactional;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.stereotype.Service;
-
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import static com.mosaicchurchaustin.oms.data.entity.OrderItemEntity.ENTITY_NAME;
 
 @Service
 public class OrderService {
@@ -43,7 +43,10 @@ public class OrderService {
     OrderRepository orderRepository;
 
     @Autowired
-    CustomerRepository customerRepository;
+    CustomerRepository firstNameRepository;
+
+    @Autowired
+    CustomerRepository lastNameRepository;
 
     @Autowired
     ItemRepository itemRepository;
@@ -202,9 +205,12 @@ public class OrderService {
         }
 
         // TODO figure out what can be updated - ie, once being fulfilled, can items still be changed?
-        if (StringUtils.isNotBlank(request.customerName())) {
-            final CustomerEntity customer = getOrCreateCustomer(request.customerName());
-            orderEntity.setCustomer(customer);
+        if (StringUtils.isNotBlank(request.customerFirstName())) {
+            orderEntity.setCustomerFirstName(request.customerFirstName());
+        }
+
+        if (StringUtils.isNotBlank(request.customerLastName())) {
+            orderEntity.setCustomerLastName(request.customerLastName());
         }
 
         if (request.removeItems() != null && !request.removeItems().isEmpty()) {
@@ -228,18 +234,21 @@ public class OrderService {
     @Transactional
     public OrderEntity createOrder(final CreateOrderRequest request) {
         final UserEntity userEntity = userService.currentUser();
-        final CustomerEntity customer = getOrCreateCustomer(request.customerName());
 
         final Boolean optInNotifications = request.optInNotifications() != null && request.optInNotifications();
-        final OrderEntity orderEntity = orderRepository.save(OrderEntity.builder()
-                .customer(customer)
-                .optInNotifications(optInNotifications)
-                .specialInstructions(StringUtils.isBlank(request.specialInstructions())
-                        ? null : request.specialInstructions().trim())
-                .phoneNumber(StringUtils.isBlank(request.customerPhone())
-                        ? null : request.customerPhone())
-                .orderStatus(OrderStatus.PENDING_ACCEPTANCE)
-                .build());
+        final OrderEntity orderEntity = orderRepository.save(
+                OrderEntity.builder()
+                    .customerFirstName(StringUtils.isBlank(request.customerFirstName())
+                    ? null : request.customerFirstName().trim())
+                    .customerLastName(StringUtils.isBlank(request.customerLastName())
+                    ? null : request.customerLastName().trim())
+                    .optInNotifications(optInNotifications)
+                    .specialInstructions(StringUtils.isBlank(request.specialInstructions())
+                            ? null : request.specialInstructions().trim())
+                    .phoneNumber(StringUtils.isBlank(request.customerPhone())
+                            ? null : request.customerPhone())
+                    .orderStatus(OrderStatus.PENDING_ACCEPTANCE)
+                    .build());
 
         addItemsToOrder(orderEntity, request.items());
 
@@ -257,14 +266,23 @@ public class OrderService {
         return orderEntity;
     }
 
-    private CustomerEntity getOrCreateCustomer(final String nameInput) {
-        return customerRepository.findByName(nameInput.trim())
-                .orElseGet(() -> {
-                    final String name = nameInput.isBlank()
-                            ? null : nameInput.trim();
-                    return customerRepository.save(new CustomerEntity(name));
-                });
-    }
+    // private FirstNameEntity getOrCreateFirstName(final String nameInput) {
+    //     return firstNameRepository.findByName(nameInput.trim())
+    //             .orElseGet(() -> {
+    //                 final String name = nameInput.isBlank()
+    //                         ? null : nameInput.trim();
+    //                 return firstNameRepository.save(new FirstNameEntity(name));
+    //             });
+    // }
+
+    // private LastNameEntity getOrCreateLastName(final String nameInput) {
+    //     return customerRepository.findByName(nameInput.trim())
+    //             .orElseGet(() -> {
+    //                 final String name = nameInput.isBlank()
+    //                         ? null : nameInput.trim();
+    //                 return customerRepository.save(new CustomerEntity(name));
+    //             });
+    // }
 
     private void addItemsToOrder(final OrderEntity orderEntity, List<OrderItemRequest> items) {
         for (final OrderItemRequest item: items) {

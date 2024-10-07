@@ -1,11 +1,19 @@
 package com.mosaicchurchaustin.oms.data.entity.order;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+
+import org.apache.commons.lang3.StringUtils;
+import org.hibernate.annotations.JoinFormula;
+
 import com.mosaicchurchaustin.oms.data.entity.BaseUuidEntity;
-import com.mosaicchurchaustin.oms.data.entity.CustomerEntity;
 import com.mosaicchurchaustin.oms.data.entity.OrderItemEntity;
 import com.mosaicchurchaustin.oms.data.entity.user.UserEntity;
 import com.mosaicchurchaustin.oms.services.audit.AuditLogListener;
 import com.mosaicchurchaustin.oms.services.audit.Auditable;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
@@ -23,13 +31,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
-import org.apache.commons.lang3.StringUtils;
-import org.hibernate.annotations.JoinFormula;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
 
 @Entity
 @Table(name = "orders")
@@ -44,7 +45,12 @@ public class OrderEntity extends BaseUuidEntity implements Auditable {
     public static String ENTITY_NAME = "Order";
 
     @ManyToOne(optional = false)
-    CustomerEntity customer;
+    // @Column(name = "First_Name")
+    String customerFirstName;
+    
+    // @ManyToOne(optional = false)
+    @Column(name = "Last_Name")
+    String customerLastName;
 
     @ManyToOne()
     @JoinColumn(name = "assignee")

@@ -1,6 +1,9 @@
 package com.mosaicchurchaustin.oms.data.entity.order;
 
+import java.util.Calendar;
+
 import com.mosaicchurchaustin.oms.data.entity.user.UserEntity;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -17,8 +20,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
-
-import java.util.Calendar;
 
 @Entity
 @Table(name = "order_history")
