@@ -57,6 +57,9 @@ public class OrderService {
     @Autowired
     UserService userService;
 
+    @Autowired
+    GroupMeService groupMeService;
+
     public List<OrderHistoryEntity> getOrderHistory() {
         final Pageable pageable = PageRequest.of(0, 20, Sort.by(Sort.Order.desc("timestamp")));
 
@@ -254,6 +257,8 @@ public class OrderService {
         orderEntity.getOrderHistoryEntityList().add(createHistoryItem);
         orderEntity.setLastStatusChange(createHistoryItem);
 
+        groupMeService.postMessage(tryGetSerializedOrder(orderEntity));
+
         return orderEntity;
     }
 
@@ -279,6 +284,44 @@ public class OrderService {
                     ))
             );
         }
+    }
+
+    public String tryGetSerializedOrder(OrderEntity order) {
+        try {
+            return getSerializedOrder(order);
+        } catch (Exception e) {
+            return "";
+        }
+    }
+
+    private String getSerializedOrder(OrderEntity order) {
+        StringBuilder sb = new StringBuilder();
+
+        // Add customer name
+        sb.append("Friend: ").append(order.getCustomer().getName()).append("\n\n");
+
+        // Add order items
+        sb.append("Order Items:\n");
+        for (OrderItemEntity orderItem : order.getOrderItemList()) {
+            sb.append("- ")
+              .append("x").append(orderItem.getQuantity())
+              .append(" ")
+              .append(orderItem.getItemEntity().getDescription());
+
+            // Include item-specific notes if present
+            if (orderItem.getNotes() != null && !orderItem.getNotes().isEmpty()) {
+                sb.append(" [").append(orderItem.getNotes()).append("]");
+            }
+
+            sb.append("\n");
+        }
+
+        // Add special instructions for the order if any
+        if (order.getSpecialInstructions() != null && !order.getSpecialInstructions().isEmpty()) {
+            sb.append("\nSpecial Instructions: ").append(order.getSpecialInstructions()).append("\n");
+        }
+
+        return sb.toString();
     }
 
 }
