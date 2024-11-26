@@ -11,6 +11,7 @@ import jakarta.persistence.Transient;
 import lombok.*;
 
 import java.util.Map;
+import java.util.Optional;
 
 @Entity
 @Table(name = "users")
@@ -55,8 +56,8 @@ public class UserEntity extends BaseUuidEntity implements Auditable {
     @Override
     public Map<String, String> getCurrentState() {
         return Map.of(
-                "name", name,
-                "username", username
+                "name", Optional.ofNullable(name).orElse(""),
+                "username", Optional.ofNullable(username).orElse("")
         );
     }
 

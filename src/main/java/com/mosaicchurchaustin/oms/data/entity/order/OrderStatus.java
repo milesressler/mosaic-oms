@@ -1,8 +1,8 @@
 package com.mosaicchurchaustin.oms.data.entity.order;
 
-import com.mosaicchurchaustin.oms.exception.EntityNotFoundException;
-
 import java.util.Arrays;
+
+import com.mosaicchurchaustin.oms.exception.EntityNotFoundException;
 
 public enum OrderStatus {
 
@@ -13,7 +13,6 @@ public enum OrderStatus {
     PACKED,
     IN_TRANSIT,
     READY_FOR_CUSTOMER_PICKUP,
-    REJECTED,
     CANCELLED,
     COMPLETED;
 
