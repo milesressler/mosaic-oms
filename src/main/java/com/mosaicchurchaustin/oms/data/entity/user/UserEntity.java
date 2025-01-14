@@ -8,9 +8,14 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.util.Map;
+import java.util.Optional;
 
 @Entity
 @Table(name = "users")
@@ -55,8 +60,8 @@ public class UserEntity extends BaseUuidEntity implements Auditable {
     @Override
     public Map<String, String> getCurrentState() {
         return Map.of(
-                "name", name,
-                "username", username
+                "name", Optional.ofNullable(name).orElse(""),
+                "username", Optional.ofNullable(username).orElse("")
         );
     }
 

@@ -54,6 +54,7 @@ export interface User extends BasicUser{
     nickname: string,
     picture: string,
     userId: string,
+    email: string,
     emailVerified: boolean,
     created: number,
     lastLogin: number,

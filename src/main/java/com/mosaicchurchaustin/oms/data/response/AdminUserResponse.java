@@ -13,6 +13,7 @@ import java.util.Optional;
 public class AdminUserResponse {
     private String name;
     private String picture;
+    private String email;
     private Long created;
     private String userId;
     private Boolean emailVerified;
@@ -27,6 +28,7 @@ public class AdminUserResponse {
                 .userId(user.getId())
                 .emailVerified(user.isEmailVerified())
                 .nickname(user.getNickname())
+                .email(user.getEmail())
                 .lastLogin(Optional.ofNullable(user.getLastLogin()).map(Date::getTime).orElse(null))
                 .build();
     }
