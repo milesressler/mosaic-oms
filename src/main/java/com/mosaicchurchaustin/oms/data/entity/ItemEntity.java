@@ -17,7 +17,7 @@ import lombok.Setter;
 import lombok.SneakyThrows;
 import lombok.ToString;
 import org.hibernate.annotations.BatchSize;
-import org.hibernate.annotations.Where;
+import org.hibernate.annotations.SQLRestriction;
 
 import java.util.HashMap;
 import java.util.List;
@@ -31,7 +31,7 @@ import java.util.Map;
 @NoArgsConstructor
 @ToString
 @EntityListeners(AuditLogListener.class)
-@Where(clause = "removed = false")
+@SQLRestriction("removed = false")
 public class ItemEntity extends BaseEntity implements Auditable {
 
     public static String ENTITY_TYPE = "Item";
@@ -58,6 +58,7 @@ public class ItemEntity extends BaseEntity implements Auditable {
 
     @BatchSize(size = 100)
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "itemEntity")
+    @ToString.Exclude
     List<OrderItemEntity> orderItems;
 
     @Transient

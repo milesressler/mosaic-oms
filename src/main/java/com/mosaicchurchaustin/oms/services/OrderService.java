@@ -57,6 +57,9 @@ public class OrderService {
     @Autowired
     UserService userService;
 
+    @Autowired
+    GroupMeService groupMeService;
+
     public List<OrderHistoryEntity> getOrderHistory() {
         final Pageable pageable = PageRequest.of(0, 20, Sort.by(Sort.Order.desc("timestamp")));
 
@@ -254,6 +257,8 @@ public class OrderService {
         orderEntity.getOrderHistoryEntityList().add(createHistoryItem);
         orderEntity.setLastStatusChange(createHistoryItem);
 
+        groupMeService.handleOrderCreated(orderEntity);
+
         return orderEntity;
     }
 
@@ -280,5 +285,6 @@ public class OrderService {
             );
         }
     }
+
 
 }
