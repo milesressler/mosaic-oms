@@ -169,4 +169,8 @@ export interface AuditLog {
     timestamp: string
 }
 
+export interface FeatureConfig {
+    groupMeEnabled: boolean
+}
+
 

@@ -20,6 +20,8 @@ spring:
         jwt:
           issuer-uri: "https://${auth0.domain}/"
           audiences: "http://localhost"
+  flyway:
+    out-of-order: true
 
 auth0:
   domain: dev-milessmiles.auth0.com

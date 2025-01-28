@@ -103,7 +103,6 @@ public class OrderEntity extends BaseUuidEntity implements Auditable {
     @Override
     public void stashState() {
         this.previousState = getCurrentState();
-
     }
 
     @Override
