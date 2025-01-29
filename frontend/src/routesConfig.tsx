@@ -17,6 +17,7 @@ import OrderItemListView from "src/components/fillers/OrderItemListView.tsx";
 import {SelectedOrderProvider} from "src/contexts/SelectedOrderContext.tsx";
 import RunnerDashboard from "src/pages/dashboards/RunnerDashboard.tsx";
 import DistributorDashboard from "src/pages/dashboards/DistributorDashboard.tsx";
+import AdminSettingsPage from "src/pages/admin/AdminSettingsPage.tsx";
 
 
 const routes = [
@@ -146,6 +147,13 @@ const routes = [
                 element: OrderDetailsPage,
                 title: 'Order Details',
                 showInNavBar: false,
+            },
+            {
+                key: 'settings',
+                path: '/settings',
+                element: AdminSettingsPage,
+                title: 'Settings',
+                showInNavBar: true,
             },
         ],
     },

@@ -60,6 +60,9 @@ public class OrderService {
     @Autowired
     GroupMeService groupMeService;
 
+    @Autowired
+    FeaturesService featuresService;
+
     public List<OrderHistoryEntity> getOrderHistory() {
         final Pageable pageable = PageRequest.of(0, 20, Sort.by(Sort.Order.desc("timestamp")));
 
@@ -257,7 +260,9 @@ public class OrderService {
         orderEntity.getOrderHistoryEntityList().add(createHistoryItem);
         orderEntity.setLastStatusChange(createHistoryItem);
 
-        groupMeService.handleOrderCreated(orderEntity);
+        if (featuresService.getFeaturesConfig().isGroupMeEnabled()) {
+            groupMeService.handleOrderCreated(orderEntity);
+        }
 
         return orderEntity;
     }

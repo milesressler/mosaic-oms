@@ -70,7 +70,6 @@ public class Auth0ClientConfig {
         // Expires in 86400 seconds
         @Scheduled(fixedRate = 20, timeUnit = TimeUnit.HOURS)
         void updateToken() {
-
             managementAPI.setApiToken(getManagementApiToken());
         }
 
