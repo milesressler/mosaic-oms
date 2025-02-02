@@ -6,6 +6,7 @@ import jakarta.validation.Valid;
 @Valid
 public record UpdateItemRequest(
         Boolean suggestedItem,
+        String category,
         String placeholder
 ) {
 }

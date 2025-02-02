@@ -132,6 +132,7 @@ export interface Item {
     id: number;
     placeholder: string;
     description: string;
+    category: string;
 }
 
 export interface AdminItem extends Item{
@@ -143,6 +144,7 @@ export interface AdminItem extends Item{
 export interface UpdateItemRequest {
     suggestedItem?: boolean
     placeholder?: string
+    category?: string
 }
 export interface OrderItem {
     description: string;

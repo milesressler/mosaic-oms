@@ -116,6 +116,7 @@ export function ItemsManagementPage() {
         <>
         <Table.Tr key={item.id} pos={'relative'}>
             <Table.Td>{item.description}</Table.Td>
+            <Table.Td>{ item.category}</Table.Td>
             <Table.Td><><EditableCell initialValue={item.placeholder}
                                     onSave={(newValue: string) => handleSavePlaceholder(item.id, newValue)}
                                     onCancel={handleCancel}
@@ -143,6 +144,7 @@ export function ItemsManagementPage() {
                 <Table.Thead>
                 <Table.Tr>
                     <Table.Th>Description</Table.Th>
+                    <Table.Th>Category</Table.Th>
                     <Table.Th>Placeholder</Table.Th>
                     <Table.Th>Suggested</Table.Th>
                     <Table.Th>Filled / Ordered</Table.Th>

@@ -5,6 +5,8 @@ import com.mosaicchurchaustin.oms.services.audit.Auditable;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
@@ -49,6 +51,11 @@ public class ItemEntity extends BaseEntity implements Auditable {
     String description;
 
     @Setter
+    @Enumerated(EnumType.STRING) // Save enum as its name
+    @Column(name = "category")
+    ItemCategory category;
+
+    @Setter
     @Column(name = "removed", nullable = false)
     boolean removed;
 
@@ -78,6 +85,9 @@ public class ItemEntity extends BaseEntity implements Auditable {
         }
         if (this.placeholder != null) {
             state.put("placeholder", placeholder);
+        }
+        if (this.category != null) {
+            state.put("category", category.name());
         }
         return state;
     }

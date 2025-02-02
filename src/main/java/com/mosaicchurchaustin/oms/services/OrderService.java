@@ -272,16 +272,13 @@ public class OrderService {
                 .orElseGet(() -> {
                     final String name = nameInput.isBlank()
                             ? null : nameInput.trim();
-                    return customerRepository.save(new CustomerEntity(name));
+                    return customerRepository.save(new CustomerEntity(name, null));
                 });
     }
 
     private void addItemsToOrder(final OrderEntity orderEntity, List<OrderItemRequest> items) {
         for (final OrderItemRequest item: items) {
-            final ItemEntity itemEntity = itemRepository.findByDescription(item.description()).orElseGet(() ->
-                    itemRepository.findByDescriptionAndRemovedIsTrue(item.description()).orElseGet(() ->
-                        itemRepository .save(ItemEntity.builder().description(item.description()).isSuggestedItem(false).build())
-            ));
+            final ItemEntity itemEntity = queryForItemByPriority(item);
 
             orderEntity.getOrderItemList().add(
                     orderItemRepository.save(new OrderItemEntity(
@@ -289,6 +286,14 @@ public class OrderService {
                     ))
             );
         }
+    }
+
+    private ItemEntity queryForItemByPriority(OrderItemRequest item) {
+        return itemRepository.findByDescription(item.description())
+                .or(() -> itemRepository.findByDescriptionAndRemovedIsTrue(item.description()))
+                .orElseGet(() ->
+                    itemRepository.save(ItemEntity.builder().description(item.description()).isSuggestedItem(false).build())
+        );
     }
 
 

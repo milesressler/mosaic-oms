@@ -5,6 +5,8 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 import lombok.*;
 
+import java.util.Calendar;
+
 @Entity
 @Table(name = "customers")
 @Getter
@@ -23,4 +25,7 @@ public class CustomerEntity extends BaseUuidEntity {
 
     @Column(name = "name")
     String name;
+
+    @Column(name = "shower_waiver_completed")
+    Calendar showerWaiverCompleted;
 }

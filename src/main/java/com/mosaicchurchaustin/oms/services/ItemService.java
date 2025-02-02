@@ -1,5 +1,6 @@
 package com.mosaicchurchaustin.oms.services;
 
+import com.mosaicchurchaustin.oms.data.entity.ItemCategory;
 import com.mosaicchurchaustin.oms.data.entity.ItemEntity;
 import com.mosaicchurchaustin.oms.data.request.UpdateItemRequest;
 import com.mosaicchurchaustin.oms.exception.EntityNotFoundException;
@@ -49,6 +50,10 @@ public class ItemService {
 
         if (request.suggestedItem() != null) {
             itemEntity.setIsSuggestedItem(request.suggestedItem());
+        }
+
+        if (request.category() != null) {
+            itemEntity.setCategory(ItemCategory.from(request.category()));
         }
 
         if (request.placeholder() != null) {
