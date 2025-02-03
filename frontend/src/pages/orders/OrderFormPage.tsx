@@ -5,7 +5,7 @@ import {
     Button,
     Group,
     Textarea,
-    Paper, Divider, LoadingOverlay, Text, Modal, Box
+    Paper, Divider, LoadingOverlay, Text, Modal
 } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import {useEffect, useState} from "react";
@@ -14,6 +14,7 @@ import {randomId} from "@mantine/hooks";
 import {Order, OrderDetails, OrderRequest} from "src/models/types.tsx";
 import OrderItemForm from "src/components/orderform/OrderItemForm.tsx";
 import OrderItemDisplay from "src/components/orderform/OrderItemDisplay.tsx";
+import {useFeatures} from "src/contexts/FeaturesContext.tsx";
 
 export interface FormItem {
     description: string,
@@ -31,6 +32,7 @@ function OrderForm({order}: props) {
     const suggestedItemsApi = useApi(itemsApi.getSuggestedItems);
     const [updatingItem, setUpdatingItem] = useState<FormItem|null>(null);
     const orderDetailApi = useApi(ordersApi.getOrderById);
+    const { groupMeEnabled } = useFeatures();
 
     function propsIsDetailed(input: Order): input is OrderDetails {
         return (input as OrderDetails) !== undefined;
@@ -188,7 +190,7 @@ function OrderForm({order}: props) {
                         Clear Form
                     </Button>
                     <Button mt="xl" type="submit">
-                        Create Order
+                        { groupMeEnabled ? "Send to GroupMe" : "Create Order"}
                     </Button>
                 </Group>
             </form>

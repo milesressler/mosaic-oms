@@ -75,9 +75,6 @@ public class ItemEntity extends BaseEntity implements Auditable {
     @Override
     public Map<String, String> getCurrentState() {
         final Map<String, String> state = new HashMap<>();
-        if (this.id != null) {
-            state.put("id", id.toString());
-        }
         state.put("isSuggestedItem", String.format("%s", isSuggestedItem != null && isSuggestedItem));
 
         if (this.description != null) {

@@ -22,6 +22,10 @@ export interface OrderNotification {
     order: Order;
 }
 
+export interface FeaturesNotification {
+    featuresValues: {};
+}
+
 export interface OrderDetails extends Order {
     items: OrderItem[];
     assignee: BasicUser;

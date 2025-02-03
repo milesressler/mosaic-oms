@@ -152,7 +152,7 @@ const routes = [
                 key: 'settings',
                 path: '/settings',
                 element: AdminSettingsPage,
-                title: 'Settings',
+                title: 'System Settings',
                 showInNavBar: true,
             },
         ],

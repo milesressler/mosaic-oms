@@ -3,14 +3,15 @@ import {FeatureConfig} from "src/models/types.tsx";
 import useApi from "src/hooks/useApi.tsx";
 import FeaturesApi from "src/services/featuresApi.tsx";
 import {useAuth0} from "@auth0/auth0-react";
+import {useSubscription} from "react-stomp-hooks";
 
 export interface FeaturesContextType {
     refreshFeatures: () => void;
     featuresLoading: boolean;
     groupMeEnabled: boolean;
     setGroupMeEnabled: (enabled: boolean) => void
-
 }
+
 // Create the context
 const FeaturesContext = createContext<FeaturesContextType|undefined   >(undefined);
 
@@ -30,6 +31,12 @@ export const FeaturesProvider: React.FC<{ children: ReactNode }> = ({ children }
     const setGroupMeEnabled = (enabled: boolean) => {
         updateFeaturesApi.request(enabled);
     };
+
+    useSubscription("/topic/features/updated", () => {
+        if (!updateFeaturesApi.loading && !featuresApi.loading) {
+            featuresApi.request();
+        }
+    });
 
     useEffect(() => {
         if (featuresApi.data) {

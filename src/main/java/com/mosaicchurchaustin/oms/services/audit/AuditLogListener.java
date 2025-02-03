@@ -3,12 +3,10 @@ package com.mosaicchurchaustin.oms.services.audit;
 
 import com.mosaicchurchaustin.oms.config.AuditConfig;
 import com.mosaicchurchaustin.oms.data.constants.AuditAction;
+import jakarta.persistence.PostLoad;
 import jakarta.persistence.PostPersist;
 import jakarta.persistence.PostRemove;
 import jakarta.persistence.PostUpdate;
-import jakarta.persistence.PrePersist;
-import jakarta.persistence.PreRemove;
-import jakarta.persistence.PreUpdate;
 
 //@Component
 public class AuditLogListener {
@@ -16,10 +14,8 @@ public class AuditLogListener {
 //    @Autowired
 //    private AuditService auditService;
 
-    @PrePersist
-    @PreUpdate
-    @PreRemove
-    public void beforeAnyUpdate(final Object entity) {
+    @PostLoad
+    public void afterLoad(final Object entity) {
         // Capture the state of the entity before saving
         if (entity instanceof Auditable auditable) {
             auditable.stashState();

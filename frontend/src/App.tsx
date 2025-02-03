@@ -31,7 +31,9 @@ function Interior({}) {
         //     console.log(str);
         // }}
     >
+        <FeaturesProvider>
         <AppShellComponent/>
+        </FeaturesProvider>
     </StompSessionProvider>
 }
 
@@ -43,9 +45,7 @@ function App() {
                 <CookiesProvider defaultSetOptions >
                     <Auth0ProviderWithNavigate>
                             <AuthContextProvider>
-                                <FeaturesProvider>
                                     <Interior/>
-                                </FeaturesProvider>
                             </AuthContextProvider>
                     </Auth0ProviderWithNavigate>
                 </CookiesProvider>
