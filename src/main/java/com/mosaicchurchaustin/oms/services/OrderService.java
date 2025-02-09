@@ -288,9 +288,8 @@ public class OrderService {
         }
     }
 
-    private ItemEntity queryForItemByPriority(OrderItemRequest item) {
+    private ItemEntity queryForItemByPriority(final OrderItemRequest item) {
         return itemRepository.findByDescription(item.description())
-                .or(() -> itemRepository.findByDescriptionAndRemovedIsTrue(item.description()))
                 .orElseGet(() ->
                     itemRepository.save(ItemEntity.builder().description(item.description()).isSuggestedItem(false).build())
         );

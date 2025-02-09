@@ -19,7 +19,6 @@ import lombok.Setter;
 import lombok.SneakyThrows;
 import lombok.ToString;
 import org.hibernate.annotations.BatchSize;
-import org.hibernate.annotations.SQLRestriction;
 
 import java.util.HashMap;
 import java.util.List;
@@ -33,7 +32,7 @@ import java.util.Map;
 @NoArgsConstructor
 @ToString
 @EntityListeners(AuditLogListener.class)
-@SQLRestriction("removed = false")
+//@SQLRestriction("removed = false")
 public class ItemEntity extends BaseEntity implements Auditable {
 
     public static String ENTITY_TYPE = "Item";

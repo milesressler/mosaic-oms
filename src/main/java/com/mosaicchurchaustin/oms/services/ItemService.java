@@ -29,7 +29,7 @@ public class ItemService {
 
     @Transactional
     public Page<ItemEntity> getPagedItems(final Pageable pageable) {
-        return itemRepository.findAll(pageable).map(itemEntity -> {
+        return itemRepository.findAllByRemovedIsFalse(pageable).map(itemEntity -> {
             Hibernate.initialize(itemEntity.getOrderItems());
             return itemEntity;
         });
@@ -68,7 +68,7 @@ public class ItemService {
 
     @Transactional
     public ItemEntity createItem(final CreateItemRequest request) {
-        if (itemRepository.findByDescriptionIncludingRemoved(request.description().trim()).isPresent()) {
+        if (itemRepository.findByDescription(request.description().trim()).isPresent()) {
             throw new InvalidRequestException(String.format("Item description %s already exists", request.description().trim()));
         }
 
