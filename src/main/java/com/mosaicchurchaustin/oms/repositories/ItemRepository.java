@@ -2,6 +2,8 @@ package com.mosaicchurchaustin.oms.repositories;
 
 import com.mosaicchurchaustin.oms.data.entity.ItemEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -12,4 +14,8 @@ public interface ItemRepository extends JpaRepository<ItemEntity, Long> {
     Optional<ItemEntity> findByDescription(String description);
     Optional<ItemEntity> findByDescriptionAndRemovedIsTrue(String description);
     List<ItemEntity> findAllByIsSuggestedItem(Boolean isSuggestedItem);
+
+    @Query(value = "SELECT * FROM items WHERE description = :description", nativeQuery = true)
+    Optional<ItemEntity> findByDescriptionIncludingRemoved(@Param("description") String description);
+
 }

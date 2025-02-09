@@ -7,13 +7,13 @@ export default function useApi<T, Args extends any[]>(apiFunc: ApiFunc<T, Args>)
     const [error, setError] = useState<string>("");
     const [loading, setLoading] = useState<boolean>(false);
 
-    const request = useCallback(async (...args: Args) => {
+    const request: (...args: Args) => Promise<{ data: T } | null> = useCallback(async (...args: Args) => {
         setLoading(true);
         setError('');
         try {
             const result = await apiFunc(...args);
             setData(result.data);
-            return result?.data;
+            return data;
         } catch (err: any) {
             setError(err.message || "Unexpected Error!");
             setData(null);

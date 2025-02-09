@@ -150,6 +150,12 @@ export interface UpdateItemRequest {
     placeholder?: string
     category?: string
 }
+export interface CreateItemRequest {
+    suggestedItem?: boolean
+    placeholder?: string
+    description: string
+    category?: string
+}
 export interface OrderItem {
     description: string;
     quantityRequested: number;

@@ -136,7 +136,7 @@ function OrderForm({order}: props) {
 
     return (<>
         <LoadingOverlay visible={createOrderAPI.loading} />
-        <Paper  withBorder shadow="md" p={30} mt={30} radius="md" maw={600}  miw={400} mx="auto">
+        <Paper  p={30} mt={30} radius="md" maw={600}  miw={400} mx="auto">
 
             {<Modal opened={!!updatingItem} onClose={() => setUpdatingItem(null)}>
                 {/*<Card center maw={200}>*/}

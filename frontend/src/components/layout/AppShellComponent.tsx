@@ -1,8 +1,8 @@
-import {AppShell, Burger, Group} from "@mantine/core";
+import {AppShell, Burger, DEFAULT_THEME, Group} from "@mantine/core";
 import AppShellNavBar from "src/components/layout/navbar/AppShellNavBar.tsx";
 import {Link, matchPath, Route, Routes, useLocation} from "react-router-dom";
 import {AuthenticationGuard} from "src/components/auth0/AuthenticationGuard.tsx";
-import { useDisclosure} from "@mantine/hooks";
+import {useDisclosure, useMediaQuery} from "@mantine/hooks";
 import {useAuth0} from "@auth0/auth0-react";
 import routes from "src/routesConfig.tsx";
 import useApi from "src/hooks/useApi.tsx";
@@ -52,6 +52,7 @@ export function AppShellComponent() {
 
     const fullscreenAvailable = document.fullscreenEnabled;
     const headerIsVisible = (!fullscreen || !activeRoute.isMonitor);
+    const isMobile = useMediaQuery(`(max-width: ${DEFAULT_THEME.breakpoints.lg})`);
 
 
     useEffect(() => {
@@ -94,6 +95,12 @@ export function AppShellComponent() {
     useEffect(() => {
         setHeaderHeight(headerIsVisible ? DEFAULT_HEADER_HEIGHT : 0);
     }, [activeRoute, fullscreen]);
+
+    useEffect(() => {
+        if (isMobile) {
+            close();
+        }
+    }, [activeRoute]);
 
     useEffect(() => {
         function onFullscreenChange() {
