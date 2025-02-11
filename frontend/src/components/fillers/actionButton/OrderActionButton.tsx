@@ -1,8 +1,9 @@
 import {ActionIcon, Button, Group, Menu, rem, useMantineTheme} from '@mantine/core';
-import {IconChevronDown, IconNotes, IconSquareX, IconTrash} from '@tabler/icons-react';
+import {IconChevronDown, IconNotes, IconPrinter, IconSquareX, IconTrash} from '@tabler/icons-react';
 import classes from './filler-order-action-button.module.css';
 import {OrderDetails, OrderStatus} from "src/models/types.tsx";
 import {useAuth0} from "@auth0/auth0-react";
+import {useFeatures} from "src/contexts/FeaturesContext.tsx";
 
 interface OrderActionButtonProps {
     loading?: boolean,
@@ -15,9 +16,11 @@ export function OrderActionButton({ loading, order, onStateChange, toggleAssigne
 
 
     const theme = useMantineTheme();
-    const buttonStyle = {width: "146px"}
     const {user} = useAuth0();
     const assignedToMe = order?.assignee?.externalId === user?.sub;
+    const { printOnTransitionToStatus } = useFeatures();
+
+    const buttonStyle = {width: printOnTransitionToStatus === OrderStatus.ACCEPTED ? "166px" : '146px'}
 
 
     const disabled = order?.orderStatus === OrderStatus.COMPLETED ||
@@ -28,7 +31,13 @@ export function OrderActionButton({ loading, order, onStateChange, toggleAssigne
         switch (order?.orderStatus) {
             case OrderStatus.PENDING_ACCEPTANCE:
                 return <>
-                    <Button style={buttonStyle} loading={loading} onClick={() => onStateChange(OrderStatus.ACCEPTED)}>Accept Order</Button>
+                    <Button
+                        style={buttonStyle}
+                            loading={loading}
+                            leftSection={printOnTransitionToStatus === OrderStatus.ACCEPTED && <IconPrinter/>}
+                            onClick={() => onStateChange(OrderStatus.ACCEPTED)}>
+                        Accept Order
+                    </Button>
                 </>
             case OrderStatus.READY_FOR_CUSTOMER_PICKUP:
                 return <>

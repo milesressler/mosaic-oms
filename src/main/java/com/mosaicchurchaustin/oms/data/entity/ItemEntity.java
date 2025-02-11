@@ -32,7 +32,6 @@ import java.util.Map;
 @NoArgsConstructor
 @ToString
 @EntityListeners(AuditLogListener.class)
-//@SQLRestriction("removed = false")
 public class ItemEntity extends BaseEntity implements Auditable {
 
     public static String ENTITY_TYPE = "Item";

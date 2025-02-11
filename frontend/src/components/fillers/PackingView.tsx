@@ -6,6 +6,8 @@ import ordersApi from "src/services/ordersApi.tsx";
 import {useEffect, useState} from "react";
 import {OrderItem, OrderStatus} from "src/models/types.tsx";
 import {useNavigate} from "react-router-dom";
+import {useFeatures} from "src/contexts/FeaturesContext.tsx";
+import {IconPrinter} from "@tabler/icons-react";
 
 function PackingView({}) {
     const {selectedOrder, doForceRefresh} = useSelectedOrder();
@@ -13,6 +15,7 @@ function PackingView({}) {
     const updateQuantities = useApi(ordersApi.updateOrderItems);
     const [draftItems, setDraftItems] = useState<OrderItem[]>([]);
     const navigate = useNavigate();
+    const { printOnTransitionToStatus } = useFeatures()
 
     useEffect(() => {
         if (updateStatus.data && updateStatus.data.orderStatus === OrderStatus.PACKED) {
@@ -132,7 +135,12 @@ function PackingView({}) {
             </Group>
             <Group justify={'flex-end'}>
                 {hasStateChanged && <Button variant={"primary"} onClick={() => saveProgress()}>Save</Button>}
-                {!hasStateChanged && <Button variant={"primary"} onClick={() => moveToWagon()}>Placed in Wagon</Button>}
+                {!hasStateChanged && <Button
+                    variant={"primary"}
+                    leftSection={ printOnTransitionToStatus === OrderStatus.PACKED && <IconPrinter/> }
+                    onClick={() => moveToWagon()}>
+                    Placed in Wagon
+                </Button>}
             </Group>
         </Group>
     </>)

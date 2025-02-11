@@ -184,6 +184,7 @@ export interface AuditLog {
 
 export interface FeatureConfig {
     groupMeEnabled: boolean
+    printOnTransitionToStatus: OrderStatus
 }
 
 

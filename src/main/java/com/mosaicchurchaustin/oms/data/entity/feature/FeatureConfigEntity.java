@@ -2,11 +2,14 @@ package com.mosaicchurchaustin.oms.data.entity.feature;
 
 
 import com.mosaicchurchaustin.oms.data.entity.BaseEntity;
+import com.mosaicchurchaustin.oms.data.entity.order.OrderStatus;
 import com.mosaicchurchaustin.oms.services.audit.AuditLogListener;
 import com.mosaicchurchaustin.oms.services.audit.Auditable;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
 import lombok.AllArgsConstructor;
@@ -38,6 +41,11 @@ public class FeatureConfigEntity extends BaseEntity implements Auditable {
     @Setter
     @Column(name = "groupme_enabled", nullable = false)
     boolean groupMeEnabled;
+
+    @Setter
+    @Enumerated(EnumType.STRING)
+    @Column(name = "print_on_transition_to_status", nullable = false)
+    OrderStatus printOnTransitionToStatus;
 
 
     @Transient

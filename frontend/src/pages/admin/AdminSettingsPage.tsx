@@ -1,13 +1,18 @@
-import {Box, Switch} from "@mantine/core";
+import {Box, Select, Switch} from "@mantine/core";
 import {useFeatures} from "src/contexts/FeaturesContext.tsx";
 import {useEffect} from "react";
+import {OrderStatus} from "src/models/types.tsx";
 
 
 const AdminSettingsPage = () => {
 
-    const { groupMeEnabled, setGroupMeEnabled, featuresLoading, refreshFeatures } = useFeatures();
+    const {
+        groupMeEnabled, setGroupMeEnabled,
+        printOnTransitionToStatus, setPrintOnTransitionToStatus,
+        featuresLoading, refreshFeatures
+    } = useFeatures();
 
-    const handleToggle = (isChecked: boolean) => {
+    const handleGroupMeToggler = (isChecked: boolean) => {
         setGroupMeEnabled(isChecked);
     }
 
@@ -26,7 +31,18 @@ const AdminSettingsPage = () => {
                     disabled={featuresLoading}
                     label="GroupMe Order Creation Post"
                     description="Crossposts orders to GroupMe upon creation"
-                    onChange={(event) => handleToggle(event.currentTarget.checked)}
+                    onChange={(event) => handleGroupMeToggler(event.currentTarget.checked)}
+                />
+                <Select
+                    disabled={featuresLoading}
+                    value={printOnTransitionToStatus}
+                    label="Print Label on Order Transition to status:"
+                    placeholder="Disabled"
+                    data={[OrderStatus.ACCEPTED, OrderStatus.PACKED]}
+                    allowDeselect
+                    onChange={(_value, option) => {
+                        setPrintOnTransitionToStatus(_value as OrderStatus)
+                    }}
                 />
             </Box>
 

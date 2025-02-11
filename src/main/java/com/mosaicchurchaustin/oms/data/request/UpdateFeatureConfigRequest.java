@@ -5,6 +5,7 @@ import jakarta.validation.Valid;
 
 @Valid
 public record UpdateFeatureConfigRequest(
-        Boolean groupMeEnabled
+        Boolean groupMeEnabled,
+        String printOnTransitionToStatus
 ) {
 }

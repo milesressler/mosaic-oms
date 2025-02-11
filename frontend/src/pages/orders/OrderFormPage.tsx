@@ -152,6 +152,7 @@ function OrderForm({order}: props) {
                     label="Customer Name"
                     placeholder="First name and last initial"
                     required
+                    size={"lg"}
                     {...form.getInputProps('customerName')}
                 />
                 <Divider my="md" />
@@ -172,7 +173,7 @@ function OrderForm({order}: props) {
                 {itemFields}
 
                 <Group grow justify={"stretch"} my="md" >
-                    <Button onClick={addNewItem} variant={"outline"}>
+                    <Button onClick={addNewItem} variant={"outline"} size={"lg"}>
                         <Text c={'dimmed'} size={'s'}>Add an item</Text>
                     </Button>
                 </Group>
@@ -183,6 +184,7 @@ function OrderForm({order}: props) {
                     label="Special Instructions"
                     placeholder="General notes about the order"
                     {...form.getInputProps('specialInstructions')}
+                    size={"lg"}
                 />
 
                 <Group justify={'space-between'}>

@@ -41,6 +41,7 @@ public class AuditLogListener {
         // Capture the state of the entity after saving
         if (entity instanceof Auditable auditable) {
             AuditConfig.AUDIT_SERVICE.logAction(auditable, auditAction);
+            auditable.stashState();
         }
     }
 }

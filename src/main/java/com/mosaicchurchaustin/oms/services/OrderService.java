@@ -19,6 +19,7 @@ import com.mosaicchurchaustin.oms.repositories.ItemRepository;
 import com.mosaicchurchaustin.oms.repositories.OrderHistoryRepository;
 import com.mosaicchurchaustin.oms.repositories.OrderItemRepository;
 import com.mosaicchurchaustin.oms.repositories.OrderRepository;
+import com.mosaicchurchaustin.oms.services.labels.PrintingService;
 import jakarta.transaction.Transactional;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -62,6 +63,9 @@ public class OrderService {
 
     @Autowired
     FeaturesService featuresService;
+
+    @Autowired
+    PrintingService printingService;
 
     public List<OrderHistoryEntity> getOrderHistory() {
         final Pageable pageable = PageRequest.of(0, 20, Sort.by(Sort.Order.desc("timestamp")));
@@ -186,7 +190,16 @@ public class OrderService {
     public OrderEntity updateOrderStatus(final String orderUuid, final String orderState) {
         final OrderEntity orderEntity = getOrder(orderUuid);
         updateOrderStatus(orderEntity, orderState);
-        return orderRepository.save(orderEntity);
+        final var result =  orderRepository.save(orderEntity);
+        if (result.getOrderStatus() == OrderStatus.ACCEPTED
+                && featuresService.getFeaturesConfig().getPrintOnTransitionToStatus() == OrderStatus.ACCEPTED) {
+            try {
+                printingService.printAcceptedOrderLabel(result);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
+        return result;
     }
 
     @Transactional

@@ -1,5 +1,5 @@
 import React, {createContext, ReactNode, useContext, useEffect, useState} from "react";
-import {FeatureConfig} from "src/models/types.tsx";
+import {FeatureConfig, OrderStatus} from "src/models/types.tsx";
 import useApi from "src/hooks/useApi.tsx";
 import FeaturesApi from "src/services/featuresApi.tsx";
 import {useAuth0} from "@auth0/auth0-react";
@@ -10,6 +10,8 @@ export interface FeaturesContextType {
     featuresLoading: boolean;
     groupMeEnabled: boolean;
     setGroupMeEnabled: (enabled: boolean) => void
+    printOnTransitionToStatus: OrderStatus|null;
+    setPrintOnTransitionToStatus: (orderStatus: OrderStatus|null) => void
 }
 
 // Create the context
@@ -29,7 +31,11 @@ export const FeaturesProvider: React.FC<{ children: ReactNode }> = ({ children }
     const updateFeaturesApi = useApi(FeaturesApi.updateFeatureConfig);
 
     const setGroupMeEnabled = (enabled: boolean) => {
-        updateFeaturesApi.request(enabled);
+        updateFeaturesApi.request(enabled, null);
+    };
+
+    const setPrintOnTransitionToStatus = (orderStatus: OrderStatus|null) => {
+        updateFeaturesApi.request(null, orderStatus ?? "");
     };
 
     useSubscription("/topic/features/updated", () => {
@@ -60,7 +66,9 @@ export const FeaturesProvider: React.FC<{ children: ReactNode }> = ({ children }
     return (
         <FeaturesContext.Provider value={{
             groupMeEnabled: !!features?.groupMeEnabled,
+            printOnTransitionToStatus: features?.printOnTransitionToStatus ?? null,
             setGroupMeEnabled,
+            setPrintOnTransitionToStatus,
             featuresLoading: featuresApi.loading || updateFeaturesApi.loading,
             refreshFeatures: featuresApi.request
         }}>
