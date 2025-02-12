@@ -11,8 +11,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.util.Base64;
 import java.util.Map;
 
@@ -58,10 +56,10 @@ public class PrintingService {
 
         final byte[] pdfBytes = pdfGenerator.generateAcceptedOrderPDF(qrCodeBytes, orderEntity);
         final String base64Pdf = Base64.getEncoder().encodeToString(pdfBytes);
-        final File filePdf = new File("qrcode"  + orderEntity.getId() + ".pdf");
-        try (FileOutputStream fos = new FileOutputStream(filePdf)) {
-            fos.write(pdfBytes);
-        }
+//        final File filePdf = new File("qrcode"  + orderEntity.getId() + ".pdf");
+//        try (FileOutputStream fos = new FileOutputStream(filePdf)) {
+//            fos.write(pdfBytes);
+//        }
 
         // Create JSON payload for PrintNode
         final String jsonPayload = """
