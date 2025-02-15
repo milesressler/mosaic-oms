@@ -58,7 +58,7 @@ const EditableCell = ({ initialValue, onSave, onCancel, isEditing, onEdit }: any
         </div>);
 };
 export function ItemsManagementPage() {
-    const PAGE_SIZE = 25;
+    const PAGE_SIZE = 250;
     const adminItemsApi = useApi(ItemsApi.getAdminItemsPage);
     const updateItemApi = useApi(ItemsApi.updateAdminItem);
     const deleteItemApi = useApi(ItemsApi.deleteAdminItem);

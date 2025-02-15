@@ -1,5 +1,5 @@
 import {Item} from "src/models/types.tsx";
-import {Autocomplete, Button, Group, Stack, Textarea} from "@mantine/core";
+import {Autocomplete, Button, Group, Stack, Textarea, Text} from "@mantine/core";
 import {useState} from "react";
 import {FormItem} from "src/pages/orders/OrderFormPage.tsx";
 
@@ -43,11 +43,15 @@ export function OrderItemForm({formItem, suggestedItems = [], handleItemUpdate, 
                     <Textarea
                         label="Additional item note"
                         required={!!selectedItem?.placeholder}
-                        placeholder={selectedItem?.placeholder ? selectedItem.placeholder :
-                            "Size, color, preferences, etc"}
+                        placeholder={"Size, color, preferences, etc"}
                         onChange={handleNoteChange}
                         value={draftItem?.notes}
                     />
+                {
+                    selectedItem?.placeholder && <Text size={'xs'} c={'dimmed'} fw={600}>
+                        Details are required for this item: <br/>{selectedItem?.placeholder}
+                    </Text>
+                }
 
                 <Group justify={"space-between"} my="md">
                     <Button  variant="outline" color="gray"  onClick={onCancel}>
