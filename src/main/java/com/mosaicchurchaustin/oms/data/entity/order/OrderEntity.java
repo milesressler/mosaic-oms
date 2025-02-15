@@ -85,6 +85,18 @@ public class OrderEntity extends BaseUuidEntity implements Auditable {
             ")")
     OrderHistoryEntity lastStatusChange;
 
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinFormula("(" +
+            "SELECT h.id " +
+            "FROM order_history h " +
+            "WHERE h.order_entity_id = id " +
+            "AND h.type = 'EXPORT'" +
+            "AND h.export_type = 'GROUPME'" +
+            "ORDER BY h.timestamp DESC " +
+            "LIMIT 1" +
+            ")")
+    OrderHistoryEntity postedToGroupMe;
+
     @Transient
     @Getter
     Map<String, String> previousState;

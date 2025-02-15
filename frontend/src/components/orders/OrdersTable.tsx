@@ -3,13 +3,13 @@ import useApi from "src/hooks/useApi.tsx";
 import ordersApi from "src/services/ordersApi.tsx";
 import {useEffect, useState} from "react";
 import {useInterval} from "@mantine/hooks";
-import {Avatar, Center, Group, rem, RingProgress, Table, Text, UnstyledButton} from "@mantine/core";
+import {Avatar, Center, Group, Image, rem, RingProgress, Table, Text, UnstyledButton} from "@mantine/core";
 import {DateTime} from "luxon";
 import StatusBadge from "src/components/StatusBadge.tsx";
 import {IconChevronDown, IconChevronUp, IconSelector} from "@tabler/icons-react";
 import classes from './TableSort.module.css';
 import {ColumnConfig, columns, OrdersView} from "src/components/orders/OrdersTableConfig.tsx";
-
+import groupmeImage from "src/assets/groupme_icon.png";
 
 interface ThProps {
     children: React.ReactNode;
@@ -155,7 +155,7 @@ export function OrdersTable({
                         <Text size={'sm'} c={assigned ? '' : 'dimmed'}>
                             {assigned?.name ?? 'Unassigned'}
                         </Text></Group></>}
-                    {key === 'Order #' && order.id}
+                    {key === 'Order #' && <>{order.id}{order.postedToGroupMe && <Image w={16} h={16} src={groupmeImage}></Image>}</>}
                     {key === 'Created' && <>
                         <Text>{DateTime.fromISO(order.created).toLocaleString(DateTime.TIME_SIMPLE)}</Text>
                         <Text c={"dimmed"} size={'xs'}>{DateTime.fromISO(order.created).toLocaleString(DateTime.DATE_MED)}</Text>

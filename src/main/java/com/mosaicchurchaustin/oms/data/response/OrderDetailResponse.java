@@ -39,6 +39,11 @@ public class OrderDetailResponse extends OrderResponse {
                 .assignee(
                         Optional.ofNullable(orderEntity.getAssignee()).map(UserResponse::from).orElse(null)
                 )
+                .postedToGroupMe(
+                        Optional.ofNullable(orderEntity.getPostedToGroupMe())
+                                .map(OrderHistoryEntity::getTimestamp)
+                                .orElse(null)
+                )
                 .history(orderEntity.getOrderHistoryEntityList().stream().map(History::from).toList())
                 .lastStatusChange(History.from(orderEntity.getLastStatusChange()))
                 .items(orderEntity.getOrderItemList().stream().map(OrderItemResponse::from).collect(Collectors.toList()))

@@ -20,13 +20,18 @@ public class QrCodeGenerator {
     final static int matrixSize = 32;
     final QRCodeWriter qrCodeWriter = new QRCodeWriter();
 
-    public byte[] generateQRCode(final String data) throws WriterException, IOException {
+    public byte[] generateQRCode(final String data) {
 
         final Hashtable<EncodeHintType, Object> hints = new Hashtable<>() {{
             put(EncodeHintType.MARGIN, 0);  // Remove margin
         }};
 
-        final BitMatrix byteMatrix = qrCodeWriter.encode(data, BarcodeFormat.QR_CODE, matrixSize, matrixSize, hints);
+        final BitMatrix byteMatrix;
+        try {
+            byteMatrix = qrCodeWriter.encode(data, BarcodeFormat.QR_CODE, matrixSize, matrixSize, hints);
+        } catch (WriterException e) {
+            throw new RuntimeException(e);
+        }
 
         final BufferedImage qrImage = new BufferedImage(matrixSize, matrixSize, BufferedImage.TYPE_INT_RGB);
         qrImage.createGraphics();
@@ -46,7 +51,11 @@ public class QrCodeGenerator {
         }
 
         final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        ImageIO.write(qrImage, "png", outputStream);
+        try {
+            ImageIO.write(qrImage, "png", outputStream);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
         return outputStream.toByteArray();
     }
 

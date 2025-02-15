@@ -9,6 +9,7 @@ export interface Order extends BaseObject {
     orderStatus: OrderStatus;
     customer: Customer;
     lastStatusUpdate: string;
+    postedToGroupMe: string;
 }
 
 export interface OrderNotification {

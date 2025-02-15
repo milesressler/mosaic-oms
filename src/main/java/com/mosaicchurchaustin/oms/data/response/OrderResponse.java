@@ -1,11 +1,13 @@
 package com.mosaicchurchaustin.oms.data.response;
 
 import com.mosaicchurchaustin.oms.data.entity.order.OrderEntity;
+import com.mosaicchurchaustin.oms.data.entity.order.OrderHistoryEntity;
 import com.mosaicchurchaustin.oms.data.entity.order.OrderStatus;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 
 import java.util.Calendar;
+import java.util.Optional;
 
 @Data
 @SuperBuilder
@@ -14,6 +16,7 @@ import java.util.Calendar;
 public class OrderResponse {
     private Calendar created;
     private Calendar lastStatusUpdate;
+    private Calendar postedToGroupMe;
     private Long id;
     private String uuid;
     private Customer customer;
@@ -26,6 +29,11 @@ public class OrderResponse {
                 .id(orderEntity.getId())
                 .created(orderEntity.getCreated())
                 .lastStatusUpdate(orderEntity.getLastStatusChange().getTimestamp())
+                .postedToGroupMe(
+                        Optional.ofNullable(orderEntity.getPostedToGroupMe())
+                                .map(OrderHistoryEntity::getTimestamp)
+                                .orElse(null)
+                )
                 .orderStatus(orderEntity.getOrderStatus())
                 .customer(
                         Customer.builder()
