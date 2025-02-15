@@ -1,5 +1,14 @@
 package com.mosaicchurchaustin.oms.services;
 
+import java.util.List;
+
+import org.apache.commons.lang3.RandomStringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+
 import com.auth0.client.mgmt.ManagementAPI;
 import com.auth0.client.mgmt.filter.PageFilter;
 import com.auth0.client.mgmt.filter.RolesFilter;
@@ -14,14 +23,6 @@ import com.mosaicchurchaustin.oms.data.request.UpdateUserRequest;
 import com.mosaicchurchaustin.oms.data.response.AdminUserDetailResponse;
 import com.mosaicchurchaustin.oms.data.response.AdminUserResponse;
 import com.mosaicchurchaustin.oms.repositories.OrderHistoryRepository;
-import org.apache.commons.lang3.RandomStringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 @Service
 public class AdminUserService {
@@ -44,9 +45,10 @@ public class AdminUserService {
         final UserFilter userFilter = new UserFilter().withPage(pageable.getPageNumber(), pageable.getPageSize());
         final UsersPage usersPage = managementAPI.users().list(userFilter)
                 .execute().getBody();
+        long totalElements = usersPage.getTotal() != null ? usersPage.getTotal() : usersPage.getItems().size();
         return new PageImpl<>(usersPage.getItems().stream()
-                .map(AdminUserResponse::from).toList(), pageable, usersPage.getTotal()==null ? usersPage.getItems().toArray().length : usersPage.getTotal());
-    }
+                .map(AdminUserResponse::from).toList(), pageable, totalElements);
+      }
 
     public AdminUserDetailResponse getUser(final String userId) throws Auth0Exception {
         final User user = managementAPI.users().get(userId, null).execute().getBody();

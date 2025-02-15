@@ -82,8 +82,14 @@ function OrderForm({order}: props) {
 
     const submitOrder = (values: any) => {
         form.validate();
+        const [firstName, ...lastNameParts] = values.customerName.split(' ');
+        const customerFirstName = firstName;
+        const customerLastName = lastNameParts.join(' ');
         const request: OrderRequest = {
+            // split to first name and last initial here
             customerName: values.customerName,
+            customerFirstName: customerFirstName,
+            customerLastName: customerLastName,
             customerPhone: values.customerPhone,
             specialInstructions: values.specialInstructions,
             optInNotifications: values.optInNotifications,
