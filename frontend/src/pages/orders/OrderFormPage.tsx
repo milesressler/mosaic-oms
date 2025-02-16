@@ -87,9 +87,9 @@ function OrderForm({order}: props) {
         const customerLastName = lastNameParts.join(' ');
         const request: OrderRequest = {
             // split to first name and last initial here
-            customerName: values.customerName,
-            customerFirstName: customerFirstName,
-            customerLastName: customerLastName,
+            customerName: values.customerName, //temporary: remove later
+            customerFirstName: customerFirstName, //yes it appears in the request
+            customerLastName: customerLastName, //yes it appears in the request
             customerPhone: values.customerPhone,
             specialInstructions: values.specialInstructions,
             optInNotifications: values.optInNotifications,

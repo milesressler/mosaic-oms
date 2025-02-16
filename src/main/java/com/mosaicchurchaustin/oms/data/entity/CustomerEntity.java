@@ -3,7 +3,11 @@ package com.mosaicchurchaustin.oms.data.entity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 
 @Entity
 @Table(name = "customers")
@@ -23,4 +27,8 @@ public class CustomerEntity extends BaseUuidEntity {
 
     @Column(name = "name")
     String name;
+    @Column(name = "first")
+    String first;
+    @Column(name = "last")
+    String last;
 }
