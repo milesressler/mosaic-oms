@@ -40,9 +40,6 @@ export function StatusBadge({ orderStatus }: { orderStatus: OrderStatus }) {
         case OrderStatus.CANCELLED:
             color = 'gray';
             break;
-        case OrderStatus.REJECTED:
-            color = 'orange';
-            break;
         default:
             color = 'gray'; // Default color for any unknown statuses
     }

@@ -24,8 +24,7 @@ export function OrderActionButton({ loading, order, onStateChange, toggleAssigne
 
 
     const disabled = order?.orderStatus === OrderStatus.COMPLETED ||
-        order?.orderStatus === OrderStatus.CANCELLED ||
-        order?.orderStatus === OrderStatus.REJECTED;
+        order?.orderStatus === OrderStatus.CANCELLED;
 
     const getButton = () => {
         switch (order?.orderStatus) {
@@ -56,12 +55,6 @@ export function OrderActionButton({ loading, order, onStateChange, toggleAssigne
         },
     ];
 
-    const rejectOption = {
-        label: "Reject",
-        icon: IconSquareX,
-        action: () => onStateChange(OrderStatus.REJECTED)
-    };
-
     if (order?.orderStatus === OrderStatus.PENDING_ACCEPTANCE) {
         options.push(
             {
@@ -69,9 +62,6 @@ export function OrderActionButton({ loading, order, onStateChange, toggleAssigne
                 icon: IconNotes,
                 action: () => onStateChange(OrderStatus.NEEDS_INFO)
             });
-        options.push(rejectOption);
-    } else if (order?.orderStatus === OrderStatus.ACCEPTED) {
-        options.push(rejectOption);
     }
 
     if (disabled) {
