@@ -11,6 +11,12 @@ export interface Order extends BaseObject {
     lastStatusUpdate: string;
 }
 
+export interface OrderPublic extends BaseObject {
+    orderStatus: OrderStatus;
+    customer: First;
+    lastStatusUpdate: string;
+}
+
 export interface OrderNotification {
     orderUuid: string;
     orderId: number;
@@ -40,6 +46,10 @@ export interface OrderDetails extends Order {
 }
 
 export interface Customer {
+    name: string
+}
+
+export interface First {
     name: string
 }
 

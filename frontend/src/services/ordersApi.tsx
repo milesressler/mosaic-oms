@@ -1,9 +1,9 @@
 import client from "./client";
-import {Order, OrderDetails, OrderFeedItem, OrderRequest, OrderStatus, Page} from "src/models/types.tsx"
+import {Order, OrderDetails, OrderFeedItem, OrderPublic, OrderRequest, OrderStatus, Page} from "src/models/types.tsx"
 
 const createOrder = (data: OrderRequest) => client.post("/order", data);
 const getOrders = (params?: {}) => client.get<Page<Order>>("/order", {params});
-const getOrdersDashboardView = (params?: {}) => client.get<Order[]>("/order/view/dashboard", {params});
+const getOrdersDashboardView = (params?: {}) => client.get<OrderPublic[]>("/order/view/dashboard", {params});
 // const getOrdersRunnersView = (params?: {}) => client.get<Order[]>("/order/view/runner", {params});
 const getOrdersWithDetails = (params?: any) => client.get<Page<OrderDetails>>("/order", {params: {...params, detailed: true}});
 const getOrderById = (id: number) => client.get<OrderDetails>(`/order/${id}`);
