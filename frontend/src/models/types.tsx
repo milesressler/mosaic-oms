@@ -27,6 +27,16 @@ export interface FeaturesNotification {
     featuresValues: {};
 }
 
+export enum HistoryEventType {
+    EXPORT = "EXPORT",
+    STATUS_CHANGE = "STATUS_CHANGE",
+}
+
+export enum ExportType {
+    GROUPME = "GROUPME",
+    PRINTED = "PRINTED",
+}
+
 export interface OrderDetails extends Order {
     items: OrderItem[];
     assignee: BasicUser;
@@ -40,6 +50,8 @@ export interface OrderDetails extends Order {
     history: {
         user: BasicUser;
         status: OrderStatus;
+        eventType: HistoryEventType;
+        exportType: ExportType;
         timestamp: string;
     }[];
 }

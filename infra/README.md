@@ -13,10 +13,13 @@ terraform -v
 
 If you see a version output, you're good to go!
 
-Step 2: Configure AWS Credentials:
+Step 2: Configure AWS Credentials via SSO:
 ```
-aws configure --profile mosaic-oms
+aws configure sso
 ```
+
+Amazon will take you through the process, but worth noting that your `~/.aws/config` will include two profiles. One for your user,
+and one for the assumed role. Please save the assumed role as the default value, `AdministratorAccess-638820400855`
 
 #### Plan
 ```

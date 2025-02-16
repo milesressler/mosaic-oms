@@ -1,6 +1,6 @@
 resource "aws_cloudwatch_event_rule" "stop_rds_ecs" {
   name                = "stop-rds-ecs"
-  schedule_expression = "cron(0 6 * * ? *)"  # 1 AM UTC
+  schedule_expression = "cron(0 6 ? * 2-7 *)"  # 1 AM UTC
 }
 
 resource "aws_cloudwatch_event_target" "stop_rds_ecs_lambda" {
@@ -13,7 +13,7 @@ resource "aws_cloudwatch_event_target" "stop_rds_ecs_lambda" {
 
 resource "aws_cloudwatch_event_rule" "start_rds" {
   name                = "start-rds"
-  schedule_expression = "cron(0 13 ? * 7 *)"  # 1 PM UTC (Saturday at 7 AM CT)
+  schedule_expression = "cron(0 13 ? * 6,7 *)"  # 1 PM UTC (Saturday at 7 AM CT)
 }
 
 resource "aws_cloudwatch_event_target" "start_rds_lambda" {

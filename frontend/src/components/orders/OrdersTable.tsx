@@ -3,7 +3,7 @@ import useApi from "src/hooks/useApi.tsx";
 import ordersApi from "src/services/ordersApi.tsx";
 import {useEffect, useState} from "react";
 import {useInterval} from "@mantine/hooks";
-import {Avatar, Center, Group, Image, rem, RingProgress, Table, Text, UnstyledButton} from "@mantine/core";
+import {Avatar, Center, Group, Image, Pagination, rem, RingProgress, Table, Text, UnstyledButton} from "@mantine/core";
 import {DateTime} from "luxon";
 import StatusBadge from "src/components/StatusBadge.tsx";
 import {IconChevronDown, IconChevronUp, IconSelector} from "@tabler/icons-react";
@@ -77,16 +77,18 @@ export function OrdersTable({
     const [progress, setProgress] = useState(0);
 
     const [sortBy, setSortBy] = useState<string | null>('created');
-    const [reverseSortDirection, setReverseSortDirection] = useState(true);
+    const [activePage, setActivePage] = useState(0);
+    const [reverseSortDirection, setReverseSortDirection] = useState(false);
 
     const visibleColumns = columns.filter(column => column.views?.includes(view) || column.views?.includes(OrdersView.DEFAULT));
-
 
 
     const refreshOrders: () => void = () => {
         let params: any = {
             status: statusFilter?.join(","),
-            sort: `${sortBy},${reverseSortDirection ? 'desc' : 'asc'}`
+            sort: `${sortBy},${reverseSortDirection ? 'desc' : 'asc'}`,
+            page: activePage,
+            size: maxNumberOfRecords,
         };
         if (maxNumberOfRecords) {
             params = {...params, size: maxNumberOfRecords};
@@ -114,13 +116,18 @@ export function OrdersTable({
 
     useEffect(() => {
         autoRefresh && interval.start();
-        refreshOrders()
     }, []);
 
     useEffect(() => {
         refreshOrders();
         setCounter(0);
     }, [forceRefresh]);
+
+    useEffect(() => {
+        if (getOrdersApi?.data && getOrdersApi?.data?.number !== activePage) {
+            refreshOrders();
+        }
+    }, [activePage]);
 
     const setSorting = (field: string) => {
         const reversed = field === sortBy ? !reverseSortDirection : false;
@@ -212,7 +219,10 @@ export function OrdersTable({
 
             </Table>
 
-            {/*<Pagination value={activePage} onChange={setPage} total={adminItemsApi.data?.totalPages ? adminItemsApi.data?.totalPages : 1} />*/}
+            { allowPagination && <Pagination value={activePage + 1}
+                                             onChange={(val) =>  setActivePage(val-1)}
+                                             disabled={getOrdersApi.loading}
+                                             total={getOrdersApi?.data?.totalPages ? getOrdersApi.data?.totalPages : 1} /> }
         </>
     );
 }

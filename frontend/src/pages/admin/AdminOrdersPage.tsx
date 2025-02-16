@@ -30,6 +30,7 @@ const AdminOrdersPage = () => {
 
             <OrdersTable view={"admin"}
                          autoRefresh={false}
+                         allowPagination={true}
                          onSelectRow={(order: Order) => {
                              navigate(`/order/${order.id}`);
                          }} >

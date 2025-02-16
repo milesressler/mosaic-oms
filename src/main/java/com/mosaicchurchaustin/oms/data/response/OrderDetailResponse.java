@@ -1,6 +1,8 @@
 package com.mosaicchurchaustin.oms.data.response;
 
 import com.mosaicchurchaustin.oms.data.entity.order.OrderEntity;
+import com.mosaicchurchaustin.oms.data.entity.order.OrderEventType;
+import com.mosaicchurchaustin.oms.data.entity.order.OrderExportType;
 import com.mosaicchurchaustin.oms.data.entity.order.OrderHistoryEntity;
 import com.mosaicchurchaustin.oms.data.entity.order.OrderStatus;
 import lombok.Builder;
@@ -64,6 +66,8 @@ public class OrderDetailResponse extends OrderResponse {
         private UserResponse user;
         private OrderStatus status;
         private OrderStatus previousStatus;
+        private OrderEventType eventType;
+        private OrderExportType exportType;
         private Calendar timestamp;
 
         public static History from(final OrderHistoryEntity orderHistoryEntity) {
@@ -72,6 +76,8 @@ public class OrderDetailResponse extends OrderResponse {
                     .previousStatus(orderHistoryEntity.getPreviousOrderStatus())
                     .user(UserResponse.from(orderHistoryEntity.getUserEntity()))
                     .timestamp(orderHistoryEntity.getTimestamp())
+                    .eventType(orderHistoryEntity.getEventType())
+                    .exportType(orderHistoryEntity.getExportType())
                     .build();
 
         }
