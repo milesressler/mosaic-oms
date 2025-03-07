@@ -11,11 +11,11 @@ export interface Order extends BaseObject {
     lastStatusUpdate: string;
 }
 
-export interface OrderPublic extends BaseObject {
-    orderStatus: OrderStatus;
-    customer: First;
-    lastStatusUpdate: string;
-}
+// export interface OrderPublic extends BaseObject {
+//     orderStatus: OrderStatus;
+//     customer: ;
+//     lastStatusUpdate: string;
+// }
 
 export interface OrderNotification {
     orderUuid: string;
@@ -46,11 +46,8 @@ export interface OrderDetails extends Order {
 }
 
 export interface Customer {
-    name: string
-}
-
-export interface First {
-    name: string
+    first: string
+    last: string
 }
 
 export interface BasicUser {
@@ -120,7 +117,7 @@ export interface ItemRequest {
 }
 
 export interface OrderRequest {
-    customerName: string;
+    // customerName: string;
     customerFirstName: string;
     customerLastName: string;
     customerPhone?: string;

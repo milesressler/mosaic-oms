@@ -32,9 +32,10 @@ public class OrderDetailResponse extends OrderResponse {
                 .created(orderEntity.getCreated())
                 .orderStatus(orderEntity.getOrderStatus())
                 .customer(
-                        OrderResponse.Customer.builder()
-                                .name(orderEntity.getCustomer().getName())
-                                .build()
+                    OrderResponse.Customer.builder()
+                        .first(orderEntity.getCustomerFullName().getFirst())
+                        .last(orderEntity.getCustomerFullName().getLast())
+                        .build()
                 )
                 .assignee(
                         Optional.ofNullable(orderEntity.getAssignee()).map(UserResponse::from).orElse(null)
@@ -48,8 +49,8 @@ public class OrderDetailResponse extends OrderResponse {
 
     @Builder
     @Data
-    public static class Customer {
-        private String name;
+    public static class Customer { //is this needed??
+        // private String name;
     }
 
 

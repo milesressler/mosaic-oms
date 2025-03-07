@@ -9,8 +9,7 @@ import com.mosaicchurchaustin.oms.data.entity.CustomerEntity;
 
 @Repository
 public interface CustomerRepository extends JpaRepository<CustomerEntity, Long> {
-
-    Optional<CustomerEntity> findByName(String name); //TODO: change to first, last name
+    Optional<CustomerEntity> findByFirstAndLast(String first, String last); 
     Optional<CustomerEntity> findByFirst(String first); 
     Optional<CustomerEntity> findByLast(String last); 
 

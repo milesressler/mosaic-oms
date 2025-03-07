@@ -42,7 +42,7 @@ public class GroupMeService {
                 Friend: %s
                 
                 Order Items:
-                """, order.getCustomer().getName());
+                """, order.getCustomerFullName());
 
         final StringBuilder sb = new StringBuilder(topLevelContent);
 

@@ -44,7 +44,7 @@ public class OrderEntity extends BaseUuidEntity implements Auditable {
     public static String ENTITY_NAME = "Order";
 
     @ManyToOne(optional = false)
-    CustomerEntity customer; //TODO: change to first, last name
+    CustomerEntity customerFullName; // used to pass full name from OrderService
 
     @ManyToOne(optional = false)
     CustomerEntity first;

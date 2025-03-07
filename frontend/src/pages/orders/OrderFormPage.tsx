@@ -86,7 +86,6 @@ function OrderForm({order}: props) {
         const customerFirstName = firstName;
         const customerLastName = lastNameParts.join(' ');
         const request: OrderRequest = {
-            customerName: values.customerName, 
             customerFirstName: customerFirstName, 
             customerLastName: customerLastName, 
             customerPhone: values.customerPhone,

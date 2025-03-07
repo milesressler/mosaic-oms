@@ -209,10 +209,9 @@ public class OrderService {
         // TODO enable first and last name here - this is reading from table
         if (StringUtils.isNotBlank(request.customerName())) {
             final CustomerEntity customer = getOrCreateCustomer(
-                request.customerName(), 
                 request.customerFirstName(), 
                 request.customerLastName());
-            orderEntity.setCustomer(customer);
+            orderEntity.setCustomerFullName(customer); //used to set full name
         }
 
         if (request.removeItems() != null && !request.removeItems().isEmpty()) {
@@ -236,12 +235,10 @@ public class OrderService {
     @Transactional
     public OrderEntity createOrder(final CreateOrderRequest request) {
         final UserEntity userEntity = userService.currentUser();
-        // Where does request.customerName() come from? passed in as param from createOrder
-        // createOrder is defined in OrdersApi, as /order POST endpoint
-        final CustomerEntity customer = getOrCreateCustomer(request.customerName(), request.customerFirstName(), request.customerLastName());
+        final CustomerEntity customerFullName = getOrCreateCustomer(request.customerFirstName(), request.customerLastName());
         final Boolean optInNotifications = request.optInNotifications() != null && request.optInNotifications();
         final OrderEntity orderEntity = orderRepository.save(OrderEntity.builder()
-                .customer(customer)
+                .customerFullName(customerFullName)
                 .optInNotifications(optInNotifications)
                 .specialInstructions(StringUtils.isBlank(request.specialInstructions())
                         ? null : request.specialInstructions().trim())
@@ -268,17 +265,15 @@ public class OrderService {
         return orderEntity;
     }
 
-    private CustomerEntity getOrCreateCustomer(final String nameInput, final String firstName, final String lastName) {
-        // return customerRepository.findByName(nameInput.trim()), customerRepository.findByName(firstName.trim()), customerRepository.findByName(lastName.trim())
-                // .orElseGet(() -> {
-                    final String name = nameInput.isBlank()
-                            ? null : nameInput.trim();
+    private CustomerEntity getOrCreateCustomer(final String firstName, final String lastName) {
+        return customerRepository.findByFirstAndLast(firstName.trim(), lastName.trim())
+                .orElseGet(() -> {
                     final String first = firstName.isBlank()
                             ? null : firstName.trim();
                     final String last = lastName.isBlank()
                             ? null : lastName.trim();
-                    return customerRepository.save(new CustomerEntity(name, first, last));
-                // });
+                    return customerRepository.save(new CustomerEntity(first, last));
+                });
     }
 
     private void addItemsToOrder(final OrderEntity orderEntity, List<OrderItemRequest> items) {

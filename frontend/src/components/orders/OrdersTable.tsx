@@ -1,5 +1,4 @@
 import {Order, OrderDetails, OrderStatus} from "src/models/types.tsx";
-import useApi from "src/hooks/useApi.tsx";
 import ordersApi from "src/services/ordersApi.tsx";
 import {useEffect, useState} from "react";
 import {useInterval} from "@mantine/hooks";
@@ -72,7 +71,7 @@ export function OrdersTable({
     const refreshPercent = refreshInterval/100;
 
     const getOrdersApi =
-        view === OrdersView.PUBLIC ? useApi(ordersApi.getOrdersDashboardView) : useApi(ordersApi.getOrdersWithDetails);
+        view === OrdersView.PUBLIC ? ordersApi.getOrdersDashboardView : ordersApi.getOrdersWithDetails;
     const [counter, setCounter] = useState(0);
     const [progress, setProgress] = useState(0);
 
@@ -160,12 +159,12 @@ export function OrdersTable({
                         <Text>{DateTime.fromISO(order.created).toLocaleString(DateTime.TIME_SIMPLE)}</Text>
                         <Text c={"dimmed"} size={'xs'}>{DateTime.fromISO(order.created).toLocaleString(DateTime.DATE_MED)}</Text>
                     </>}
-                    {key === 'Updated' && <Text c={'dimmed'}>{DateTime.fromISO(order.lastStatusChange?.timestamp).toRelative()}</Text>}
+                    {key === 'Updated' && <Text c={'dimmed'}>{DateTime.fromISO(order.updated).toRelative()}</Text>}
                     {key === 'Status' && <div>
                         <StatusBadge orderStatus={order.orderStatus} />
-                        <Text c={'dimmed'} size={'xs'}>{DateTime.fromISO(order.lastStatusChange?.timestamp).toRelative()}</Text>
+                        <Text c={'dimmed'} size={'xs'}>{DateTime.fromISO(order.lastStatusUpdate).toRelative()}</Text>
                     </div>}
-                    {key === 'Customer' && order.customer?.name}
+                    {key === 'Customer' && order.customer?.first && order.customer?.last}
                     {key === 'statusObfuscated' && <StatusBadge orderStatus={getObfusgatedStatus(order.orderStatus)}/> }
                 </Table.Td>
             )})}

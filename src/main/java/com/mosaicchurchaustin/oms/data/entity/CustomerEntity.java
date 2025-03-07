@@ -25,8 +25,6 @@ public class CustomerEntity extends BaseUuidEntity {
         return ENTITY_TYPE;
     }
 
-    @Column(name = "name")
-    String name;
     @Column(name = "first")
     String first;
     @Column(name = "last")
