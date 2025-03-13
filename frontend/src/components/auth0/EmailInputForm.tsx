@@ -38,6 +38,7 @@ const EmailInputForm = ({ onSubmit, loading }: EmailInputFormProps) => {
                     label="Email Address"
                     placeholder="user@domain.com"
                     {...form.getInputProps('email')}
+                    type={'email'}
                     required
                 />
                 <Group position="right" mt="md">

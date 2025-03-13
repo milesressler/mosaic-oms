@@ -60,6 +60,14 @@ export interface Customer {
     name: string
 }
 
+export interface CustomerSearch {
+    firstName: string
+    lastName: string
+    name: string
+    id: number
+    uuid: string
+}
+
 export interface BasicUser {
     name: string,
     uuid: string,
@@ -128,7 +136,8 @@ export interface ItemRequest {
 }
 
 export interface OrderRequest {
-    customerName: string;
+    customerName?: string;
+    customerUuid?: number;
     customerPhone?: string;
     specialInstructions?: string;
     optInNotifications?: boolean;

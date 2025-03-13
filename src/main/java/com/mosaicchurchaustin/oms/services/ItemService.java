@@ -11,20 +11,31 @@ import jakarta.transaction.Transactional;
 import org.apache.commons.lang3.StringUtils;
 import org.hibernate.Hibernate;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class ItemService {
+    public static final String ITEMS_KEY = "itemsKey";
 
     @Autowired
     ItemRepository itemRepository;
 
-    public List<ItemEntity> getSuggestedItems() {
-        return itemRepository.findAllByIsSuggestedItem(true);
+    @Transactional
+    @Cacheable(value = "items", key = "#root.target.ITEMS_KEY")
+    public Map<ItemCategory, List<ItemEntity>> getSuggestedItems() {
+        return itemRepository.findAllSuggestedItems().collect(
+                Collectors.groupingBy(
+                        (item) -> item.getCategory() == null ? ItemCategory.OTHER : item.getCategory(),
+                        Collectors.toList())
+        );
     }
 
     @Transactional
@@ -36,6 +47,7 @@ public class ItemService {
     }
 
     @Transactional
+    @CacheEvict(value = "items", key = "#root.target.ITEMS_KEY")
     public void removeItem(final Long id) {
         final ItemEntity itemEntity = itemRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Item", id.toString()));
@@ -46,6 +58,7 @@ public class ItemService {
     }
 
     @Transactional
+    @CacheEvict(value = "items", key = "#root.target.ITEMS_KEY")
     public ItemEntity updateItem(final Long id, final UpdateItemRequest request) {
         final ItemEntity itemEntity = itemRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Item", id.toString()));
@@ -67,6 +80,7 @@ public class ItemService {
     }
 
     @Transactional
+    @CacheEvict(value = "items", key = "#root.target.ITEMS_KEY")
     public ItemEntity createItem(final CreateItemRequest request) {
         if (itemRepository.findByDescription(request.description().trim()).isPresent()) {
             throw new InvalidRequestException(String.format("Item description %s already exists", request.description().trim()));

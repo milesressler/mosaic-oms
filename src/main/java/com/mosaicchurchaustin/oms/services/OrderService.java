@@ -14,6 +14,7 @@ import com.mosaicchurchaustin.oms.data.request.OrderItemRequest;
 import com.mosaicchurchaustin.oms.data.request.UpdateOrderItemRequest;
 import com.mosaicchurchaustin.oms.data.request.UpdateOrderRequest;
 import com.mosaicchurchaustin.oms.exception.EntityNotFoundException;
+import com.mosaicchurchaustin.oms.exception.InvalidRequestException;
 import com.mosaicchurchaustin.oms.repositories.CustomerRepository;
 import com.mosaicchurchaustin.oms.repositories.ItemRepository;
 import com.mosaicchurchaustin.oms.repositories.OrderHistoryRepository;
@@ -31,7 +32,9 @@ import org.springframework.stereotype.Service;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import static com.mosaicchurchaustin.oms.data.entity.OrderItemEntity.ENTITY_NAME;
@@ -202,10 +205,10 @@ public class OrderService {
         }
 
         // TODO figure out what can be updated - ie, once being fulfilled, can items still be changed?
-        if (StringUtils.isNotBlank(request.customerName())) {
-            final CustomerEntity customer = getOrCreateCustomer(request.customerName());
-            orderEntity.setCustomer(customer);
-        }
+//        if (StringUtils.isNotBlank(request.customerName())) {
+//            final CustomerEntity customer = getOrCreateCustomer(request.customerName());
+//            orderEntity.setCustomer(customer);
+//        }
 
         if (request.removeItems() != null && !request.removeItems().isEmpty()) {
             final Set<Long> removeIds = request.removeItems().stream().filter(itemId ->
@@ -228,7 +231,19 @@ public class OrderService {
     @Transactional
     public OrderEntity createOrder(final CreateOrderRequest request) {
         final UserEntity userEntity = userService.currentUser();
-        final CustomerEntity customer = getOrCreateCustomer(request.customerName());
+        final CustomerEntity customer = Optional.ofNullable(request.customerUuid())
+                .map(UUID::toString)
+                .filter(StringUtils::isNotBlank)
+                .map(uuid ->
+                        customerRepository.findByUuid(uuid)
+                                .orElseThrow(() -> new EntityNotFoundException(CustomerEntity.ENTITY_TYPE, uuid)))
+                .orElseGet(() -> {
+                    if(StringUtils.isNotBlank(request.customerName())) {
+                        return customerRepository.save(new CustomerEntity(request.customerName().trim(), null));
+                    } else {
+                        throw new InvalidRequestException("Customer name or uuid is required.");
+                    }
+                });
 
         final Boolean optInNotifications = request.optInNotifications() != null && request.optInNotifications();
         final OrderEntity orderEntity = orderRepository.save(OrderEntity.builder()
@@ -257,18 +272,11 @@ public class OrderService {
         return orderEntity;
     }
 
-    private CustomerEntity getOrCreateCustomer(final String nameInput) {
-        return customerRepository.findByName(nameInput.trim())
-                .orElseGet(() -> {
-                    final String name = nameInput.isBlank()
-                            ? null : nameInput.trim();
-                    return customerRepository.save(new CustomerEntity(name, null));
-                });
-    }
 
     private void addItemsToOrder(final OrderEntity orderEntity, List<OrderItemRequest> items) {
         for (final OrderItemRequest item: items) {
-            final ItemEntity itemEntity = queryForItemByPriority(item);
+            final ItemEntity itemEntity = itemRepository.findById(item.item())
+                    .orElseThrow(() -> new EntityNotFoundException(ItemEntity.ENTITY_TYPE, item.item().toString()));
 
             orderEntity.getOrderItemList().add(
                     orderItemRepository.save(new OrderItemEntity(
@@ -278,12 +286,12 @@ public class OrderService {
         }
     }
 
-    private ItemEntity queryForItemByPriority(final OrderItemRequest item) {
-        return itemRepository.findByDescription(item.description())
-                .orElseGet(() ->
-                    itemRepository.save(ItemEntity.builder().description(item.description()).isSuggestedItem(false).build())
-        );
-    }
+//    private ItemEntity queryForItemByPriority(final OrderItemRequest item) {
+//        return itemRepository.findByDescription(item.description())
+//                .orElseGet(() ->
+//                    itemRepository.save(ItemEntity.builder().description(item.description()).isSuggestedItem(false).build())
+//        );
+//    }
 
 
 }

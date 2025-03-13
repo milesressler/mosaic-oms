@@ -2,7 +2,7 @@ import client from "./client";
 import {AdminItem, CreateItemRequest, Item, Page, UpdateItemRequest} from "src/models/types.tsx";
 
 const getSuggestedItems = () =>
-    client.get<Item[]>("/item");
+    client.get<Record<string, Item[]>>("/item");
 const getAdminItemsPage = (page: number, size: number) =>
     client.get<Page<AdminItem>>("/admin/item", {params: {page, size}});
 

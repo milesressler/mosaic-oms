@@ -15,13 +15,8 @@ import {Order, OrderDetails, OrderRequest} from "src/models/types.tsx";
 import OrderItemForm from "src/components/orderform/OrderItemForm.tsx";
 import OrderItemDisplay from "src/components/orderform/OrderItemDisplay.tsx";
 import {useFeatures} from "src/contexts/FeaturesContext.tsx";
+import {FormOrderItem} from "src/models/forms.tsx";
 
-export interface FormItem {
-    description: string,
-    notes?: string,
-    quantity: number,
-    itemkey?: string,
-}
 
 interface props {
     order?: Order
@@ -30,7 +25,7 @@ interface props {
 function OrderForm({order}: props) {
     const createOrderAPI = useApi(ordersApi.createOrder);
     const suggestedItemsApi = useApi(itemsApi.getSuggestedItems);
-    const [updatingItem, setUpdatingItem] = useState<FormItem|null>(null);
+    const [updatingItem, setUpdatingItem] = useState<FormOrderItem|null>(null);
     const orderDetailApi = useApi(ordersApi.getOrderById);
     const { groupMeEnabled } = useFeatures();
 
@@ -56,9 +51,6 @@ function OrderForm({order}: props) {
             setOrderDetail(orderDetailApi.data);
         }
     }, [orderDetailApi.data]);
-
-
-
 
     const form = useForm({
         initialValues: {
@@ -93,7 +85,7 @@ function OrderForm({order}: props) {
         };
         createOrderAPI.request(request);
     }
-    const itemFields = form.values.items.map((formItem: FormItem, index: number) => (
+    const itemFields = form.values.items.map((formItem: FormOrderItem, index: number) => (
         <OrderItemDisplay
             formItem={formItem}
             onEditSelected={() => setUpdatingItem(formItem)}
@@ -101,8 +93,8 @@ function OrderForm({order}: props) {
             handleQuantityChange={(quantity) => {
                 form.setValues((currentValues: any) => ({
                     items: currentValues.items
-                        .map((currentItem: FormItem) =>
-                            formItem.itemkey === currentItem.itemkey ?
+                        .map((currentItem: FormOrderItem) =>
+                            formItem.item.id === currentItem.item.id ?
                                 { ...currentItem, quantity: quantity } :
                                 currentItem)
                 }));
@@ -115,10 +107,10 @@ function OrderForm({order}: props) {
         setUpdatingItem({ description: '',  quantity: 1, notes: "" });
     };
 
-    function updateFromDraftItem(draftItem: FormItem) {
+    function updateFromDraftItem(draftItem: FormOrderItem) {
         if (draftItem.itemkey) {
             form.setValues((currentValues: any) => ({
-                items: currentValues.items.map((currentItem: FormItem) =>
+                items: currentValues.items.map((currentItem: FormOrderItem) =>
                     draftItem.itemkey === currentItem.itemkey ? {
                         ...currentItem,
                         description: draftItem.description,
@@ -136,12 +128,11 @@ function OrderForm({order}: props) {
 
     return (<>
         <LoadingOverlay visible={createOrderAPI.loading} />
-        <Paper  p={30} mt={30} radius="md" maw={600}  miw={400} mx="auto">
+        <Paper  p={15} radius="md" maw={600}  miw={400} mx="auto">
 
             {<Modal opened={!!updatingItem} onClose={() => setUpdatingItem(null)}>
                 {/*<Card center maw={200}>*/}
                 { updatingItem && <OrderItemForm
-                    suggestedItems={suggestedItemsApi?.data ?? []}
                     formItem={updatingItem}
                     onCancel={() => setUpdatingItem(null)}
                     handleItemUpdate={updateFromDraftItem}></OrderItemForm> }

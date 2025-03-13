@@ -4,11 +4,13 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
 
 import java.util.List;
+import java.util.UUID;
 
 
 @Valid
 public record CreateOrderRequest(
-        @NotBlank(message = "customerName cannot be blank") String customerName,
+        String customerName,
+        UUID customerUuid,
         @Pattern(regexp="(^$|[0-9]{10})", message = "customerPhone should be 10 digits")
         String customerPhone,
         Boolean optInNotifications,

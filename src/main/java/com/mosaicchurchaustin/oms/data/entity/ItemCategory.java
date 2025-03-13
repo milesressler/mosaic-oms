@@ -14,7 +14,8 @@ public enum ItemCategory {
     LINENS("Household items like towels, sheets, and blankets."),
     FIRST_AID("Medical supplies like bandages, pain relievers, and ointments."),
     GEAR("Essential equipment like backpacks, tents, and sleeping bags."),
-    ACCESSORIES("Additional items like hats, gloves, and ChapStick.");
+    ACCESSORIES("Additional items like hats, gloves, and ChapStick."),
+    OTHER("Other");
 
     @Getter
     private final String description;

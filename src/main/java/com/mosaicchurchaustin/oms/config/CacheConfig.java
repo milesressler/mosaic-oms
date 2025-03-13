@@ -18,7 +18,10 @@ public class CacheConfig {
 
     @Bean("transitCacheManager")
     public CacheManager cacheManager() {
-        final CaffeineCacheManager cacheManager = new CaffeineCacheManager("transitData", "features");
+        final CaffeineCacheManager cacheManager = new CaffeineCacheManager(
+                "transitData",
+                "items",
+                "features");
         cacheManager.setCaffeine(Caffeine.newBuilder()
                 .expireAfterWrite(5, TimeUnit.MINUTES)
                 .maximumSize(100));
