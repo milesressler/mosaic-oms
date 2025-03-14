@@ -1,18 +1,20 @@
 import useApi from "src/hooks/useApi.tsx";
 import {
-    Text, Stack, SegmentedControl, ScrollArea, Grid, Card, Badge, useMantineTheme, Group, Modal
+    Text, Stack, SegmentedControl, ScrollArea, Grid, Card, Badge, useMantineTheme, Group, Modal, Button
 } from '@mantine/core';
-import {useEffect, useState} from "react";
+import {useCallback, useEffect, useState} from "react";
 import itemsApi from "src/services/itemsApi.tsx";
 import {Item} from "src/models/types.tsx";
-import OrderItemFormV2 from "src/components/forms/OrderItemFormV2.tsx";
+import OrderItemFormV2 from "src/forms/OrderItemFormV2.tsx";
 import {FormOrderItem} from "src/models/forms.tsx";
-import { IconNote} from "@tabler/icons-react";
+import {IconCircleX, IconNote} from "@tabler/icons-react";
+import {useDisclosure} from "@mantine/hooks";
+import ItemForm from "src/forms/items/ItemForm.tsx";
 
 
 interface props {
     currentSelection: FormOrderItem[]
-    onItemSelectionChange: (index: number|null, formOrderItem: FormOrderItem) => void
+    onItemSelectionChange: (index: number|null, formOrderItem: FormOrderItem|null) => void
 }
 
 export function ItemSelection ({currentSelection, onItemSelectionChange}: props) {
@@ -30,6 +32,7 @@ export function ItemSelection ({currentSelection, onItemSelectionChange}: props)
     const [draftItem, setDraftItem] = useState<FormOrderItem | null>(null);
     const [editingIndex, setEditingIndex] = useState<number | null>(null);
     const [categories, setCategories] = useState<string[]>([]);
+    const [newItemOpen, {open: openNewItem, close: closeNewItem}] = useDisclosure(false);
 
     const suggestedItemsApi = useApi(itemsApi.getSuggestedItems);
 
@@ -68,6 +71,10 @@ export function ItemSelection ({currentSelection, onItemSelectionChange}: props)
         setEditingIndex(index);
     };
 
+    const handleItemDelete = (index: number) => {
+        onItemSelectionChange(index, null);
+    };
+
     const handleItemSave = (formOrderItem: FormOrderItem) => {
         if (editingIndex !== null) {
             // Update existing item
@@ -83,8 +90,20 @@ export function ItemSelection ({currentSelection, onItemSelectionChange}: props)
         setEditingIndex(null);
     };
 
+    const handleNewItem = () => {
+        openNewItem();
+    }
+
+    const handleItemCreated = useCallback((item: Item) => {
+        suggestedItemsApi.request();
+        closeNewItem();
+    }, [suggestedItemsApi.request, closeNewItem]);
+
     return (
         <Stack gap="md" >
+            <Modal title={"Create New Item"} opened={newItemOpen} onClose={() => {closeNewItem()}} >
+                <ItemForm categories={categories} onItemCreate={handleItemCreated}/>
+            </Modal>
 
             {<Modal opened={!!draftItem} title={draftItem?.item?.description}  onClose={() => setDraftItem(null)}>
                 {/*<Card center maw={200}>*/}
@@ -137,7 +156,12 @@ export function ItemSelection ({currentSelection, onItemSelectionChange}: props)
                                    style={{cursor: ''}}
                                    key={index}
                                    variant="filled"
-                                   rightSection={item.notes && <IconNote/>}
+                                   rightSection={
+                                        <Group> {item.notes && <IconNote/>}
+                                       <IconCircleX color={'white'} onClick={(e) => {
+                                           e.stopPropagation(); // Prevents event from reaching Badge
+                                           handleItemDelete(index);
+                                       }}/> </Group>}
                                    color={categoryColors[categories.indexOf(item.item.category || 'OTHER')]}>
                                 {item.item.description}
                             </Badge>
@@ -145,6 +169,8 @@ export function ItemSelection ({currentSelection, onItemSelectionChange}: props)
                     </Group>
                 </Stack>
             )}
+            {/*<Modal opened={false} onClose={}></Modal>*/}
+            <Button variant={'outline'} onClick={handleNewItem}>New Item</Button>
         </Stack>
     );
 }

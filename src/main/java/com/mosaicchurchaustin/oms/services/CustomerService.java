@@ -1,9 +1,13 @@
 package com.mosaicchurchaustin.oms.services;
 
+import com.mosaicchurchaustin.oms.data.entity.CustomerEntity;
 import com.mosaicchurchaustin.oms.data.jpa.CustomerSearchProjection;
+import com.mosaicchurchaustin.oms.exception.EntityNotFoundException;
 import com.mosaicchurchaustin.oms.repositories.CustomerRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -21,5 +25,15 @@ public class CustomerService {
         final String lastName = parts.length > 1 ? parts[1] : inputName;
 
         return customerRepository.searchCustomers(firstName, lastName, 10);
+    }
+
+    @Transactional
+    public CustomerEntity getCustomer(final String uuid) {
+        return customerRepository.findByUuid(uuid).orElseThrow(() -> new EntityNotFoundException(CustomerEntity.ENTITY_TYPE, uuid));
+    }
+
+    @Transactional
+    public Page<CustomerEntity> getCustomers(final Pageable pageable) {
+        return customerRepository.findAll(pageable);
     }
 }

@@ -18,6 +18,7 @@ import {SelectedOrderProvider} from "src/contexts/SelectedOrderContext.tsx";
 import RunnerDashboard from "src/pages/dashboards/RunnerDashboard.tsx";
 import DistributorDashboard from "src/pages/dashboards/DistributorDashboard.tsx";
 import AdminSettingsPage from "src/pages/admin/AdminSettingsPage.tsx";
+import CustomerMgmtPage from "src/pages/admin/CustomerMgmtPage.tsx";
 
 
 const routes = [
@@ -118,6 +119,13 @@ const routes = [
                 path: '/orders',
                 element: AdminOrdersPage,
                 title: 'Orders',
+                showInNavBar: true,
+            },
+            {
+                key: 'customers',
+                path: '/customers',
+                element: CustomerMgmtPage,
+                title: 'Customers',
                 showInNavBar: true,
             },
             {

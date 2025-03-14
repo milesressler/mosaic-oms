@@ -6,6 +6,9 @@ const getSuggestedItems = () =>
 const getAdminItemsPage = (page: number, size: number) =>
     client.get<Page<AdminItem>>("/admin/item", {params: {page, size}});
 
+const createItem = (request: CreateItemRequest) =>
+    client.post<Item>( `/item`, request)
+
 const createAdminItem = (request: CreateItemRequest) =>
     client.post<AdminItem>( `/admin/item`, request)
 const updateAdminItem = (id: number, request: UpdateItemRequest) =>
@@ -16,6 +19,7 @@ const deleteAdminItem = (id: number) =>
 export default {
     getSuggestedItems,
     getAdminItemsPage,
+    createItem,
     updateAdminItem,
     deleteAdminItem,
     createAdminItem,

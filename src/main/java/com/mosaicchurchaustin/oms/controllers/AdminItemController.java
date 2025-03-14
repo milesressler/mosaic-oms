@@ -34,8 +34,7 @@ public class AdminItemController {
 
     @ResponseBody
     @PostMapping(path = "/item", produces = MediaType.APPLICATION_JSON_VALUE)
-    public AdminItemResponse createItem(@PathVariable("id") final Long id,
-                                        @RequestBody final CreateItemRequest request) {
+    public AdminItemResponse createItem(@RequestBody final CreateItemRequest request) {
         return AdminItemResponse.from(itemService.createItem(request));
     }
 

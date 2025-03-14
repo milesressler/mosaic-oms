@@ -58,6 +58,9 @@ export interface OrderDetails extends Order {
 
 export interface Customer {
     name: string
+    uuid: string
+    created: number
+    showerWaiverCompleted: number
 }
 
 export interface CustomerSearch {
@@ -130,14 +133,15 @@ export enum OrderStatus {
 }
 
 export interface ItemRequest {
-    description: string;
-    notes: string;
+    item: number;
+    notes?: string;
     quantity: number;
+    attributes?: Record<string, string|number>
 }
 
 export interface OrderRequest {
     customerName?: string;
-    customerUuid?: number;
+    customerUuid?: string;
     customerPhone?: string;
     specialInstructions?: string;
     optInNotifications?: boolean;

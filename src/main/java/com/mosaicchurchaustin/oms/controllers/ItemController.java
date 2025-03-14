@@ -1,11 +1,14 @@
 package com.mosaicchurchaustin.oms.controllers;
 
 import com.mosaicchurchaustin.oms.data.entity.ItemCategory;
+import com.mosaicchurchaustin.oms.data.request.CreateItemRequest;
 import com.mosaicchurchaustin.oms.data.response.SuggestedItemResponse;
 import com.mosaicchurchaustin.oms.services.ItemService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -31,5 +34,11 @@ public class ItemController {
                                 .map(SuggestedItemResponse::from) // Convert Items to SuggestedItemResponse
                                 .toList()
                 ));
+    }
+
+    @ResponseBody
+    @PostMapping(path = "/item", produces = MediaType.APPLICATION_JSON_VALUE)
+    public SuggestedItemResponse createItem(@RequestBody final CreateItemRequest request) {
+        return SuggestedItemResponse.from(itemService.createItem(request));
     }
 }

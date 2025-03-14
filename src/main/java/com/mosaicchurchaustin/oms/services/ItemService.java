@@ -89,6 +89,7 @@ public class ItemService {
         final ItemEntity itemEntity = ItemEntity.builder()
                 .description(request.description().trim())
                 .placeholder(StringUtils.defaultIfBlank(request.placeholder(), null))
+                .isSuggestedItem(request.suggestedItem() ==  Boolean.TRUE ? Boolean.TRUE : Boolean.FALSE)
                 .category(StringUtils.isNotBlank(request.category()) ? ItemCategory.from(request.category()) : null)
                 .build();
 

@@ -1,5 +1,5 @@
 import { useEffect, useState} from "react";
-import {useForm} from "@mantine/form";
+import {UseFormReturnType} from "@mantine/form";
 import {
     Badge, Blockquote,
     Box,
@@ -16,21 +16,21 @@ import {
     Title
 } from "@mantine/core";
 import {useDebouncedValue, useMediaQuery} from "@mantine/hooks";
-import {CustomerSearch, Order, OrderRequest} from "src/models/types";
+import {CustomerSearch, OrderRequest} from "src/models/types";
 import ItemSelection from "src/components/orders/ItemSelection.tsx";
 import useApi from "src/hooks/useApi.tsx";
 import customersApi from "src/services/customersApi.tsx";
-import CustomerResultCard from "src/components/forms/CustomerResultCard.tsx";
-import {FormOrderItem} from "src/models/forms.tsx";
+import CustomerResultCard from "src/forms/CustomerResultCard.tsx";
+import {FormOrderItem, OrderFormValues} from "src/models/forms.tsx";
 import {useFeatures} from "src/contexts/FeaturesContext.tsx";
 import ordersApi from "src/services/ordersApi.tsx";
 import {IconNote, IconNotes, IconSend, IconShoppingBag, IconUserCheck} from "@tabler/icons-react";
 
 interface Props {
-    order: Order | null;
+    form: UseFormReturnType<OrderFormValues>,
 }
 
-export function OrderFormV2({ order }: Props) {
+export function OrderFormV2({ form }: Props) {
     const isMobile = useMediaQuery(`(max-width: ${DEFAULT_THEME.breakpoints.lg})`);
     const { groupMeEnabled } = useFeatures();
 
@@ -42,22 +42,6 @@ export function OrderFormV2({ order }: Props) {
     const createOrderAPI = useApi(ordersApi.createOrder);
 
     const steps = ["customer", "items", "additional", "confirm"];
-
-    const form = useForm({
-        initialValues: {
-            // customerId: order?.customer?.?.toString() || "",
-            customerId: "",
-            firstName: order?.customer?.name || "",
-            lastName: order?.customer?.name || "",
-            specialInstructions: null,
-            items: [],
-        },
-        validate: {
-            firstName: (value) => (value.trim().length > 0 ? null : "First name is required"),
-            lastName: (value) => (value.trim().length > 0 ? null : "Last name is required"),
-            items: (value => value.length > 0 ? null : "No items selected"),
-        },
-    });
 
     useEffect(() => {
         if (debouncedSearch) {
@@ -78,9 +62,11 @@ export function OrderFormV2({ order }: Props) {
 
         if (index === null) {
             form.insertListItem('items', newItem)
-        } else {
+        } else if (newItem !== null) {
             form.removeListItem('items', index);
             form.insertListItem('items', newItem)
+        } else {
+            form.removeListItem('items', index);
         }
     };
 
@@ -96,14 +82,14 @@ export function OrderFormV2({ order }: Props) {
         }
     };
 
-    const submitOrder = (values: any) => {
+    const submitOrder = (values: OrderFormValues) => {
         form.validate();
         const request: OrderRequest = {
             customerName: values.firstName + " " + values.lastName,
             customerUuid: values.customerId,
             customerPhone: values.customerPhone,
-            specialInstructions: values.specialInstructions,
-            optInNotifications: values.optInNotifications,
+            specialInstructions: values.specialInstructions || '',
+            optInNotifications: !!values.optInNotifications,
             items: values.items.map((formItem: FormOrderItem) => {
                 return {...formItem, 'item': formItem.item.id};
             }),

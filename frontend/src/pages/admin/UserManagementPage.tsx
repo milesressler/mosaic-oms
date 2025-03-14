@@ -117,7 +117,7 @@ export function UserManagementPage() {
                 </Box>
                 </GridCol>}
             </Grid>
-            <Modal opened={inviteModal} onClose={() => setInviteModal(false)}>
+            <Modal title={"Invite New User"} opened={inviteModal} onClose={() => setInviteModal(false)}>
               <EmailInputForm loading={createUserApi.loading} onSubmit={inviteUser}/>
             </Modal>
             </>

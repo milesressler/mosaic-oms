@@ -5,8 +5,13 @@ interface EmailInputFormProps {
     onSubmit: (email: string, name: string) => void
     loading: boolean
 }
+
+interface EmailInputValues {
+    email: string,
+    name: string
+}
 const EmailInputForm = ({ onSubmit, loading }: EmailInputFormProps) => {
-    const form = useForm({
+    const form = useForm<EmailInputValues>({
         initialValues: {
             email: '',
             name: '',
@@ -19,14 +24,14 @@ const EmailInputForm = ({ onSubmit, loading }: EmailInputFormProps) => {
                     : 'Invalid email',
         },
     });
-    const handleSubmit = (values) => {
+    const handleSubmit = (values: EmailInputValues) => {
         if (form.isValid()) {
             onSubmit(values.email, values.name)
         }
     };
 
     return (
-        <Box sx={{ maxWidth: 300 }} mx="auto">
+        <Box  mx="auto">
             <form onSubmit={form.onSubmit(handleSubmit)}>
                 <TextInput
                     label="Name"
@@ -41,7 +46,7 @@ const EmailInputForm = ({ onSubmit, loading }: EmailInputFormProps) => {
                     type={'email'}
                     required
                 />
-                <Group position="right" mt="md">
+                <Group justify={'flex-end'} mt="md">
                     <Button loading={loading} type="submit">Send Invitation</Button>
                 </Group>
             </form>
