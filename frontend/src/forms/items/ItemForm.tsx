@@ -2,23 +2,23 @@ import { useForm } from "@mantine/form";
 import { Button, Select, TextInput, Stack } from "@mantine/core";
 import useApi from "src/hooks/useApi.tsx";
 import itemsApi from "src/services/itemsApi.tsx";
-import { Item } from "src/models/types.tsx";
+import {AdminItem, Category, categoryDisplayNames, Item} from "src/models/types.tsx";
 import {useEffect} from "react";
 
 interface Props {
-    categories: string[];
+    item?: AdminItem;
     onItemCreate: (item: Item) => void;
 }
 
-export function ItemForm({ categories, onItemCreate }: Props) {
+export function ItemForm({ onItemCreate, item }: Props) {
     const createApi = useApi(itemsApi.createItem);
 
     const form = useForm({
         initialValues: {
-            description: "",
-            category: "",
-            placeholder: "",
-            suggestedItem: true
+            description: item?.description || "",
+            category: item?.category || "",
+            placeholder: item?.placeholder || "",
+            suggestedItem: item?.suggestedItem != false
         },
         validate: {
             description: (value) => (value.trim() ? null : "Description is required"),
@@ -47,7 +47,9 @@ export function ItemForm({ categories, onItemCreate }: Props) {
                 />
                 <Select
                     label="Category"
-                    data={categories}
+                    data={Object.values(Category).map(category => {
+                        return { label: categoryDisplayNames[category], value: category.toString() }
+                    })}
                     placeholder="Select a category"
                     {...form.getInputProps("category")}
                 />

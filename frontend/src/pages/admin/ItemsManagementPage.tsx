@@ -1,8 +1,19 @@
-import {ActionIcon, Checkbox, Group, LoadingOverlay, Pagination, Table, Text, TextInput} from "@mantine/core";
+import {
+    ActionIcon,
+    Checkbox,
+    Group,
+    LoadingOverlay,
+    Modal,
+    Pagination,
+    Select,
+    Table,
+    Text,
+    TextInput
+} from "@mantine/core";
 import useApi from "src/hooks/useApi.tsx";
 import ItemsApi from "src/services/itemsApi.tsx";
 import {useEffect, useRef, useState} from "react";
-import {AdminItem, Item} from "src/models/types.tsx";
+import {AdminItem, Category, categoryDisplayNames, Item} from "src/models/types.tsx";
 import {IconCheck, IconX} from "@tabler/icons-react";
 
 const EditableCell = ({ initialValue, onSave, onCancel, isEditing, onEdit }: any) => {
@@ -66,6 +77,7 @@ export function ItemsManagementPage() {
     const [editingId, setEditingId] = useState<number|null>(null);
     const [deletingId, setDeleting] = useState<number|null>(null);
     const [pageContent, setPageContent] = useState<AdminItem[]|null>(null);
+    const [editingItem, setEditingItem] = useState<AdminItem|null>(null);
 
     useEffect(() => {
         if(adminItemsApi.data) {
@@ -117,6 +129,10 @@ export function ItemsManagementPage() {
         }
     };
 
+    const handleCategoryChange = (id: number,  category: string) => {
+        updateItemApi.request(id, {category});
+    }
+
     const handleDelete = (item: Item) => {
         if (!deleteItemApi.loading) {
             deleteItemApi.request(item.id)
@@ -136,8 +152,19 @@ export function ItemsManagementPage() {
         <Table.Tr key={item.id} pos={'relative'}>
             <LoadingOverlay visible={item.id === deletingId}/>
 
-            <Table.Td>{item.description}</Table.Td>
-            <Table.Td>{ item.category}</Table.Td>
+            <Table.Td onClick={() => setEditingItem(item)}>{item.description}</Table.Td>
+            <Table.Td>
+                <Select
+                    // label="Category"
+                    data={Object.values(Category).map(category => {
+                        return { label: categoryDisplayNames[category], value: category.toString() }
+                    })}
+                    placeholder="Select a category"
+                    value={item.category}
+                    onChange={(val, option) => handleCategoryChange(item.id, val)}
+                />
+                {/*{ item.category}*/}
+            </Table.    Td>
             <Table.Td><><EditableCell initialValue={item.placeholder}
                                     onSave={(newValue: string) => handleSavePlaceholder(item.id, newValue)}
                                     onCancel={handleCancel}
@@ -164,23 +191,24 @@ export function ItemsManagementPage() {
 
     return (
         <>
-        <Table pos={'relative'}>
-                <Table.Thead>
-                <Table.Tr>
-                    <Table.Th>Description</Table.Th>
-                    <Table.Th>Category</Table.Th>
-                    <Table.Th>Placeholder</Table.Th>
-                    <Table.Th>Suggested</Table.Th>
-                    <Table.Th>Filled / Ordered</Table.Th>
-                </Table.Tr>
-            </Table.Thead>
-            <Table.Tbody>
-                {rows}
-            </Table.Tbody>
-        </Table>
-        { (adminItemsApi.data?.totalPages ?? 0) > 1 && <Pagination value={activePage} onChange={setPage} total={adminItemsApi.data?.totalPages ?? 0} /> }
-
-
+            {/*<Modal opened={!!editingItem} onClose={() => setEditingItem(null)}>*/}
+            {/*    {  <ItemForm categories={['test']} item={editingItem!} onItemCreate={() => setEditingItem(null)}></ItemForm> }*/}
+            {/*</Modal>*/}
+            <Table pos={'relative'}>
+                    <Table.Thead>
+                    <Table.Tr>
+                        <Table.Th>Description</Table.Th>
+                        <Table.Th>Category</Table.Th>
+                        <Table.Th>Placeholder</Table.Th>
+                        <Table.Th>Suggested</Table.Th>
+                        <Table.Th>Filled / Ordered</Table.Th>
+                    </Table.Tr>
+                </Table.Thead>
+                <Table.Tbody>
+                    {rows}
+                </Table.Tbody>
+            </Table>
+            { (adminItemsApi.data?.totalPages ?? 0) > 1 && <Pagination value={activePage} onChange={setPage} total={adminItemsApi.data?.totalPages ?? 0} /> }
         </>
     );
 }

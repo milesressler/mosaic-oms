@@ -95,7 +95,7 @@ public class OrderNotifier {
         messagingTemplate.convertAndSend("/topic/orders/status", orderNotification);
 
         var printingActions = Map.<OrderStatus, Consumer<OrderEntity>>of(
-                OrderStatus.PACKED, printingService::printAcceptedOrderLabel,
+                OrderStatus.PACKED, printingService::printPackedLabel,
                 OrderStatus.ACCEPTED, printingService::printAcceptedOrderLabel
         );
 

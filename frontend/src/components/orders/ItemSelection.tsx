@@ -4,7 +4,7 @@ import {
 } from '@mantine/core';
 import {useCallback, useEffect, useState} from "react";
 import itemsApi from "src/services/itemsApi.tsx";
-import {Item} from "src/models/types.tsx";
+import {Category, categoryDisplayNames, Item} from "src/models/types.tsx";
 import OrderItemFormV2 from "src/forms/OrderItemFormV2.tsx";
 import {FormOrderItem} from "src/models/forms.tsx";
 import {IconCircleX, IconNote} from "@tabler/icons-react";
@@ -29,9 +29,10 @@ export function ItemSelection ({currentSelection, onItemSelectionChange}: props)
         theme.colors.lime[4],
         theme.colors.cyan[7]]
 
+    const categories = Object.values(Category).map(c => c.toString());
+
     const [draftItem, setDraftItem] = useState<FormOrderItem | null>(null);
     const [editingIndex, setEditingIndex] = useState<number | null>(null);
-    const [categories, setCategories] = useState<string[]>([]);
     const [newItemOpen, {open: openNewItem, close: closeNewItem}] = useDisclosure(false);
 
     const suggestedItemsApi = useApi(itemsApi.getSuggestedItems);
@@ -40,20 +41,7 @@ export function ItemSelection ({currentSelection, onItemSelectionChange}: props)
         suggestedItemsApi.request();
     }, []);
 
-    useEffect(() => {
-        if (categories.length === 0 && suggestedItemsApi.data) {
-            setCategories(suggestedItemsApi.data ? Object.keys(suggestedItemsApi.data) : [])
-        }
-
-    }, [suggestedItemsApi.data]);
-
-    useEffect(() => {
-        if (categories && !selectedCategory) {
-            setSelectedCategory(categories[0]);
-        }
-    }, [categories]);
-
-    const [selectedCategory, setSelectedCategory] = useState("");
+    const [selectedCategory, setSelectedCategory] = useState(categories[0].toString());
 
 
     const handleItemSelect = (item: Item) => {
@@ -102,7 +90,7 @@ export function ItemSelection ({currentSelection, onItemSelectionChange}: props)
     return (
         <Stack gap="md" >
             <Modal title={"Create New Item"} opened={newItemOpen} onClose={() => {closeNewItem()}} >
-                <ItemForm categories={categories} onItemCreate={handleItemCreated}/>
+                <ItemForm onItemCreate={handleItemCreated}/>
             </Modal>
 
             {<Modal opened={!!draftItem} title={draftItem?.item?.description}  onClose={() => setDraftItem(null)}>
@@ -121,7 +109,9 @@ export function ItemSelection ({currentSelection, onItemSelectionChange}: props)
                     fullWidth
                     value={selectedCategory || undefined}
                     onChange={(val) => setSelectedCategory(val)}
-                    data={categories}
+                    data={Object.values(Category).map(category => {
+                        return { label: categoryDisplayNames[category], value: category.toString() }
+                    })}
                 />
             </ScrollArea>
             {/* Item Selection */}

@@ -213,4 +213,22 @@ export interface FeatureConfig {
     printOnTransitionToStatus: OrderStatus
 }
 
+export enum Category{
+    CLOTHING = "CLOTHING",
+    GEAR = "GEAR",
+    HYGIENE = "HYGIENE",
+    LINENS = "LINENS",
+    FIRST_AID = "FIRST_AID",
+    ACCESSORIES = "ACCESSORIES",
+    OTHER = "OTHER",
+}
 
+export const categoryDisplayNames: Record<Category, string> = {
+    [Category.FIRST_AID]: "First Aid",
+    [Category.CLOTHING]: "Clothing",
+    [Category.HYGIENE]: "Hygiene",
+    [Category.GEAR]: "Gear",
+    [Category.LINENS]: "Linens",
+    [Category.ACCESSORIES]: "Accessories",
+    [Category.OTHER]: "Misc",
+};

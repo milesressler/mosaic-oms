@@ -23,6 +23,7 @@ export function OrderItemFormv2({formItem,  onSave, onCancel}: OrderItemFormProp
     return (<>
             <Stack>
                     <Textarea
+                        size={'lg'}
                         label="Additional item note"
                         required={!!formItem?.item?.placeholder}
                         placeholder={"Size, color, preferences, etc"}

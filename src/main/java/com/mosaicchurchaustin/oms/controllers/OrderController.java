@@ -13,7 +13,6 @@ import com.mosaicchurchaustin.oms.services.sockets.OrderNotifier;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
@@ -35,9 +34,7 @@ import java.util.List;
 public class OrderController {
 
     final OrderService orderService;
-
-    @Autowired
-    private OrderNotifier orderNotifier;
+    final OrderNotifier orderNotifier;
 
     @ResponseBody
     @PostMapping(path = "/order", produces = MediaType.APPLICATION_JSON_VALUE)

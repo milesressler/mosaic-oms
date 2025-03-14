@@ -9,7 +9,7 @@ interface UserRoleManagementProps {
     loading: boolean;
 }
 
-const UserRoleManagement = ({ selectedUser}: UserRoleManagementProps) => {
+const UserRoleManagement = ({ selectedUser, loading}: UserRoleManagementProps) => {
     const updateUserApi = useApi(AdminUserApi.updateUser);
 
     const handleRoleChange = (roleName: string, checked: boolean) => {
@@ -23,6 +23,7 @@ const UserRoleManagement = ({ selectedUser}: UserRoleManagementProps) => {
 
     const checkboxes = ROLE_NAMES.map((value) => (
         <Checkbox
+            indeterminate={loading}
             mt="xs"
             ml={33}
             label={value}
