@@ -14,15 +14,23 @@ def lambda_handler(event, context):
     action = event.get("action", "")
 
     if action == "stop_rds_ecs":
-        print("Stopping RDS instance...")
-        rds_client.stop_db_instance(DBInstanceIdentifier=DB_INSTANCE_ID)
+        try:
+            print("Stopping RDS instance...")
+            rds_client.stop_db_instance(DBInstanceIdentifier=DB_INSTANCE_ID)
+        except:
+            print("Failed stopping RDS instance.")
 
-        print("Stopping ECS service...")
-        ecs_client.update_service(
-            cluster=ECS_CLUSTER,
-            service=ECS_SERVICE,
-            desiredCount=0
-        )
+
+        try:
+            print("Stopping ECS service...")
+            ecs_client.update_service(
+                cluster=ECS_CLUSTER,
+                service=ECS_SERVICE,
+                desiredCount=0
+            )
+        except:
+            print("Failed stopping ECS service.")
+
 
     elif action == "start_rds":
         print("Starting RDS instance...")

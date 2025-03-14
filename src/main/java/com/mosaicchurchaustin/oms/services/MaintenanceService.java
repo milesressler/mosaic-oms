@@ -22,7 +22,7 @@ public class MaintenanceService {
 //    @Scheduled(fixedRate = 1, timeUnit = TimeUnit.DAYS)
     void cleanupOldOrders() {
         final Calendar calendar = Calendar.getInstance();
-        calendar.add(Calendar.DAY_OF_MONTH, -10);
+        calendar.add(Calendar.DAY_OF_MONTH, -6);
 
         final Stream<OrderEntity> expiredOrders =
                 orderRepository.findByCreatedBefore(calendar);
