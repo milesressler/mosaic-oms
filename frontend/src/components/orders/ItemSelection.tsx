@@ -45,13 +45,19 @@ export function ItemSelection ({currentSelection, onItemSelectionChange}: props)
 
 
     const handleItemSelect = (item: Item) => {
-        setDraftItem({
+        const draftItem: FormOrderItem = {
             item,
             quantity: 1,
             notes: "", // Default state
             attributes: {}, // If there are attributes to be filled
-        });
-        setEditingIndex(null);
+        };
+
+        if (item.placeholder && item.placeholder.length > 0) {
+            setDraftItem(draftItem);
+            setEditingIndex(null);
+        } else {
+            onItemSelectionChange(null, draftItem);
+        }
     };
 
     const handleItemEdit = (index: number) => {
