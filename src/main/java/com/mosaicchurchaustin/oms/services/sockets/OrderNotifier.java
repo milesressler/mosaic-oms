@@ -65,7 +65,7 @@ public class OrderNotifier {
 
         if (featuresService.getFeaturesConfig().isGroupMeEnabled()) {
             groupMeService.handleOrderCreated(orderEntity);
-            orderHistoryRepository.save(
+            final var newHistory = orderHistoryRepository.save(
                 OrderHistoryEntity.builder()
                         .orderEntity(orderEntity)
                         .orderStatus(OrderStatus.PENDING_ACCEPTANCE)
@@ -76,6 +76,7 @@ public class OrderNotifier {
                         .timestamp(Calendar.getInstance())
                 .build()
             );
+            orderEntity.setLastStatusChange(newHistory);
         }
     }
 

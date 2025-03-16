@@ -1,7 +1,9 @@
 package com.mosaicchurchaustin.oms.controllers;
 
 import com.mosaicchurchaustin.oms.data.entity.order.OrderEntity;
+import com.mosaicchurchaustin.oms.data.entity.order.OrderExportType;
 import com.mosaicchurchaustin.oms.data.entity.order.OrderHistoryEntity;
+import com.mosaicchurchaustin.oms.data.entity.order.OrderStatus;
 import com.mosaicchurchaustin.oms.data.request.CreateOrderRequest;
 import com.mosaicchurchaustin.oms.data.request.UpdateOrderRequest;
 import com.mosaicchurchaustin.oms.data.request.UpdateOrderStatusBulkRequest;
@@ -42,7 +44,12 @@ public class OrderController {
         // Better validation/error handler
         final OrderEntity orderEntity = orderService.createOrder(createOrderRequest);
         orderNotifier.notifyOrderCreated(orderEntity);
-        return OrderDetailResponse.from(orderEntity);
+        if (orderEntity.getLastStatusChange().getExportType() == OrderExportType.GROUPME) {
+            final var updatedOrder = orderService.updateOrderStatus(orderEntity.getUuid(), OrderStatus.COMPLETED.toString());
+            return OrderDetailResponse.from(updatedOrder);
+        } else {
+            return OrderDetailResponse.from(orderEntity);
+        }
     }
 
 
