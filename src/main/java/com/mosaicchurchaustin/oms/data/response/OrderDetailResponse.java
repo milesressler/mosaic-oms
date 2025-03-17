@@ -1,6 +1,8 @@
 package com.mosaicchurchaustin.oms.data.response;
 
 import com.mosaicchurchaustin.oms.data.entity.order.OrderEntity;
+import com.mosaicchurchaustin.oms.data.entity.order.OrderEventType;
+import com.mosaicchurchaustin.oms.data.entity.order.OrderExportType;
 import com.mosaicchurchaustin.oms.data.entity.order.OrderHistoryEntity;
 import com.mosaicchurchaustin.oms.data.entity.order.OrderStatus;
 import lombok.Builder;
@@ -33,12 +35,17 @@ public class OrderDetailResponse extends OrderResponse {
                 .orderStatus(orderEntity.getOrderStatus())
                 .customer(
                     OrderResponse.Customer.builder()
-                        .first(orderEntity.getCustomerFullName().getFirst())
-                        .last(orderEntity.getCustomerFullName().getLast())
+                        .firstName(orderEntity.getCustomerFullName().getFirstNameString())
+                        .lastName(orderEntity.getCustomerFullName().getLastNameString())
                         .build()
                 )
                 .assignee(
                         Optional.ofNullable(orderEntity.getAssignee()).map(UserResponse::from).orElse(null)
+                )
+                .postedToGroupMe(
+                        Optional.ofNullable(orderEntity.getPostedToGroupMe())
+                                .map(OrderHistoryEntity::getTimestamp)
+                                .orElse(null)
                 )
                 .history(orderEntity.getOrderHistoryEntityList().stream().map(History::from).toList())
                 .lastStatusChange(History.from(orderEntity.getLastStatusChange()))
@@ -57,19 +64,21 @@ public class OrderDetailResponse extends OrderResponse {
     @Builder
     @Data
     public static class History {
-        private String user;
-        private String assigneeExt;
+        private UserResponse user;
         private OrderStatus status;
         private OrderStatus previousStatus;
+        private OrderEventType eventType;
+        private OrderExportType exportType;
         private Calendar timestamp;
 
         public static History from(final OrderHistoryEntity orderHistoryEntity) {
             return History.builder()
                     .status(orderHistoryEntity.getOrderStatus())
                     .previousStatus(orderHistoryEntity.getPreviousOrderStatus())
-                    .user(orderHistoryEntity.getUserEntity().getName())
-                    .assigneeExt(orderHistoryEntity.getUserEntity().getExternalId())
+                    .user(UserResponse.from(orderHistoryEntity.getUserEntity()))
                     .timestamp(orderHistoryEntity.getTimestamp())
+                    .eventType(orderHistoryEntity.getEventType())
+                    .exportType(orderHistoryEntity.getExportType())
                     .build();
 
         }

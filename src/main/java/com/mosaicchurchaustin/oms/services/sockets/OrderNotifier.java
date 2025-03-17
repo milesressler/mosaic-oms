@@ -1,13 +1,26 @@
 package com.mosaicchurchaustin.oms.services.sockets;
 
 import com.mosaicchurchaustin.oms.data.entity.order.OrderEntity;
+import com.mosaicchurchaustin.oms.data.entity.order.OrderEventType;
+import com.mosaicchurchaustin.oms.data.entity.order.OrderExportType;
+import com.mosaicchurchaustin.oms.data.entity.order.OrderHistoryEntity;
+import com.mosaicchurchaustin.oms.data.entity.order.OrderStatus;
 import com.mosaicchurchaustin.oms.data.entity.user.UserEntity;
 import com.mosaicchurchaustin.oms.data.response.OrderResponse;
 import com.mosaicchurchaustin.oms.data.sockets.OrderNotification;
+import com.mosaicchurchaustin.oms.repositories.OrderHistoryRepository;
+import com.mosaicchurchaustin.oms.services.FeaturesService;
+import com.mosaicchurchaustin.oms.services.GroupMeService;
 import com.mosaicchurchaustin.oms.services.UserService;
+import com.mosaicchurchaustin.oms.services.labels.PrintingService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Component;
+
+import java.util.Calendar;
+import java.util.Map;
+import java.util.Optional;
+import java.util.function.Consumer;
 
 @Component
 public class OrderNotifier {
@@ -18,14 +31,24 @@ public class OrderNotifier {
     private UserService userService;
 
     @Autowired
+    private PrintingService printingService;
+
+    @Autowired
+    private GroupMeService groupMeService;
+
+    @Autowired
+    private FeaturesService featuresService;
+
+    @Autowired
+    private OrderHistoryRepository orderHistoryRepository;
+
+    @Autowired
     public OrderNotifier(final SimpMessagingTemplate messagingTemplate) {
         this.messagingTemplate = messagingTemplate;
     }
 
     // Method to send a message
     public void notifyOrderCreated(final OrderEntity orderEntity) {
-
-
         final OrderNotification orderNotification = OrderNotification.builder()
                 .orderId(orderEntity.getId())
                 .orderStatus(orderEntity.getOrderStatus())
@@ -39,6 +62,21 @@ public class OrderNotifier {
         orderNotification.setOrder(OrderResponse.from(orderEntity));
 
         messagingTemplate.convertAndSend("/topic/orders/created", orderNotification);
+
+        if (featuresService.getFeaturesConfig().isGroupMeEnabled()) {
+            groupMeService.handleOrderCreated(orderEntity);
+            orderHistoryRepository.save(
+                OrderHistoryEntity.builder()
+                        .orderEntity(orderEntity)
+                        .orderStatus(OrderStatus.PENDING_ACCEPTANCE)
+                        .previousOrderStatus(OrderStatus.PENDING_ACCEPTANCE)
+                        .eventType(OrderEventType.EXPORT)
+                        .exportType(OrderExportType.GROUPME)
+                        .userEntity(userEntity)
+                        .timestamp(Calendar.getInstance())
+                .build()
+            );
+        }
     }
 
     public void notifyOrderStatusChanged(final OrderEntity orderEntity, final UserEntity userEntity) {
@@ -55,6 +93,16 @@ public class OrderNotifier {
         orderNotification.setOrder(OrderResponse.from(orderEntity));
 
         messagingTemplate.convertAndSend("/topic/orders/status", orderNotification);
+
+        var printingActions = Map.<OrderStatus, Consumer<OrderEntity>>of(
+                OrderStatus.PACKED, printingService::printAcceptedOrderLabel,
+                OrderStatus.ACCEPTED, printingService::printAcceptedOrderLabel
+        );
+
+        Optional.of(orderEntity.getOrderStatus())
+                .filter(status -> status == featuresService.getFeaturesConfig().getPrintOnTransitionToStatus())
+                .map(printingActions::get)
+                .ifPresent(action -> action.accept(orderEntity));
     }
 
     public void notifyOrderAssigneeChanged(final OrderEntity orderEntity) {

@@ -44,7 +44,7 @@ public class SecurityConfig {
         final CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(List.of(frontendUrl, frontendUrl + "/"));
         configuration.setAllowedMethods(Arrays.asList(
-                HttpMethod.GET.name(), HttpMethod.POST.name(), HttpMethod.PUT.name()
+                HttpMethod.GET.name(), HttpMethod.POST.name(), HttpMethod.PUT.name(), HttpMethod.DELETE.name()
         ));
         configuration.setAllowCredentials(true);
         configuration.addAllowedHeader("*");

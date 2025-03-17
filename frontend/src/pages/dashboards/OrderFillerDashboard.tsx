@@ -1,5 +1,5 @@
 import {DEFAULT_THEME, Grid, GridCol, rem, Tabs} from "@mantine/core";
-import {Order, OrderStatus} from "src/models/types.tsx";
+import {Order, OrderDetails, OrderStatus} from "src/models/types.tsx";
 import OrdersTable from "src/components/orders/OrdersTable.tsx";
 import {useMediaQuery} from "@mantine/hooks";
 import {IconMessageCircle, IconPhoto, IconSettings} from "@tabler/icons-react";
@@ -8,13 +8,15 @@ import {SelectedOrderProvider, useSelectedOrder} from "src/contexts/SelectedOrde
 import OrderDetailSection from "src/components/fillers/OrderDetailSection.tsx";
 import {OrdersView} from "src/components/orders/OrdersTableConfig.tsx";
 import {useState} from "react";
+import {useAuth0} from "@auth0/auth0-react";
 
 export function OrderFillerDashboard() {
     const isMobile = useMediaQuery(`(max-width: ${DEFAULT_THEME.breakpoints.lg})`);
     const navigate = useNavigate();
     const { id } = useParams();
     const [ forceRefreshTable, setForceRefreshTable ] = useState(false);
-    const { forceRefresh, selectedOrder, doForceRefresh } = useSelectedOrder();
+    const { selectedOrder } = useSelectedOrder();
+    const {user} = useAuth0();
 
 
     const triggerTableRefresh = () => {
@@ -25,7 +27,12 @@ export function OrderFillerDashboard() {
         if (id && order.id === +id) {
             navigate(`/dashboard/filler/`)
         } else {
-            navigate(`/dashboard/filler/order/${order.id}`)
+            const assignedToMe = (order as OrderDetails)?.assignee?.externalId === user?.sub;
+            if (assignedToMe) {
+                navigate(`/dashboard/filler/fill/${order.id}`)
+            } else {
+                navigate(`/dashboard/filler/order/${order.id}`)
+            }
         }
     }
 

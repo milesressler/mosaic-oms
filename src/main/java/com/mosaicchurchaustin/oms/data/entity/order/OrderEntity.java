@@ -47,10 +47,10 @@ public class OrderEntity extends BaseUuidEntity implements Auditable {
     CustomerEntity customerFullName; // used to pass full name from OrderService
 
     @ManyToOne(optional = false)
-    CustomerEntity first;
+    CustomerEntity firstNameCustomerEntity;
 
     @ManyToOne(optional = false)
-    CustomerEntity last;
+    CustomerEntity lastNameCustomerEntity;
 
     @ManyToOne()
     @JoinColumn(name = "assignee")
@@ -91,6 +91,18 @@ public class OrderEntity extends BaseUuidEntity implements Auditable {
             ")")
     OrderHistoryEntity lastStatusChange;
 
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinFormula("(" +
+            "SELECT h.id " +
+            "FROM order_history h " +
+            "WHERE h.order_entity_id = id " +
+            "AND h.type = 'EXPORT'" +
+            "AND h.export_type = 'GROUPME'" +
+            "ORDER BY h.timestamp DESC " +
+            "LIMIT 1" +
+            ")")
+    OrderHistoryEntity postedToGroupMe;
+
     @Transient
     @Getter
     Map<String, String> previousState;
@@ -109,7 +121,6 @@ public class OrderEntity extends BaseUuidEntity implements Auditable {
     @Override
     public void stashState() {
         this.previousState = getCurrentState();
-
     }
 
     @Override

@@ -1,5 +1,6 @@
 package com.mosaicchurchaustin.oms.controllers;
 
+import com.mosaicchurchaustin.oms.data.request.CreateItemRequest;
 import com.mosaicchurchaustin.oms.data.request.UpdateItemRequest;
 import com.mosaicchurchaustin.oms.data.response.AdminItemResponse;
 import com.mosaicchurchaustin.oms.services.ItemService;
@@ -10,6 +11,7 @@ import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -31,6 +33,13 @@ public class AdminItemController {
     }
 
     @ResponseBody
+    @PostMapping(path = "/item", produces = MediaType.APPLICATION_JSON_VALUE)
+    public AdminItemResponse createItem(@PathVariable("id") final Long id,
+                                        @RequestBody final CreateItemRequest request) {
+        return AdminItemResponse.from(itemService.createItem(request));
+    }
+
+    @ResponseBody
     @GetMapping(path = "/item", produces = MediaType.APPLICATION_JSON_VALUE)
     public Page<AdminItemResponse> getAllItems(final Pageable pageable) {
         return itemService.getPagedItems(pageable)
@@ -38,7 +47,7 @@ public class AdminItemController {
     }
 
     @ResponseBody
-    @DeleteMapping(path = "/item/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    @DeleteMapping(path = "/item/{id}")
     public void removeItem(@PathVariable("id") final Long id) {
         itemService.removeItem(id);
     }

@@ -17,7 +17,6 @@ public class GroupMeService {
     GroupMeBotClient groupMeBotClient;
 
 
-
     public void handleOrderCreated(final OrderEntity orderEntity) {
         try {
             final String message = tryGetSerializedOrder(orderEntity);
@@ -40,16 +39,18 @@ public class GroupMeService {
 
         final String topLevelContent = String.format("""
                 Friend: %s
+                Order Taker: %s
                 
                 Order Items:
-                """, order.getCustomerFullName());
+                """, 
+                order.getCustomerFullName(),
+                order.getLastStatusChange().getUserEntity().getName());
 
         final StringBuilder sb = new StringBuilder(topLevelContent);
 
         order.getOrderItemList()
             .forEach(orderItem -> {
-                sb.append(String.format("- x%s %s",
-                        orderItem.getQuantity(),
+                sb.append(String.format("- %s",
                         orderItem.getItemEntity().getDescription()));
 
                 Optional.ofNullable(StringUtils.defaultIfBlank(orderItem.getNotes(), null))

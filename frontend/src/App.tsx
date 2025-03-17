@@ -11,6 +11,7 @@ import { StompSessionProvider} from "react-stomp-hooks";
 import { CookiesProvider, useCookies} from "react-cookie";
 import {useAuth0} from "@auth0/auth0-react";
 import {PreferencesProvider} from "src/contexts/PreferencesContext.tsx";
+import {FeaturesProvider} from "src/contexts/FeaturesContext.tsx";
 const WS_URL = import.meta.env.VITE_API_WEBSOCKET_URL;
 
 function Interior({}) {
@@ -30,7 +31,9 @@ function Interior({}) {
         //     console.log(str);
         // }}
     >
+        <FeaturesProvider>
         <AppShellComponent/>
+        </FeaturesProvider>
     </StompSessionProvider>
 }
 
@@ -39,13 +42,13 @@ function App() {
     <><MantineProvider>
         <PreferencesProvider>
             <Notifications/>
-            <CookiesProvider defaultSetOptions >
-                <Auth0ProviderWithNavigate>
-                        <AuthContextProvider>
-                            <Interior/>
-                        </AuthContextProvider>
-                </Auth0ProviderWithNavigate>
-            </CookiesProvider>
+                <CookiesProvider defaultSetOptions >
+                    <Auth0ProviderWithNavigate>
+                            <AuthContextProvider>
+                                    <Interior/>
+                            </AuthContextProvider>
+                    </Auth0ProviderWithNavigate>
+                </CookiesProvider>
         </PreferencesProvider>
     </MantineProvider>
     </>

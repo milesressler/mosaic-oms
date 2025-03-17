@@ -58,11 +58,13 @@ const EditableCell = ({ initialValue, onSave, onCancel, isEditing, onEdit }: any
         </div>);
 };
 export function ItemsManagementPage() {
-    const PAGE_SIZE = 25;
+    const PAGE_SIZE = 250;
     const adminItemsApi = useApi(ItemsApi.getAdminItemsPage);
     const updateItemApi = useApi(ItemsApi.updateAdminItem);
+    const deleteItemApi = useApi(ItemsApi.deleteAdminItem);
     const [activePage, setPage] = useState(1);
     const [editingId, setEditingId] = useState<number|null>(null);
+    const [deletingId, setDeleting] = useState<number|null>(null);
     const [pageContent, setPageContent] = useState<AdminItem[]|null>(null);
 
     useEffect(() => {
@@ -71,9 +73,13 @@ export function ItemsManagementPage() {
         }
     }, [adminItemsApi.data]);
 
-    useEffect(() => {
+    const refreshData = () =>
         adminItemsApi.request(activePage - 1, PAGE_SIZE);
+
+    useEffect(() => {
+        refreshData();
     }, [activePage]);
+
 
     useEffect(() => {
         if (updateItemApi.data) {
@@ -97,7 +103,6 @@ export function ItemsManagementPage() {
             updateItemApi.request(item.id, {suggestedItem: event.currentTarget.checked});
     }
 
-
     const handleSavePlaceholder = (id: number, newValue: string) => {
         updateItemApi.request(id, {placeholder: newValue});
     };
@@ -112,10 +117,27 @@ export function ItemsManagementPage() {
         }
     };
 
+    const handleDelete = (item: Item) => {
+        if (!deleteItemApi.loading) {
+            deleteItemApi.request(item.id)
+            setDeleting(item.id)
+        }
+    }
+
+    useEffect(() => {
+        if (!deleteItemApi.loading && deletingId) {
+            setDeleting(null);
+            refreshData()
+        }
+    }, [deletingId, deleteItemApi.loading]);
+
     const rows = pageContent?.map((item) => (
         <>
         <Table.Tr key={item.id} pos={'relative'}>
+            <LoadingOverlay visible={item.id === deletingId}/>
+
             <Table.Td>{item.description}</Table.Td>
+            <Table.Td>{ item.category}</Table.Td>
             <Table.Td><><EditableCell initialValue={item.placeholder}
                                     onSave={(newValue: string) => handleSavePlaceholder(item.id, newValue)}
                                     onCancel={handleCancel}
@@ -133,6 +155,9 @@ export function ItemsManagementPage() {
             <Table.Td>
                 {item.totalFilled} / {item.totalOrdered ?? 0}
             </Table.Td>
+            <Table.Td>
+                <IconX color={'red'} onClick={() => handleDelete(item)}></IconX>
+            </Table.Td>
         </Table.Tr>
         </>
     ));
@@ -143,6 +168,7 @@ export function ItemsManagementPage() {
                 <Table.Thead>
                 <Table.Tr>
                     <Table.Th>Description</Table.Th>
+                    <Table.Th>Category</Table.Th>
                     <Table.Th>Placeholder</Table.Th>
                     <Table.Th>Suggested</Table.Th>
                     <Table.Th>Filled / Ordered</Table.Th>

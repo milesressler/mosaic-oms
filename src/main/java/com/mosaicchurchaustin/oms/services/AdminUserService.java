@@ -58,6 +58,9 @@ public class AdminUserService {
         return AdminUserDetailResponse.from(user, rolesPage, orderHistoryRepository.findByUserEntityExternalIdOrderByTimestampDesc(userId).stream().limit(10).toList());
     }
 
+    public void sendInvite(final String userId) throws Auth0Exception {
+        managementAPI.jobs().sendVerificationEmail(userId, null).execute().getBody().getStatus();
+    }
     public AdminUserDetailResponse updateUser(final String userId, final UpdateUserRequest updateUserRequest) throws Auth0Exception {
         final User userToUpdate = managementAPI.users().get(userId, null).execute().getBody();
 //        final RolesPage rolesOnUser = getUserRoles(userId);

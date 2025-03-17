@@ -9,8 +9,8 @@ import com.mosaicchurchaustin.oms.data.entity.CustomerEntity;
 
 @Repository
 public interface CustomerRepository extends JpaRepository<CustomerEntity, Long> {
-    Optional<CustomerEntity> findByFirstAndLast(String first, String last); 
-    Optional<CustomerEntity> findByFirst(String first); 
-    Optional<CustomerEntity> findByLast(String last); 
+    Optional<CustomerEntity> findByFirstNameStringAndLastNameString(String firstNameString, String lastNameString); 
+    Optional<CustomerEntity> findByFirstNameString(String firstNameString); 
+    Optional<CustomerEntity> findByLastNameString(String lastNameString); 
 
 }

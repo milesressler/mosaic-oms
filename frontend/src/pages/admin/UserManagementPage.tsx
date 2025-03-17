@@ -9,12 +9,13 @@ import {
     Pagination,
     Table,
     Text,
+    Tooltip,
 } from "@mantine/core";
 import useApi from "src/hooks/useApi.tsx";
-import {useEffect, useState} from "react";
+import {MouseEvent, useEffect, useState} from "react";
 import AdminUserApi from "src/services/adminUserApi.tsx";
 import {DateTime} from "luxon";
-import {IconCheck} from "@tabler/icons-react";
+import {IconCircleCheck} from "@tabler/icons-react";
 import {User} from "src/models/types.tsx";
 import EmailInputForm from "src/components/auth0/EmailInputForm.tsx";
 import UserRoleManagement from "src/components/admin/user/UserRoleManagement.tsx";
@@ -25,6 +26,7 @@ export function UserManagementPage() {
     const getUsersApi = useApi(AdminUserApi.getUsers);
     const getUserDetailApi = useApi(AdminUserApi.getUser);
     const createUserApi = useApi(AdminUserApi.createUser);
+    const resendInviteApi = useApi(AdminUserApi.resendInvite);
     const [activePage, setPage] = useState(1);
     const [selectedUser, setSelectedUser] = useState<User|null>(null)
     const [inviteModal, setInviteModal] = useState(false);
@@ -49,6 +51,10 @@ export function UserManagementPage() {
     const inviteUser = (email: string, name: string) => {
         createUserApi.request(email, name);
     }
+    const resendInvite = (event: MouseEvent, user: User) => {
+        event.stopPropagation();
+        resendInviteApi.request(user.userId);
+    }
 
     const rows = getUsersApi.data?.content?.map((user) => (
         <Table.Tr style={{cursor: 'pointer'}} bg={selectedUser?.userId === user.userId ? "#F4f4f4" : ''} key={user.userId} onClick={() => selectedUser?.userId === user.userId ? setSelectedUser(null) : setSelectedUser(user)}>
@@ -56,7 +62,14 @@ export function UserManagementPage() {
             <Table.Td>{user.name}</Table.Td>
             <Table.Td>{DateTime.fromMillis(user.created).toLocaleString(DateTime.DATETIME_SHORT)}</Table.Td>
             <Table.Td><Text c='dimmed'>{user.lastLogin && DateTime.fromMillis(user.lastLogin).toRelative()}</Text></Table.Td>
-            <Table.Td>{user.emailVerified && <IconCheck color={'green'} size={20}/>}</Table.Td>
+            <Table.Td>
+                <Group >
+                { user.email }
+                {user.emailVerified &&
+                    <Tooltip label="Verified"><IconCircleCheck color={'green'} size={20}/></Tooltip>}
+                { !user.emailVerified && <Button size={'xs'} variant={'outline'} loading={resendInviteApi.loading} onClick={(clickEvent) => resendInvite(clickEvent, user)} >Resend</Button> }
+                </Group>
+            </Table.Td>
             {/*<Table.Td><IconPencil color={'grey'} onClick={() => console.log("Edit")}/></Table.Td>*/}
         </Table.Tr>
     ));
@@ -73,7 +86,7 @@ export function UserManagementPage() {
                                 <Table.Th>Name</Table.Th>
                                 <Table.Th>Created</Table.Th>
                                 <Table.Th>Last Logged In</Table.Th>
-                                <Table.Th>Email Verified</Table.Th>
+                                <Table.Th>Email</Table.Th>
                                 {/*<Table.Th></Table.Th>*/}
                             </Table.Tr>
                         </Table.Thead>

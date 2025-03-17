@@ -58,9 +58,6 @@ public class OrderService {
     @Autowired
     UserService userService;
 
-    @Autowired
-    GroupMeService groupMeService;
-
     public List<OrderHistoryEntity> getOrderHistory() {
         final Pageable pageable = PageRequest.of(0, 20, Sort.by(Sort.Order.desc("timestamp")));
 
@@ -260,28 +257,24 @@ public class OrderService {
         orderEntity.getOrderHistoryEntityList().add(createHistoryItem);
         orderEntity.setLastStatusChange(createHistoryItem);
 
-        groupMeService.handleOrderCreated(orderEntity);
-
         return orderEntity;
     }
 
     private CustomerEntity getOrCreateCustomer(final String firstName, final String lastName) {
-        return customerRepository.findByFirstAndLast(firstName.trim(), lastName.trim())
+        return customerRepository.findByFirstNameStringAndLastNameString(firstName.trim(), lastName.trim())
                 .orElseGet(() -> {
-                    final String first = firstName.isBlank()
-                            ? null : firstName.trim();
-                    final String last = lastName.isBlank()
-                            ? null : lastName.trim();
-                    return customerRepository.save(new CustomerEntity(first, last));
+                    final String first = firstName.isBlank() ? null : firstName.trim();
+                    final String last = lastName.isBlank() ? null : lastName.trim();
+                    return customerRepository.save(new CustomerEntity(null ,
+                            first,
+                            last
+                    ));
                 });
     }
 
     private void addItemsToOrder(final OrderEntity orderEntity, List<OrderItemRequest> items) {
         for (final OrderItemRequest item: items) {
-            final ItemEntity itemEntity = itemRepository.findByDescription(item.description()).orElseGet(() ->
-                    itemRepository.findByDescriptionAndRemovedIsTrue(item.description()).orElseGet(() ->
-                        itemRepository .save(ItemEntity.builder().description(item.description()).isSuggestedItem(false).build())
-            ));
+            final ItemEntity itemEntity = queryForItemByPriority(item);
 
             orderEntity.getOrderItemList().add(
                     orderItemRepository.save(new OrderItemEntity(
@@ -289,6 +282,13 @@ public class OrderService {
                     ))
             );
         }
+    }
+
+    private ItemEntity queryForItemByPriority(final OrderItemRequest item) {
+        return itemRepository.findByDescription(item.description())
+                .orElseGet(() ->
+                    itemRepository.save(ItemEntity.builder().description(item.description()).isSuggestedItem(false).build())
+        );
     }
 
 

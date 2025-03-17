@@ -47,6 +47,10 @@ public class OrderHistoryEntity {
     Calendar timestamp;
 
     @Enumerated(EnumType.STRING)
+    @Column(name = "export_type")
+    OrderExportType exportType;
+
+    @Enumerated(EnumType.STRING)
     @Column(name = "order_status", nullable = false)
     OrderStatus orderStatus;
 
@@ -64,7 +68,9 @@ public class OrderHistoryEntity {
 
     @PrePersist
     protected void onCreate() {
-        this.timestamp = Calendar.getInstance();
+        if (this.timestamp == null) {
+            this.timestamp = Calendar.getInstance();
+        }
     }
 
 

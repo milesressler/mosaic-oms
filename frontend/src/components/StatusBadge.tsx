@@ -19,7 +19,7 @@ export function StatusBadge({ orderStatus }: { orderStatus: OrderStatus }) {
             break;
         case OrderStatus.NEEDS_INFO:
             color = 'yellow';
-            text = "NEEDS INFO";
+            text = "SEE ORDER TAKER";
             break;
         case OrderStatus.PACKED:
             color = 'lightblue';

@@ -9,6 +9,7 @@ export interface Order extends BaseObject {
     orderStatus: OrderStatus;
     customer: Customer;
     lastStatusUpdate: string;
+    postedToGroupMe: string;
 }
 
 // export interface OrderPublic extends BaseObject {
@@ -28,6 +29,20 @@ export interface OrderNotification {
     order: Order;
 }
 
+export interface FeaturesNotification {
+    featuresValues: {};
+}
+
+export enum HistoryEventType {
+    EXPORT = "EXPORT",
+    STATUS_CHANGE = "STATUS_CHANGE",
+}
+
+export enum ExportType {
+    GROUPME = "GROUPME",
+    PRINTED = "PRINTED",
+}
+
 export interface OrderDetails extends Order {
     items: OrderItem[];
     assignee: BasicUser;
@@ -39,8 +54,10 @@ export interface OrderDetails extends Order {
     };
     specialInstructions: string;
     history: {
-        user: string;
+        user: BasicUser;
         status: OrderStatus;
+        eventType: HistoryEventType;
+        exportType: ExportType;
         timestamp: string;
     }[];
 }
@@ -61,6 +78,7 @@ export interface User extends BasicUser{
     nickname: string,
     picture: string,
     userId: string,
+    email: string,
     emailVerified: boolean,
     created: number,
     lastLogin: number,
@@ -140,6 +158,7 @@ export interface Item {
     id: number;
     placeholder: string;
     description: string;
+    category: string;
 }
 
 export interface AdminItem extends Item{
@@ -151,6 +170,13 @@ export interface AdminItem extends Item{
 export interface UpdateItemRequest {
     suggestedItem?: boolean
     placeholder?: string
+    category?: string
+}
+export interface CreateItemRequest {
+    suggestedItem?: boolean
+    placeholder?: string
+    description: string
+    category?: string
 }
 export interface OrderItem {
     description: string;
@@ -176,6 +202,11 @@ export interface OrderFeedItem {
 
 export interface AuditLog {
     timestamp: string
+}
+
+export interface FeatureConfig {
+    groupMeEnabled: boolean
+    printOnTransitionToStatus: OrderStatus
 }
 
 

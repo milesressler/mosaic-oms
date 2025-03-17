@@ -11,16 +11,16 @@ export function OrderTakerDashboard() {
             <GridCol span={{base: 12, md: 6}}>
                 <OrderForm></OrderForm>
             </GridCol>
-            <GridCol span={6} className="mantine-visible-from-sm" >
-        <OrdersTable
-            view={OrdersView.ORDERTAKER}
-            disableSorting={true}
-            statusFilter={[OrderStatus.NEEDS_INFO]}
-            autoRefresh={true}
-            showProgressIndicator={true}
+            {/*<GridCol span={6} className="mantine-visible-from-sm" >*/}
+            {/*    <OrdersTable*/}
+            {/*        view={OrdersView.ORDERTAKER}*/}
+            {/*        disableSorting={true}*/}
+            {/*        statusFilter={[OrderStatus.NEEDS_INFO]}*/}
+            {/*        autoRefresh={true}*/}
+            {/*        showProgressIndicator={true}*/}
 
-        ></OrdersTable>
-            </GridCol>
+            {/*    ></OrdersTable>*/}
+            {/*</GridCol>*/}
     </Grid>
 )
 }

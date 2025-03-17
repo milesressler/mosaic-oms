@@ -36,7 +36,7 @@ public class AuditService {
     }
 
     public void logAction(final Auditable auditable, final AuditAction auditAction) {
-        if (auditAction == AuditAction.UPDATE) {
+        if (auditAction == AuditAction.UPDATE && auditable.getPreviousState() != null) {
             final MapDifference<String, String> difference =
                     Maps.difference(auditable.getCurrentState(), auditable.getPreviousState());
             if (difference.areEqual()) {
