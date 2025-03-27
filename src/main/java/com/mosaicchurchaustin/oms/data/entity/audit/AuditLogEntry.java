@@ -1,7 +1,7 @@
 package com.mosaicchurchaustin.oms.data.entity.audit;
 
 import com.mosaicchurchaustin.oms.data.constants.AuditAction;
-import com.mosaicchurchaustin.oms.data.converter.JsonAttributeConverter;
+import com.mosaicchurchaustin.oms.support.converters.JsonAttributeConverter;
 import com.mosaicchurchaustin.oms.data.entity.BaseEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Convert;

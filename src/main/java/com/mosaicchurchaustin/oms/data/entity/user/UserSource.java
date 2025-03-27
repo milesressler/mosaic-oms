@@ -7,7 +7,8 @@ import java.util.Optional;
 
 public enum UserSource {
     GOOGLE(1),
-    AUTH0(2);
+    AUTH0(2),
+    SYSTEM(3);
 
     @Getter
     final Integer id;

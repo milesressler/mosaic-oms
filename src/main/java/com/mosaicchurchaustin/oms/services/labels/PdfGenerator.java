@@ -2,7 +2,7 @@ package com.mosaicchurchaustin.oms.services.labels;
 
 import ch.qos.logback.core.testUtil.RandomUtil;
 import com.mosaicchurchaustin.oms.data.entity.CustomerEntity;
-import com.mosaicchurchaustin.oms.data.entity.OrderItemEntity;
+import com.mosaicchurchaustin.oms.data.entity.order.OrderItemEntity;
 import com.mosaicchurchaustin.oms.data.entity.order.OrderEntity;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;

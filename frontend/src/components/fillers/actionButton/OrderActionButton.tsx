@@ -1,5 +1,5 @@
 import {ActionIcon, Button, Group, Menu, rem, useMantineTheme} from '@mantine/core';
-import {IconChevronDown, IconNotes, IconPrinter, IconSquareX, IconTrash} from '@tabler/icons-react';
+import {IconCheckbox, IconChevronDown, IconNotes, IconPrinter, IconTrash} from '@tabler/icons-react';
 import classes from './filler-order-action-button.module.css';
 import {OrderDetails, OrderStatus} from "src/models/types.tsx";
 import {useAuth0} from "@auth0/auth0-react";
@@ -49,18 +49,18 @@ export function OrderActionButton({ loading, order, onStateChange, toggleAssigne
     }
 
     const options = [
+
+        {
+            label: "Complete",
+            icon: IconCheckbox,
+            action: () => onStateChange(OrderStatus.COMPLETED)
+        },
         {
             label: "Cancel",
             icon: IconTrash,
             action: () => onStateChange(OrderStatus.CANCELLED)
         },
     ];
-
-    const rejectOption = {
-        label: "Reject",
-        icon: IconSquareX,
-        action: () => onStateChange(OrderStatus.REJECTED)
-    };
 
     if (order?.orderStatus === OrderStatus.PENDING_ACCEPTANCE) {
         options.push(
@@ -69,9 +69,6 @@ export function OrderActionButton({ loading, order, onStateChange, toggleAssigne
                 icon: IconNotes,
                 action: () => onStateChange(OrderStatus.NEEDS_INFO)
             });
-        options.push(rejectOption);
-    } else if (order?.orderStatus === OrderStatus.ACCEPTED) {
-        options.push(rejectOption);
     }
 
     if (disabled) {

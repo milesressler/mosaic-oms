@@ -14,12 +14,14 @@ public class CustomerResponse {
     private Long created;
     private Long showerWaiverCompleted;
     private String uuid;
+    private int visits;
 
     public static CustomerResponse from(final CustomerEntity customerEntity) {
         return CustomerResponse.builder()
                 .name(customerEntity.getName())
                 .uuid(customerEntity.getUuid())
                 .created(customerEntity.getCreated().getTimeInMillis())
+//                .visits(cus)
                 .showerWaiverCompleted(Optional.ofNullable(customerEntity.getShowerWaiverCompleted()).map(Calendar::getTimeInMillis).orElse(null))
                 .build();
     }

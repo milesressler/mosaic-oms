@@ -1,4 +1,4 @@
-package com.mosaicchurchaustin.oms.data.converter;
+package com.mosaicchurchaustin.oms.support.converters;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;

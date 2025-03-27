@@ -1,4 +1,4 @@
-package com.mosaicchurchaustin.oms.controllers;
+package com.mosaicchurchaustin.oms.controllers.admin;
 
 import com.auth0.exception.Auth0Exception;
 import com.mosaicchurchaustin.oms.data.request.CreateUserRequest;
@@ -6,6 +6,7 @@ import com.mosaicchurchaustin.oms.data.request.UpdateUserRequest;
 import com.mosaicchurchaustin.oms.data.response.AdminUserDetailResponse;
 import com.mosaicchurchaustin.oms.data.response.AdminUserResponse;
 import com.mosaicchurchaustin.oms.services.AdminUserService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -28,7 +29,7 @@ public class AdminUserController {
 
     @PostMapping(path = "/user", produces = MediaType.APPLICATION_JSON_VALUE)
     Object createUser(
-            @RequestBody final CreateUserRequest createUserRequest
+            @Valid @RequestBody final CreateUserRequest createUserRequest
             ) throws Auth0Exception {
         return adminUserService.addUser(createUserRequest);
     }
@@ -42,7 +43,7 @@ public class AdminUserController {
     @ResponseBody
     @PutMapping(path = "/user/{id}",produces = MediaType.APPLICATION_JSON_VALUE)
     public AdminUserDetailResponse updateUser(@PathVariable("id") final String id,
-                                              @RequestBody final UpdateUserRequest request) throws Auth0Exception {
+                                              @Valid @RequestBody final UpdateUserRequest request) throws Auth0Exception {
         return adminUserService.updateUser(id,request);
     }
 

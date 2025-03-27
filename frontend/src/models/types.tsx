@@ -158,23 +158,35 @@ export interface Page<T> {
     totalPages?: number;
     totalElements?: number;
 }
+
+export interface ItemAttribute {
+    key: string
+    label: string
+    required: boolean
+    type: 'SINGLE_SELECT'|'MULTI_SELECT'
+    options: {label: string, value: string, available: boolean}[]
+}
+
 export interface Item {
     id: number;
     placeholder: string;
     description: string;
-    category: string;
+    category: Category;
+    availability: string;
+    attributes: ItemAttribute[];
 }
 
 export interface AdminItem extends Item{
-    suggestedItem: boolean;
+    managed: boolean;
     totalOrdered: number;
     totalFilled: number;
 }
 
 export interface UpdateItemRequest {
-    suggestedItem?: boolean
+    managed?: boolean
     placeholder?: string
     category?: string
+    attributes?: any[];
 }
 export interface CreateItemRequest {
     suggestedItem?: boolean

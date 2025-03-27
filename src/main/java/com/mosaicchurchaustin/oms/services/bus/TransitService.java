@@ -2,8 +2,8 @@ package com.mosaicchurchaustin.oms.services.bus;
 
 import com.mosaicchurchaustin.oms.client.CapMetroClient;
 import com.mosaicchurchaustin.oms.data.constants.Location;
-import com.mosaicchurchaustin.oms.data.pojo.transit.BusStopInfo;
-import com.mosaicchurchaustin.oms.data.pojo.transit.StopInfo;
+import com.mosaicchurchaustin.oms.data.domain.transit.BusStopInfo;
+import com.mosaicchurchaustin.oms.data.domain.transit.StopInfo;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;

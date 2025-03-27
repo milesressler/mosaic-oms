@@ -1,7 +1,7 @@
 package com.mosaicchurchaustin.oms.config;
 
 import com.mosaicchurchaustin.oms.data.constants.Location;
-import com.mosaicchurchaustin.oms.data.pojo.transit.StopInfo;
+import com.mosaicchurchaustin.oms.data.domain.transit.StopInfo;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;

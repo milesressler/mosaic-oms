@@ -3,7 +3,7 @@ package com.mosaicchurchaustin.oms.services.labels;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mosaicchurchaustin.oms.data.entity.order.OrderEntity;
-import com.mosaicchurchaustin.oms.data.pojo.barcode.QRCodeData;
+import com.mosaicchurchaustin.oms.data.domain.barcode.QRCodeData;
 import okhttp3.Credentials;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;

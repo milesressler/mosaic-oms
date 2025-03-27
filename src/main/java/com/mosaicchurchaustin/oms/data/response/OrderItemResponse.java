@@ -1,8 +1,8 @@
 package com.mosaicchurchaustin.oms.data.response;
 
 
-import com.mosaicchurchaustin.oms.data.entity.ItemCategory;
-import com.mosaicchurchaustin.oms.data.entity.OrderItemEntity;
+import com.mosaicchurchaustin.oms.data.entity.item.ItemCategory;
+import com.mosaicchurchaustin.oms.data.entity.order.OrderItemEntity;
 import lombok.Builder;
 import lombok.Getter;
 

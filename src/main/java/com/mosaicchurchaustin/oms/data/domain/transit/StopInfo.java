@@ -1,4 +1,4 @@
-package com.mosaicchurchaustin.oms.data.pojo.transit;
+package com.mosaicchurchaustin.oms.data.domain.transit;
 public class StopInfo {
     private String stopId;
     private String stopName;

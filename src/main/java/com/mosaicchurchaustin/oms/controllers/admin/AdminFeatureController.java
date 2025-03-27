@@ -1,4 +1,4 @@
-package com.mosaicchurchaustin.oms.controllers;
+package com.mosaicchurchaustin.oms.controllers.admin;
 
 import com.mosaicchurchaustin.oms.data.request.UpdateFeatureConfigRequest;
 import com.mosaicchurchaustin.oms.data.response.FeatureConfigResponse;

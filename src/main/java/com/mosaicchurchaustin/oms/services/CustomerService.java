@@ -1,7 +1,7 @@
 package com.mosaicchurchaustin.oms.services;
 
 import com.mosaicchurchaustin.oms.data.entity.CustomerEntity;
-import com.mosaicchurchaustin.oms.data.jpa.CustomerSearchProjection;
+import com.mosaicchurchaustin.oms.data.projections.CustomerSearchProjection;
 import com.mosaicchurchaustin.oms.exception.EntityNotFoundException;
 import com.mosaicchurchaustin.oms.repositories.CustomerRepository;
 import jakarta.transaction.Transactional;

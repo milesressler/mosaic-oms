@@ -7,7 +7,7 @@ import {
     Card, DEFAULT_THEME,
     Group,
     Loader,
-    LoadingOverlay,
+    LoadingOverlay, Pill,
     Stack,
     Stepper,
     Text,
@@ -58,7 +58,7 @@ export function OrderFormV2({ form }: Props) {
         setUseCustomerSearch(false)
     }
 
-    const handleItemSelection = (index: number|null, newItem: FormOrderItem) => {
+    const handleItemSelection = (index: number|null, newItem: FormOrderItem|null) => {
 
         if (index === null) {
             form.insertListItem('items', newItem)
@@ -177,8 +177,8 @@ export function OrderFormV2({ form }: Props) {
                                 // onSubmit={}
                                 style={{ display: "flex", flexDirection: "column", gap: "1rem" }}
                             >
-                                <TextInput label="First Name" {...form.getInputProps("firstName")} />
-                                <TextInput label="Last Name" {...form.getInputProps("lastName")} />
+                                <TextInput label="First Name" size={'lg'} {...form.getInputProps("firstName")} />
+                                <TextInput label="Last Name" size={'lg'} {...form.getInputProps("lastName")} />
 
                                 <Group justify={"space-between"} grow mt="md">
                                     {!useCustomerSearch && (
@@ -244,6 +244,14 @@ export function OrderFormV2({ form }: Props) {
                                     <Group justify="space-between" gap={'xs'}>
                                         <Text fw={600}>{i.item.description}</Text>
                                         <Badge size="sm" color="blue">Qty: {i.quantity || 1}</Badge>
+                                    </Group>
+                                    <Group>
+                                    {i.attributes &&
+                                        Object.entries(i.attributes).map(([key, value]) => (
+                                            <Pill key={key}>
+                                                {key}:{value.value.toString()}
+                                            </Pill>
+                                        ))}
                                     </Group>
                                     {i.notes && (
                                         <Text size="sm" c="dimmed" >Notes: {i.notes}</Text>

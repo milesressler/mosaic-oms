@@ -1,4 +1,4 @@
-package com.mosaicchurchaustin.oms.data.entity;
+package com.mosaicchurchaustin.oms.data.entity.item;
 
 import com.mosaicchurchaustin.oms.exception.EntityNotFoundException;
 import lombok.AllArgsConstructor;

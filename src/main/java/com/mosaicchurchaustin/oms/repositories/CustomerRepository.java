@@ -1,7 +1,7 @@
 package com.mosaicchurchaustin.oms.repositories;
 
 import com.mosaicchurchaustin.oms.data.entity.CustomerEntity;
-import com.mosaicchurchaustin.oms.data.jpa.CustomerSearchProjection;
+import com.mosaicchurchaustin.oms.data.projections.CustomerSearchProjection;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

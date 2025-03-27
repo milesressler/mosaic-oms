@@ -1,4 +1,4 @@
-package com.mosaicchurchaustin.oms.data.converter;
+package com.mosaicchurchaustin.oms.support.converters;
 
 import com.mosaicchurchaustin.oms.data.entity.user.UserSource;
 import jakarta.persistence.AttributeConverter;

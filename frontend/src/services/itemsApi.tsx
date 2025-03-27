@@ -1,10 +1,15 @@
 import client from "./client";
-import {AdminItem, CreateItemRequest, Item, Page, UpdateItemRequest} from "src/models/types.tsx";
+import {AdminItem, Category, CreateItemRequest, Item, Page, UpdateItemRequest} from "src/models/types.tsx";
 
 const getSuggestedItems = () =>
     client.get<Record<string, Item[]>>("/item");
 const getAdminItemsPage = (page: number, size: number) =>
     client.get<Page<AdminItem>>("/admin/item", {params: {page, size}});
+const getAdminItemsPageSort = (page: number, size: number, sort: {column: string, direction: 'asc'|'desc'}, showAll?: boolean, category?: Category|null) => {
+    const params = {page, size, sort: `${sort.column},${sort.direction}`, categories: category, managedItemsOnly: !showAll};
+
+    return client.get<Page<AdminItem>>("/admin/item", {params: params});
+}
 
 const createItem = (request: CreateItemRequest) =>
     client.post<Item>( `/item`, request)
@@ -19,6 +24,7 @@ const deleteAdminItem = (id: number) =>
 export default {
     getSuggestedItems,
     getAdminItemsPage,
+    getAdminItemsPageSort,
     createItem,
     updateAdminItem,
     deleteAdminItem,

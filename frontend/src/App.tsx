@@ -3,7 +3,7 @@ import {Auth0ProviderWithNavigate} from "src/components/auth0/Auth0ProviderWithN
 import {AuthContextProvider, useAuthContext} from "src/contexts/AuthContext";
 import '@mantine/core/styles.css';
 
-import {MantineProvider} from '@mantine/core';
+import {createTheme, MantineProvider} from '@mantine/core';
 import { Notifications } from '@mantine/notifications';
 
 import {AppShellComponent} from "src/components/layout/AppShellComponent.tsx";
@@ -13,6 +13,22 @@ import {useAuth0} from "@auth0/auth0-react";
 import {PreferencesProvider} from "src/contexts/PreferencesContext.tsx";
 import {FeaturesProvider} from "src/contexts/FeaturesContext.tsx";
 const WS_URL = import.meta.env.VITE_API_WEBSOCKET_URL;
+
+
+const theme = createTheme({
+    components: {
+        Modal: {
+            styles: {
+                header: {
+                    backgroundColor: '#f1f3f5', // soft gray from Mantine's palette
+                    color: '#1a1b1e', // default black text
+                    padding: 'var(--mantine-spacing-sm) var(--mantine-spacing-md)',
+                    borderBottom: '1px solid #dee2e6',
+                },
+            },
+        },
+    },
+});
 
 function Interior({}) {
     const {token} = useAuthContext();
@@ -39,7 +55,7 @@ function Interior({}) {
 
 function App() {
   return (
-    <><MantineProvider>
+    <><MantineProvider theme={theme}>
         <PreferencesProvider>
             <Notifications/>
                 <CookiesProvider defaultSetOptions >

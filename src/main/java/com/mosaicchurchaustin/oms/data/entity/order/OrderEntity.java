@@ -2,7 +2,6 @@ package com.mosaicchurchaustin.oms.data.entity.order;
 
 import com.mosaicchurchaustin.oms.data.entity.BaseUuidEntity;
 import com.mosaicchurchaustin.oms.data.entity.CustomerEntity;
-import com.mosaicchurchaustin.oms.data.entity.OrderItemEntity;
 import com.mosaicchurchaustin.oms.data.entity.user.UserEntity;
 import com.mosaicchurchaustin.oms.services.audit.AuditLogListener;
 import com.mosaicchurchaustin.oms.services.audit.Auditable;
@@ -24,6 +23,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import org.apache.commons.lang3.StringUtils;
+import org.hibernate.annotations.BatchSize;
 import org.hibernate.annotations.JoinFormula;
 
 import java.util.ArrayList;
@@ -62,10 +62,12 @@ public class OrderEntity extends BaseUuidEntity implements Auditable {
     @Column(name = "cart_id")
     String cartId;
 
+    @BatchSize(size = 100)
     @OneToMany(mappedBy = "orderEntity")
     @ToString.Exclude
     final List<OrderHistoryEntity> orderHistoryEntityList = new ArrayList<>();
 
+    @BatchSize(size = 100)
     @OneToMany(mappedBy = "orderEntity")
     @ToString.Exclude
     final List<OrderItemEntity> orderItemList = new ArrayList<>();

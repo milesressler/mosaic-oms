@@ -3,12 +3,12 @@ package com.mosaicchurchaustin.oms.services;
 import com.auth0.client.mgmt.ManagementAPI;
 import com.auth0.client.mgmt.filter.PageFilter;
 import com.auth0.client.mgmt.filter.RolesFilter;
-import com.auth0.client.mgmt.filter.UserFilter;
 import com.auth0.exception.Auth0Exception;
 import com.auth0.json.mgmt.roles.Role;
 import com.auth0.json.mgmt.roles.RolesPage;
 import com.auth0.json.mgmt.users.User;
 import com.auth0.json.mgmt.users.UsersPage;
+import com.mosaicchurchaustin.oms.client.Auth0Client;
 import com.mosaicchurchaustin.oms.data.request.CreateUserRequest;
 import com.mosaicchurchaustin.oms.data.request.UpdateUserRequest;
 import com.mosaicchurchaustin.oms.data.response.AdminUserDetailResponse;
@@ -22,12 +22,16 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class AdminUserService {
 
     @Autowired
     private ManagementAPI managementAPI;
+
+    @Autowired
+    private Auth0Client auth0Client;
 
     @Autowired
     private OrderHistoryRepository orderHistoryRepository;
@@ -37,19 +41,21 @@ public class AdminUserService {
         user.setEmail(request.email());
         user.setName(request.name());
         user.setPassword(RandomStringUtils.randomAlphanumeric(32).toCharArray());
-        return AdminUserResponse.from(managementAPI.users().create(user).execute().getBody());
+        return AdminUserResponse.from(auth0Client.getUserById(user.getId()));
     }
 
     public Page<AdminUserResponse> getUsers(final Pageable pageable) throws Auth0Exception {
-        final UserFilter userFilter = new UserFilter().withPage(pageable.getPageNumber(), pageable.getPageSize());
-        final UsersPage usersPage = managementAPI.users().list(userFilter)
-                .execute().getBody();
-        return new PageImpl<>(usersPage.getItems().stream()
-                .map(AdminUserResponse::from).toList(), pageable, usersPage.getTotal()==null ? usersPage.getItems().toArray().length : usersPage.getTotal());
+        final UsersPage usersPage = auth0Client.getUserPage(pageable.getPageNumber(), pageable.getPageSize());
+        final var content = usersPage.getItems()
+                .stream()
+                .map(AdminUserResponse::from).toList();
+        final var total = Optional.ofNullable(usersPage.getTotal())
+                .orElse(usersPage.getItems().toArray().length);
+        return new PageImpl<>(content, pageable, total);
     }
 
     public AdminUserDetailResponse getUser(final String userId) throws Auth0Exception {
-        final User user = managementAPI.users().get(userId, null).execute().getBody();
+        final User user = auth0Client.getUserById(userId);
         final RolesPage rolesPage = managementAPI.users()
                 .listRoles(userId, new PageFilter().withPage(0, 100)).execute().getBody();
 
@@ -60,7 +66,7 @@ public class AdminUserService {
         managementAPI.jobs().sendVerificationEmail(userId, null).execute().getBody().getStatus();
     }
     public AdminUserDetailResponse updateUser(final String userId, final UpdateUserRequest updateUserRequest) throws Auth0Exception {
-        final User userToUpdate = managementAPI.users().get(userId, null).execute().getBody();
+        final User userToUpdate = auth0Client.getUserById(userId);
 //        final RolesPage rolesOnUser = getUserRoles(userId);
 
 //        final String authedUserId = SecurityContextHolder.getContext().getAuthentication().getName();

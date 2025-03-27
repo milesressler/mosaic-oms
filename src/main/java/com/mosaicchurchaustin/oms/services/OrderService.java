@@ -2,11 +2,11 @@ package com.mosaicchurchaustin.oms.services;
 
 import com.mosaicchurchaustin.oms.data.entity.BaseEntity;
 import com.mosaicchurchaustin.oms.data.entity.CustomerEntity;
-import com.mosaicchurchaustin.oms.data.entity.ItemEntity;
-import com.mosaicchurchaustin.oms.data.entity.OrderItemEntity;
+import com.mosaicchurchaustin.oms.data.entity.item.ItemEntity;
 import com.mosaicchurchaustin.oms.data.entity.order.OrderEntity;
 import com.mosaicchurchaustin.oms.data.entity.order.OrderEventType;
 import com.mosaicchurchaustin.oms.data.entity.order.OrderHistoryEntity;
+import com.mosaicchurchaustin.oms.data.entity.order.OrderItemEntity;
 import com.mosaicchurchaustin.oms.data.entity.order.OrderStatus;
 import com.mosaicchurchaustin.oms.data.entity.user.UserEntity;
 import com.mosaicchurchaustin.oms.data.request.CreateOrderRequest;
@@ -37,7 +37,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import static com.mosaicchurchaustin.oms.data.entity.OrderItemEntity.ENTITY_NAME;
+import static com.mosaicchurchaustin.oms.data.entity.order.OrderItemEntity.ENTITY_NAME;
 
 @Service
 public class OrderService {
@@ -278,11 +278,17 @@ public class OrderService {
             final ItemEntity itemEntity = itemRepository.findById(item.item())
                     .orElseThrow(() -> new EntityNotFoundException(ItemEntity.ENTITY_TYPE, item.item().toString()));
 
-            orderEntity.getOrderItemList().add(
-                    orderItemRepository.save(new OrderItemEntity(
-                            orderEntity, itemEntity, item.notes() == null ? null : item.notes().trim(), item.quantity(), 0
-                    ))
-            );
+            // Create & save OrderItemEntity first (it's required)
+            final OrderItemEntity orderItemEntity = orderItemRepository.save(new OrderItemEntity(
+                    orderEntity,
+                    itemEntity,
+                    item.attributes(),
+                    item.notes() == null ? null : item.notes().trim(),
+                    item.quantity(),
+                    0
+            ));
+
+            orderEntity.getOrderItemList().add(orderItemEntity);
         }
     }
 

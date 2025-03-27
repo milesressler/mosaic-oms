@@ -2,7 +2,7 @@ package com.mosaicchurchaustin.oms.data.response;
 
 
 import com.mosaicchurchaustin.oms.data.constants.AuditAction;
-import com.mosaicchurchaustin.oms.data.entity.ItemEntity;
+import com.mosaicchurchaustin.oms.data.entity.item.ItemEntity;
 import lombok.Builder;
 import lombok.Getter;
 import org.apache.commons.lang3.tuple.Pair;

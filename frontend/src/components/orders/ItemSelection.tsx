@@ -1,13 +1,23 @@
 import useApi from "src/hooks/useApi.tsx";
 import {
-    Text, Stack, SegmentedControl, ScrollArea, Grid, Card, Badge, useMantineTheme, Group, Modal, Button
+    Box,
+    Button,
+    Card,
+    Grid,
+    Group,
+    Modal,
+    Pill,
+    ScrollArea,
+    SegmentedControl,
+    Stack,
+    Text,
+    useMantineTheme
 } from '@mantine/core';
 import {useCallback, useEffect, useState} from "react";
 import itemsApi from "src/services/itemsApi.tsx";
 import {Category, categoryDisplayNames, Item} from "src/models/types.tsx";
 import OrderItemFormV2 from "src/forms/OrderItemFormV2.tsx";
 import {FormOrderItem} from "src/models/forms.tsx";
-import {IconCircleX, IconNote} from "@tabler/icons-react";
 import {useDisclosure} from "@mantine/hooks";
 import ItemForm from "src/forms/items/ItemForm.tsx";
 
@@ -52,7 +62,10 @@ export function ItemSelection ({currentSelection, onItemSelectionChange}: props)
             attributes: {}, // If there are attributes to be filled
         };
 
-        if (item.placeholder && item.placeholder.length > 0) {
+        const needsForm = (item.placeholder && item.placeholder.length > 0) ||
+            (item.attributes && item.attributes.length > 0)
+        || item.category === Category.CLOTHING;
+        if (needsForm) {
             setDraftItem(draftItem);
             setEditingIndex(null);
         } else {
@@ -96,17 +109,18 @@ export function ItemSelection ({currentSelection, onItemSelectionChange}: props)
     return (
         <Stack gap="md" >
             <Modal title={"Create New Item"} opened={newItemOpen} onClose={() => {closeNewItem()}} >
-                <ItemForm onItemCreate={handleItemCreated}/>
+                    <ItemForm onItemSave={handleItemCreated}/>
             </Modal>
 
-            {<Modal opened={!!draftItem} title={draftItem?.item?.description}  onClose={() => setDraftItem(null)}>
-                {/*<Card center maw={200}>*/}
+            {<Modal opened={!!draftItem} title={draftItem?.item?.description}
+                    onClose={() => setDraftItem(null)}>
+                <Box mt={'xs'}>
                 { draftItem && <OrderItemFormV2
                     formItem={draftItem}
                     onCancel={() => setDraftItem(null)}
                     onSave={handleItemSave}
                 />}
-                {/*</Card>*/}
+                </Box>
             </Modal> }
 
             {/* Category Selection */}
@@ -122,7 +136,7 @@ export function ItemSelection ({currentSelection, onItemSelectionChange}: props)
             </ScrollArea>
             {/* Item Selection */}
             <Grid>
-                {selectedCategory && suggestedItemsApi.data && suggestedItemsApi.data[selectedCategory].sort((a:Item, b:Item) => a.description.localeCompare(b.description)).map((item: Item) => (
+                {selectedCategory && suggestedItemsApi.data && suggestedItemsApi.data[selectedCategory]?.sort((a:Item, b:Item) => a.description.localeCompare(b.description)).map((item: Item) => (
                     <Grid.Col span={{base: 6, md: 3}} key={item.description}>
                         <Card
                             shadow="sm"
@@ -147,20 +161,22 @@ export function ItemSelection ({currentSelection, onItemSelectionChange}: props)
                     {/*<Text fw={500}>Selected Items:</Text>*/}
                     <Group>
                         {currentSelection.sort((a, b) => (a.item.category || 'OTHER').localeCompare(b.item.category || 'OTHER')).map((item: FormOrderItem, index: number) => (
-                            <Badge size="xl"
+                            <Pill size="xl"
+                                  // style={{}}
                                    onClick={() => handleItemEdit(index)}
-                                   style={{cursor: ''}}
+                                   style={{cursor: '', backgroundColor: categoryColors[categories.indexOf(item.item.category || 'OTHER')]}}
                                    key={index}
-                                   variant="filled"
-                                   rightSection={
-                                        <Group> {item.notes && <IconNote/>}
-                                       <IconCircleX color={'white'} onClick={(e) => {
-                                           e.stopPropagation(); // Prevents event from reaching Badge
-                                           handleItemDelete(index);
-                                       }}/> </Group>}
-                                   color={categoryColors[categories.indexOf(item.item.category || 'OTHER')]}>
+                                  onRemove={()=> handleItemDelete(index)}
+                                   // variant="filled"
+                                   // rightSection={
+                                   //      <Group> {item.notes && <IconNote/>}
+                                   //     <IconCircleX color={'white'} onClick={(e) => {
+                                   //         e.stopPropagation(); // Prevents event from reaching Badge
+                                   //         handleItemDelete(index);
+                                   //     }}/> </Group>}
+                                  withRemoveButton={true}>
                                 {item.item.description}
-                            </Badge>
+                            </Pill>
                         ))}
                     </Group>
                 </Stack>

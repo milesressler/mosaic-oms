@@ -1,6 +1,6 @@
 package com.mosaicchurchaustin.oms.data.response;
 
-import com.mosaicchurchaustin.oms.data.jpa.CustomerSearchProjection;
+import com.mosaicchurchaustin.oms.data.projections.CustomerSearchProjection;
 import lombok.Builder;
 import lombok.Getter;
 

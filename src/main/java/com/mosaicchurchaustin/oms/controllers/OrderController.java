@@ -1,9 +1,7 @@
 package com.mosaicchurchaustin.oms.controllers;
 
 import com.mosaicchurchaustin.oms.data.entity.order.OrderEntity;
-import com.mosaicchurchaustin.oms.data.entity.order.OrderExportType;
 import com.mosaicchurchaustin.oms.data.entity.order.OrderHistoryEntity;
-import com.mosaicchurchaustin.oms.data.entity.order.OrderStatus;
 import com.mosaicchurchaustin.oms.data.request.CreateOrderRequest;
 import com.mosaicchurchaustin.oms.data.request.UpdateOrderRequest;
 import com.mosaicchurchaustin.oms.data.request.UpdateOrderStatusBulkRequest;
@@ -44,12 +42,13 @@ public class OrderController {
         // Better validation/error handler
         final OrderEntity orderEntity = orderService.createOrder(createOrderRequest);
         orderNotifier.notifyOrderCreated(orderEntity);
-        if (orderEntity.getLastStatusChange().getExportType() == OrderExportType.GROUPME) {
-            final var updatedOrder = orderService.updateOrderStatus(orderEntity.getUuid(), OrderStatus.COMPLETED.toString());
-            return OrderDetailResponse.from(updatedOrder);
-        } else {
+        // Tbis autocompletes orders on export - notneeded or now
+//        if (orderEntity.getLastStatusChange().getExportType() == OrderExportType.GROUPME) {
+//            final var updatedOrder = orderService.updateOrderStatus(orderEntity.getUuid(), OrderStatus.COMPLETED.toString());
+//            return OrderDetailResponse.from(updatedOrder);
+//        } else {
             return OrderDetailResponse.from(orderEntity);
-        }
+//        }
     }
 
 
@@ -99,7 +98,7 @@ public class OrderController {
     @PutMapping(path = "/order/bulk/state/{state}", produces = MediaType.APPLICATION_JSON_VALUE)
     public List<OrderDetailResponse> updateOrderStateBulk(
             @PathVariable("state") String orderState,
-            @RequestBody UpdateOrderStatusBulkRequest request
+            @Valid @RequestBody UpdateOrderStatusBulkRequest request
             ){
         final List<OrderEntity> updatedOrders = orderService.updateOrderStatusBulk(request.orderUuids(), orderState);
         updatedOrders.forEach(order ->

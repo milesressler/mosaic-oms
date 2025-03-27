@@ -1,6 +1,6 @@
 package com.mosaicchurchaustin.oms.controllers;
 
-import com.mosaicchurchaustin.oms.data.entity.OrderItemEntity;
+import com.mosaicchurchaustin.oms.data.entity.order.OrderItemEntity;
 import com.mosaicchurchaustin.oms.data.request.UpdateOrderItemRequest;
 import com.mosaicchurchaustin.oms.data.request.UpdateOrderItemsFilledRequest;
 import com.mosaicchurchaustin.oms.data.response.OrderDetailResponse;

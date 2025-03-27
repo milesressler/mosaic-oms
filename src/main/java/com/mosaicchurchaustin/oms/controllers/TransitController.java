@@ -1,7 +1,7 @@
 package com.mosaicchurchaustin.oms.controllers;
 
 import com.mosaicchurchaustin.oms.data.constants.Location;
-import com.mosaicchurchaustin.oms.data.pojo.transit.BusStopInfo;
+import com.mosaicchurchaustin.oms.data.domain.transit.BusStopInfo;
 import com.mosaicchurchaustin.oms.services.bus.TransitService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;

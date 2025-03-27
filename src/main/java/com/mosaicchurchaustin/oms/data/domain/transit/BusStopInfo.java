@@ -1,4 +1,4 @@
-package com.mosaicchurchaustin.oms.data.pojo.transit;
+package com.mosaicchurchaustin.oms.data.domain.transit;
 
 import lombok.Data;
 import lombok.RequiredArgsConstructor;

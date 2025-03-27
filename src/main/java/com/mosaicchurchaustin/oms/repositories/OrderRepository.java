@@ -16,9 +16,7 @@ import java.util.stream.Stream;
 
 @Repository
 public interface OrderRepository extends JpaRepository<OrderEntity, Long> {
-
-
-    Stream<OrderEntity> findByCreatedBefore(@Param("tenDaysAgo") Calendar tenDaysAgo);
+    Stream<OrderEntity> findByCreatedBeforeAndOrderStatusNotIn(@Param("tenDaysAgo") Calendar tenDaysAgo, List<OrderStatus> orderStatuses);
 
     List<OrderEntity> findAllByUuidIn(List<String> uuids);
 

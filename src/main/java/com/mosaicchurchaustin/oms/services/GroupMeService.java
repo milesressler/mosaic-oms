@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -52,6 +53,12 @@ public class GroupMeService {
             .forEach(orderItem -> {
                 sb.append(String.format("- %s",
                         orderItem.getItemEntity().getDescription()));
+
+              Optional.ofNullable(orderItem.getAttributes())
+                    .map(attributes -> attributes.entrySet().stream()
+                        .map(entry -> entry.getKey() + ":" + entry.getValue().toString())
+                        .collect(Collectors.joining(", "))
+                    ).ifPresent(value -> sb.append(String.format(" (%s)", value)));
 
                 Optional.ofNullable(StringUtils.defaultIfBlank(orderItem.getNotes(), null))
                         .map(itemNote -> String.format(" [%s]", itemNote))

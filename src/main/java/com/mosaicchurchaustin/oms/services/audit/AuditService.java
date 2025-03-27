@@ -16,6 +16,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
+import java.util.Optional;
 
 @Service
 public class AuditService {
@@ -45,7 +46,7 @@ public class AuditService {
         }
 
         final AuditLogEntry entry = new AuditLogEntry();
-        entry.setUserId(getExternalIdFromAuth());
+        entry.setUserId(getExternalIdFromAuth().orElse(null));
         entry.setAction(auditAction);
         if (auditAction != AuditAction.CREATE) {
             entry.setPreviousState(auditable.getPreviousState());
@@ -72,7 +73,11 @@ public class AuditService {
         auditLogEntryRepository.save(entry);
     }
 
-    private String getExternalIdFromAuth() {
-        return SecurityContextHolder.getContext().getAuthentication().getName();
+    private Optional<String> getExternalIdFromAuth() {
+        try {
+            return Optional.ofNullable(SecurityContextHolder.getContext().getAuthentication().getName());
+        } catch (Exception e) {
+            return Optional.empty();
+        }
     }
 }

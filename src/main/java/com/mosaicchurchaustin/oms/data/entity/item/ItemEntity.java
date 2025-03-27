@@ -1,5 +1,7 @@
-package com.mosaicchurchaustin.oms.data.entity;
+package com.mosaicchurchaustin.oms.data.entity.item;
 
+import com.mosaicchurchaustin.oms.data.entity.BaseEntity;
+import com.mosaicchurchaustin.oms.data.entity.order.OrderItemEntity;
 import com.mosaicchurchaustin.oms.services.audit.AuditLogListener;
 import com.mosaicchurchaustin.oms.services.audit.Auditable;
 import jakarta.persistence.Column;
@@ -43,9 +45,10 @@ public class ItemEntity extends BaseEntity implements Auditable {
 
     @Setter
     @Column(name = "placeholder", nullable = false)
+    @Deprecated
     String placeholder;
 
-    @Column(name = "description", nullable = false)
+    @Column(name = "description", nullable = false, unique = true)
     String description;
 
     @Setter
@@ -54,17 +57,26 @@ public class ItemEntity extends BaseEntity implements Auditable {
     ItemCategory category;
 
     @Setter
-    @Column(name = "removed", nullable = false)
-    boolean removed;
+    @Enumerated(EnumType.STRING) // Save enum as its name
+    @Column(name = "availability")
+    ItemAvailability availability;
 
+    /**
+     * This means the item is part of inventory, vs an adhoc requested item
+     * This should be set by an admin, not an order taker
+     */
     @Setter
-    @Column(name = "is_suggested_item", nullable = false)
-    Boolean isSuggestedItem;
+    @Column(name = "managed", nullable = false)
+    boolean managed;
 
     @BatchSize(size = 100)
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "itemEntity")
     @ToString.Exclude
     List<OrderItemEntity> orderItems;
+
+    @OneToMany(mappedBy = "itemEntity", fetch = FetchType.EAGER)
+    @ToString.Exclude
+    List<ItemAttribute> attributes;
 
     @Transient
     Map<String, String> previousState;
@@ -73,7 +85,7 @@ public class ItemEntity extends BaseEntity implements Auditable {
     @Override
     public Map<String, String> getCurrentState() {
         final Map<String, String> state = new HashMap<>();
-        state.put("isSuggestedItem", String.format("%s", isSuggestedItem != null && isSuggestedItem));
+        state.put("isManaged", String.format("%s", isManaged()));
 
         if (this.description != null) {
             state.put("description", description);
@@ -83,6 +95,9 @@ public class ItemEntity extends BaseEntity implements Auditable {
         }
         if (this.category != null) {
             state.put("category", category.name());
+        }
+        if (this.availability != null) {
+            state.put("availability", availability.name());
         }
         return state;
     }

@@ -1,7 +1,7 @@
 package com.mosaicchurchaustin.oms.client;
 
 import com.google.transit.realtime.GtfsRealtime;
-import com.mosaicchurchaustin.oms.data.pojo.transit.BusStopInfo;
+import com.mosaicchurchaustin.oms.data.domain.transit.BusStopInfo;
 import com.mosaicchurchaustin.oms.exception.ExternalServiceException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
