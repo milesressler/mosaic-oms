@@ -120,6 +120,16 @@ export function ItemsManagementPage() {
         }
     }
 
+    const toggleAvailability = (item: Item) => {
+        if (!updateItemApi.loading) {
+            const newAvailability = item.availability.toLowerCase() === 'available' ? 'unavailable' : 'available';
+            updateItemApi.request(item.id, {availability: newAvailability})
+            setUpdatingId(item.id);
+        }
+    }
+
+
+
     const handleItemSave = (item: Item) => {
         setEditingItem(null);
         refreshData();
@@ -158,7 +168,10 @@ export function ItemsManagementPage() {
                 {item?.attributes?.map(a => <Pill>{a.label}</Pill>)}
             </Table.Td>
             <Table.Td>
-                <Badge variant={'dot'} size={'xs'}>{item.availability}</Badge>
+                <Badge variant={'dot'}
+                       color={item.availability.toLowerCase() === 'available' ? 'green' : 'red'}
+                       onClick={(e) => { e.stopPropagation(); toggleAvailability(item);}}
+                       size={'xs'}>{item.availability}</Badge>
             </Table.Td>
             <Table.Td>
                 {item.totalFilled} / {item.totalOrdered ?? 0}
@@ -174,7 +187,7 @@ export function ItemsManagementPage() {
 
     return (
         <>
-            <Modal opened={!!editingItem} onClose={() => setEditingItem(null)}>
+            <Modal title={editingItem?.description} opened={!!editingItem} onClose={() => setEditingItem(null)}>
                 {  <ItemForm item={editingItem!} onItemSave={handleItemSave}></ItemForm> }
             </Modal>
             <Group m="xs" align="end" justify="space-between" wrap="wrap">

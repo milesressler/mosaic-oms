@@ -122,12 +122,12 @@ export function ItemForm({ onItemSave, item }: Props) {
     return (
         <form onSubmit={form.onSubmit(handleSubmit)}>
             <Stack gap="md">
-                <TextInput
+                {!item?.description && <TextInput
                     disabled={!!item?.description}
                     label="Description"
                     placeholder="Enter description"
                     {...form.getInputProps("description")}
-                />
+                />}
                 <Select
                     label="Category"
                     data={Object.values(Category).map((category) => ({

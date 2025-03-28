@@ -186,6 +186,7 @@ export interface UpdateItemRequest {
     managed?: boolean
     placeholder?: string
     category?: string
+    availability?: string
     attributes?: any[];
 }
 export interface CreateItemRequest {
