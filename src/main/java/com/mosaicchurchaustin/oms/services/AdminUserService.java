@@ -15,6 +15,7 @@ import com.mosaicchurchaustin.oms.data.response.AdminUserDetailResponse;
 import com.mosaicchurchaustin.oms.data.response.AdminUserResponse;
 import com.mosaicchurchaustin.oms.repositories.OrderHistoryRepository;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -44,8 +45,11 @@ public class AdminUserService {
         return AdminUserResponse.from(auth0Client.getUserById(user.getId()));
     }
 
-    public Page<AdminUserResponse> getUsers(final Pageable pageable) throws Auth0Exception {
-        final UsersPage usersPage = auth0Client.getUserPage(pageable.getPageNumber(), pageable.getPageSize());
+    public Page<AdminUserResponse> getUsers(final Pageable pageable, final String roleFilter) throws Auth0Exception {
+        final UsersPage usersPage = StringUtils.isBlank(roleFilter) ?
+                auth0Client.getUserPage(pageable.getPageNumber(), pageable.getPageSize())
+                : auth0Client.getUserPageWithRole(roleFilter, pageable.getPageNumber(), pageable.getPageSize());
+
         final var content = usersPage.getItems()
                 .stream()
                 .map(AdminUserResponse::from).toList();

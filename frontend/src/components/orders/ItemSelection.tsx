@@ -83,16 +83,7 @@ export function ItemSelection ({currentSelection, onItemSelectionChange}: props)
     };
 
     const handleItemSave = (formOrderItem: FormOrderItem) => {
-        if (editingIndex !== null) {
-            // Update existing item
-            // const updatedSelection = [...currentSelection];
-            // updatedSelection[editingIndex] = formOrderItem;
-            onItemSelectionChange(editingIndex, formOrderItem);
-        } else {
-            onItemSelectionChange(null, formOrderItem);
-            // Add new item
-            // onItemSelectionChange([...currentSelection, formOrderItem]);
-        }
+        onItemSelectionChange(editingIndex, formOrderItem);
         setDraftItem(null);
         setEditingIndex(null);
     };
@@ -103,7 +94,9 @@ export function ItemSelection ({currentSelection, onItemSelectionChange}: props)
 
     const handleItemCreated = useCallback((item: Item) => {
         suggestedItemsApi.request();
+
         closeNewItem();
+        onItemSelectionChange(null, {item: item, quantity: 1})
     }, [suggestedItemsApi.request, closeNewItem]);
 
     return (

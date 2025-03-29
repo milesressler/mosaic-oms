@@ -59,7 +59,6 @@ export function OrderFormV2({ form }: Props) {
     }
 
     const handleItemSelection = (index: number|null, newItem: FormOrderItem|null) => {
-
         if (index === null) {
             form.insertListItem('items', newItem)
         } else if (newItem !== null) {

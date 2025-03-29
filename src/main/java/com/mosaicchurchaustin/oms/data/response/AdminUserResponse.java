@@ -24,7 +24,7 @@ public class AdminUserResponse {
         return AdminUserResponse.builder()
                 .name(user.getName())
                 .picture(user.getPicture())
-                .created(user.getCreatedAt().getTime())
+                .created(Optional.ofNullable(user.getCreatedAt()).map(Date::getTime).orElse(null))
                 .userId(user.getId())
                 .emailVerified(user.isEmailVerified())
                 .nickname(user.getNickname())

@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -36,8 +37,9 @@ public class AdminUserController {
 
     @ResponseBody
     @GetMapping(path = "/user", produces = MediaType.APPLICATION_JSON_VALUE)
-    public Page<AdminUserResponse> getUsers(final Pageable pageable) throws Auth0Exception {
-        return adminUserService.getUsers(pageable);
+    public Page<AdminUserResponse> getUsers(final Pageable pageable,
+                                            @RequestParam(name = "role", required = false) final String roleFilter) throws Auth0Exception {
+        return adminUserService.getUsers(pageable, roleFilter);
     }
 
     @ResponseBody
