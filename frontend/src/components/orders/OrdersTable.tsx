@@ -182,7 +182,7 @@ export function OrdersTable({
     return (
         <>
             <Table style={{ position: 'relative' }}>
-                <Table.Thead style={{ backgroundColor: '#f7f7f7', color: '#555' }}>
+                <Table.Thead>
                     <Table.Tr>
                         {visibleColumns.map((column: ColumnConfig) => (
                             <Th

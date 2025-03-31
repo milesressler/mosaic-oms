@@ -17,6 +17,15 @@ const WS_URL = import.meta.env.VITE_API_WEBSOCKET_URL;
 
 const theme = createTheme({
     components: {
+        Table: {
+            styles: {
+                th: {
+                    backgroundColor: '#f1f3f5', // soft gray for table header
+                    color: '#555', // default black text color
+                    fontWeight: 'bold', // make the header text bold
+                },
+            },
+        },
         Modal: {
             styles: {
                 header: {

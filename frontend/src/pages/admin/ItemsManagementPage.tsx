@@ -225,6 +225,7 @@ export function ItemsManagementPage() {
                         <Table.Th>Attributes</Table.Th>
                         <Table.Th>Availability</Table.Th>
                         <Table.Th>Filled / Ordered</Table.Th>
+                        <Table.Th></Table.Th>
                     </Table.Tr>
                 </Table.Thead>
                 <Table.Tbody>

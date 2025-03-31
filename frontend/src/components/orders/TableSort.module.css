@@ -11,6 +11,11 @@
     }
 }
 
+.nosort {
+    width: 100%;
+    padding: var(--mantine-spacing-xs) var(--mantine-spacing-md);
+}
+
 .icon {
     width: rem(21px);
     height: rem(21px);

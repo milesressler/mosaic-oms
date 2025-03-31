@@ -24,8 +24,7 @@ export function OrderActionButton({ loading, order, onStateChange, toggleAssigne
 
 
     const disabled = order?.orderStatus === OrderStatus.COMPLETED ||
-        order?.orderStatus === OrderStatus.CANCELLED ||
-        order?.orderStatus === OrderStatus.REJECTED;
+        order?.orderStatus === OrderStatus.CANCELLED;
 
     const getButton = () => {
         switch (order?.orderStatus) {

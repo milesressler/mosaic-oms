@@ -40,14 +40,12 @@ export function OrderDetailSection({unselectOrder,onUpdate}: OrderDetailsProps) 
 
     const changeState = (orderStatus: OrderStatus) => {
         if (orderStatus === OrderStatus.ACCEPTED
-            || orderStatus === OrderStatus.REJECTED
             || orderStatus === OrderStatus.CANCELLED
             || orderStatus === OrderStatus.NEEDS_INFO
             || orderStatus === OrderStatus.COMPLETED) {
             updateStateApi.request(selectedOrder!.uuid, orderStatus)
         }
-        if (orderStatus === OrderStatus.REJECTED
-            || orderStatus === OrderStatus.CANCELLED ) {
+        if (orderStatus === OrderStatus.CANCELLED ) {
             doForceRefresh();
             if (unselectOrder) {
                 unselectOrder();
