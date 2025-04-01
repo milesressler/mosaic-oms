@@ -57,7 +57,8 @@ export interface OrderDetails extends Order {
 }
 
 export interface Customer {
-    name: string
+    firstName: string
+    lastName: string
     uuid: string
     created: number
     showerWaiverCompleted: number
@@ -66,7 +67,6 @@ export interface Customer {
 export interface CustomerSearch {
     firstName: string
     lastName: string
-    name: string
     id: number
     uuid: string
 }
@@ -139,7 +139,8 @@ export interface ItemRequest {
 }
 
 export interface OrderRequest {
-    customerName?: string;
+    customerFirstName?: string;
+    customerLastName?: string;
     customerUuid?: string;
     customerPhone?: string;
     specialInstructions?: string;

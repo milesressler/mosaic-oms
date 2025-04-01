@@ -172,7 +172,7 @@ export function OrdersTable({
                         <StatusBadge orderStatus={order.orderStatus} />
                         <Text c={'dimmed'} size={'xs'}>{DateTime.fromISO(order.lastStatusChange?.timestamp).toRelative()}</Text>
                     </div>}
-                    {key === 'Customer' && order.customer?.name}
+                    {key === 'Customer' && `${order.customer?.firstName || ''} ${order.customer?.lastName || ''}`.trim()}
                     {key === 'statusObfuscated' && <StatusBadge orderStatus={getObfusgatedStatus(order.orderStatus)}/> }
                 </Table.Td>
             )})}

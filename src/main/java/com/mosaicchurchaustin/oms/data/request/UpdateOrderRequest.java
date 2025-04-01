@@ -8,7 +8,8 @@ import java.util.List;
 
 @Valid
 public record UpdateOrderRequest(
-        String customerName,
+        String customerFirstName,
+        String customerLastName,
         @Pattern(regexp="(^$|[0-9]{10})", message = "customerPhone should be 10 digits")
         String customerPhone,
         Boolean optInNotifications,

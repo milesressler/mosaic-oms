@@ -24,7 +24,7 @@ export function OrderInfoBlock({ orderDetails, loading, changeState, toggleAssig
 
             </Group>
             <Text>
-                <Text span c="gray.6">Customer:</Text> {orderDetails?.customer?.name}
+                <Text span c="gray.6">Customer:</Text> {`${orderDetails?.customer?.firstName || ''} ${orderDetails?.customer?.lastName || ''}`.trim()}
             </Text>
             <Text>
                 { orderDetails?.assignee && <><Text span c="gray.6">Assignee </Text><UserAvatar user={orderDetails!.assignee} /></>}

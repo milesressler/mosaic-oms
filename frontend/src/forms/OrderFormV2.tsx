@@ -52,6 +52,7 @@ export function OrderFormV2({ form }: Props) {
     const handleCreateNew = () => {
         const [first, ...rest] = searchString.split(" ")
         form.setValues({
+            customerId: '',
             firstName: first,
             lastName: rest.length > 0? rest.join(" ") : ''
         });
@@ -74,8 +75,8 @@ export function OrderFormV2({ form }: Props) {
         if (customer) {
             form.setValues({
                 customerId: customer.uuid,
-                firstName: customer.name,
-                lastName: ''
+                firstName: customer.firstName,
+                lastName: customer.lastName || ''
             });
             setStep("items");
         }
@@ -84,7 +85,8 @@ export function OrderFormV2({ form }: Props) {
     const submitOrder = (values: OrderFormValues) => {
         form.validate();
         const request: OrderRequest = {
-            customerName: values.firstName + " " + values.lastName,
+            customerFirstName: values.firstName,
+            customerLastName: values.lastName,
             customerUuid: values.customerId,
             customerPhone: values.customerPhone,
             specialInstructions: values.specialInstructions || '',
@@ -132,7 +134,7 @@ export function OrderFormV2({ form }: Props) {
                     <Stepper.Step
                         icon={<IconUserCheck />}
                         label="Customer"
-                        description={form.values.firstName && step != 'customer' ? `${form.values.firstName} ${form.values.lastName}` : ""}
+                        description={form.values.firstName && step != 'customer' ? `${form.values.firstName} ${form.values.lastName || ''}` : ""}
                     />
                     <Stepper.Step label="Items"
                                   icon={<IconShoppingBag />}
@@ -167,7 +169,10 @@ export function OrderFormV2({ form }: Props) {
                                     { searchString && <CustomerResultCard useAlternateStyle={true} key={'new'} text={'Create "' + searchString + '"'} onClick={handleCreateNew}/> }
                                 {(
                                    searchString && searchCustomersApi.data && searchCustomersApi.data?.map((c: CustomerSearch) =>
-                                       <CustomerResultCard key={c.uuid} text={c.name} onClick={() => handleCustomerSelect(c.uuid)}/>)
+                                       <CustomerResultCard key={c.uuid}
+                                                           text={`${c.firstName || ''} ${c.lastName || ''}`.trim()}
+                                                           onClick={() => handleCustomerSelect(c.uuid)
+                                       }/>)
                                        )}
                                     </Stack>
                             </>

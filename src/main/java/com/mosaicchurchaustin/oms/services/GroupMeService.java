@@ -44,7 +44,7 @@ public class GroupMeService {
                 
                 Order Items:
                 """,
-                order.getCustomer().getName(),
+                order.getCustomer().fullName(),
                 order.getLastStatusChange().getUserEntity().getName());
 
         final StringBuilder sb = new StringBuilder(topLevelContent);

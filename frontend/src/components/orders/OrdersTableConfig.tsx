@@ -30,7 +30,7 @@ export const columns: ColumnConfig[] = [
         OrdersView.PUBLIC] },
     { label: 'Cart', id: 'cart', sortField: 'cart', views: [
         OrdersView.RUNNER] },
-    { label: 'Customer', sortField: 'customer.name', views:
+    { label: 'Customer', sortField: 'customer.lastName', views:
         [OrdersView.DEFAULT, OrdersView.ADMIN, OrdersView.PUBLIC, OrdersView.FILLER, OrdersView.DISTRIBUTOR ]},
 ];
 

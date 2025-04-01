@@ -27,7 +27,8 @@ export function CustomerManagementPage() {
         <>
             <LoadingOverlay visible={getCustomersApi.loading}/>
             <Table.Tr key={customer.uuid} pos={'relative'} >
-                <Table.Td>{customer.name}</Table.Td>
+                <Table.Td>{customer.firstName}</Table.Td>
+                <Table.Td>{customer.lastName}</Table.Td>
                 <Table.Td>{customer.created && DateTime.fromMillis(customer.created).toLocaleString(DateTime.DATETIME_SHORT)}</Table.Td>
                 <Table.Td>{customer.showerWaiverCompleted && DateTime.fromMillis(customer.showerWaiverCompleted).toLocaleString(DateTime.DATETIME_SHORT)}</Table.Td>
             </Table.Tr>
@@ -40,7 +41,8 @@ export function CustomerManagementPage() {
             <Table pos={'relative'}>
                 <Table.Thead>
                     <Table.Tr>
-                        <Table.Th>Name</Table.Th>
+                        <Table.Th>First Name</Table.Th>
+                        <Table.Th>Last Name</Table.Th>
                         <Table.Th>Created</Table.Th>
                         <Table.Th>Shower Waiver Signed</Table.Th>
                     </Table.Tr>

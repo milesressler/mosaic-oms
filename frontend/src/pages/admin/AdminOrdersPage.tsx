@@ -131,7 +131,7 @@ const AdminOrdersPage = () => {
                         {order.assignee?.name ?? 'Unassigned'}
                     </Text></Group></></Table.Td>
                 <Table.Td>{order.id}  { order.postedToGroupMe && <Image w={16} h={16} src={groupmeImage}></Image> } </Table.Td>
-                <Table.Td>{order.customer.name}</Table.Td>
+                <Table.Td>{order.customer.firstName} {order.customer.lastName}</Table.Td>
                 <Table.Td> <>
                     <Text>{DateTime.fromISO(order.created).toLocaleString(DateTime.TIME_SIMPLE)}</Text>
                     <Text c={"dimmed"} size={'xs'}>{DateTime.fromISO(order.created).toLocaleString(DateTime.DATE_MED)}</Text>
@@ -192,7 +192,7 @@ const AdminOrdersPage = () => {
                             field={'id'}>
                             <>Order #</>
                         </Th>
-                        <Th key={'customer'} field={'customer.name'}>Customer</Th>
+                        <Th key={'customer'} field={'customer.lastName'}>Customer</Th>
                         <Th
                             key={'created'}
                             field={'created'}>

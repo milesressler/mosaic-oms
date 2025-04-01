@@ -13,38 +13,38 @@ import java.util.Optional;
 @Repository
 public interface CustomerRepository extends JpaRepository<CustomerEntity, Long> {
 
-    Optional<CustomerEntity> findByName(String name);
+    Optional<CustomerEntity> findByFirstNameAndLastName(String firstName, String lastName);
     Optional<CustomerEntity> findByUuid(String uuid);
 
     @Query("""
-SELECT scored.name as name,
+SELECT scored.firstName as firstName,
+       scored.lastName as lastName,
        scored.uuid as uuid,
        (scored.firstScore + scored.lastScore) AS matchScore
 FROM (
-    SELECT c.name AS name,
+    SELECT c.firstName AS firstName,
+           c.lastName AS lastName,
            c.uuid AS uuid,
            CASE
-                      WHEN CAST(SUBSTRING_INDEX(c.name, ' ', 1) AS string) = :firstName THEN 5
-                      WHEN CAST(SUBSTRING_INDEX(c.name, ' ', 1) AS string) LIKE CONCAT(:firstName, '%') AND LENGTH(:firstName) >= 3 THEN 4
-                      WHEN CAST(SUBSTRING_INDEX(c.name, ' ', 1) AS string) LIKE CONCAT('%', :firstName, '%') AND LENGTH(:firstName) >= 3 THEN 2
-                      WHEN CAST(SUBSTRING_INDEX(c.name, ' ', 1) AS string) LIKE CONCAT('%', :firstName, '%') THEN 1
+                      WHEN c.firstName = :firstName THEN 5
+                      WHEN c.firstName LIKE CONCAT(:firstName, '%') AND LENGTH(:firstName) >= 3 THEN 4
+                      WHEN c.firstName LIKE CONCAT('%', :firstName, '%') AND LENGTH(:firstName) >= 3 THEN 2
+                      WHEN c.firstName LIKE CONCAT('%', :firstName, '%') THEN 1
                       ELSE 0
                   END +
                   CASE
-                      WHEN SOUNDEX(CAST(SUBSTRING_INDEX(c.name, ' ', 1) AS string)) = SOUNDEX(:firstName) THEN 2
+                      WHEN SOUNDEX(c.firstName) = SOUNDEX(:firstName) THEN 2
                       ELSE 0
                   END AS firstScore,
                   CASE
-                      WHEN LOCATE(' ', c.name) = 0 THEN 0
-                      WHEN CAST(SUBSTRING_INDEX(c.name, ' ', -1) AS string) = :lastName THEN 5
-                      WHEN CAST(SUBSTRING_INDEX(c.name, ' ', -1) AS string) LIKE CONCAT(:lastName, '%') AND LENGTH(:lastName) >= 3 THEN 4
-                      WHEN CAST(SUBSTRING_INDEX(c.name, ' ', -1) AS string) LIKE CONCAT('%', :lastName, '%') AND LENGTH(:lastName) >= 3 THEN 2
-                      WHEN CAST(SUBSTRING_INDEX(c.name, ' ', -1) AS string) LIKE CONCAT('%', :lastName, '%') THEN 1
+                      WHEN c.lastName = :lastName THEN 5
+                      WHEN c.lastName LIKE CONCAT(:lastName, '%') AND LENGTH(:lastName) >= 3 THEN 4
+                      WHEN c.lastName LIKE CONCAT('%', :lastName, '%') AND LENGTH(:lastName) >= 3 THEN 2
+                      WHEN c.lastName LIKE CONCAT('%', :lastName, '%') THEN 1
                       ELSE 0
                   END +
                   CASE
-                      WHEN LOCATE(' ', c.name) = 0 THEN 0
-                      WHEN SOUNDEX(CAST(SUBSTRING_INDEX(c.name, ' ', -1) AS string)) = SOUNDEX(:lastName) THEN 2
+                      WHEN SOUNDEX(c.lastName) = SOUNDEX(:lastName) THEN 2
                       ELSE 0
                   END AS lastScore
     FROM CustomerEntity c

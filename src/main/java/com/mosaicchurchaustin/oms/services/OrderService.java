@@ -238,10 +238,14 @@ public class OrderService {
                         customerRepository.findByUuid(uuid)
                                 .orElseThrow(() -> new EntityNotFoundException(CustomerEntity.ENTITY_TYPE, uuid)))
                 .orElseGet(() -> {
-                    if(StringUtils.isNotBlank(request.customerName())) {
-                        return customerRepository.save(new CustomerEntity(request.customerName().trim(), null));
-                    } else {
-                        throw new InvalidRequestException("Customer name or uuid is required.");
+                    if(StringUtils.isBlank(request.customerFirstName()) || StringUtils.isBlank(request.customerLastName())) {
+                        throw new InvalidRequestException("Customer first/last name or uuid is required.");
+                    }  else {
+                        return customerRepository.save(
+                                new CustomerEntity(
+                                        request.customerFirstName().trim(),
+                                        request.customerLastName().trim(),
+                                        null));
                     }
                 });
 

@@ -10,7 +10,8 @@ import java.util.Optional;
 @Builder
 @Getter
 public class CustomerResponse {
-    private String name;
+    private String firstName;
+    private String lastName;
     private Long created;
     private Long showerWaiverCompleted;
     private String uuid;
@@ -18,7 +19,8 @@ public class CustomerResponse {
 
     public static CustomerResponse from(final CustomerEntity customerEntity) {
         return CustomerResponse.builder()
-                .name(customerEntity.getName())
+                .firstName(customerEntity.getFirstName())
+                .lastName(customerEntity.getLastName())
                 .uuid(customerEntity.getUuid())
                 .created(customerEntity.getCreated().getTimeInMillis())
 //                .visits(cus)

@@ -145,7 +145,7 @@ public class PdfGenerator {
         contentStream.showText(String.format("%s of %s", page + 1, totalPages));
         contentStream.newLine();
         contentStream.setFont(new PDType1Font(Standard14Fonts.FontName.HELVETICA_BOLD), 8);
-        contentStream.showText(orderEntity.getCustomer().getName());
+        contentStream.showText(orderEntity.getCustomer().fullName());
         contentStream.newLine();
         contentStream.newLine(); // Extra space before items
 
@@ -196,7 +196,7 @@ public class PdfGenerator {
         byte[] qrCodeBytes = Files.readAllBytes(Path.of("/Users/milesressler/workspace/mosaic/mosaic-oms/qr_code_sample.png")); // Load an example QR code image
         byte[] pdfBytes = generator.generateAcceptedOrderPDF(qrCodeBytes,
                 OrderEntity.builder()
-                        .customer(new CustomerEntity("Fred Flinstone", null))
+                        .customer(new CustomerEntity("Fred", "Flintstone", null))
                         .build()
         );
 

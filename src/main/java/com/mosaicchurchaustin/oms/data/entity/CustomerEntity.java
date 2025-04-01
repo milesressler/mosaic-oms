@@ -6,6 +6,8 @@ import jakarta.persistence.Table;
 import lombok.*;
 
 import java.util.Calendar;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Entity
 @Table(name = "customers")
@@ -23,9 +25,18 @@ public class CustomerEntity extends BaseUuidEntity {
         return ENTITY_TYPE;
     }
 
-    @Column(name = "name")
-    String name;
+    @Column(name = "first_name")
+    String firstName;
+
+    @Column(name = "last_name")
+    String lastName;
 
     @Column(name = "shower_waiver_completed")
     Calendar showerWaiverCompleted;
+
+    public String fullName() {
+        return Stream.of(firstName, lastName)
+                .filter(String::isBlank)
+                .collect(Collectors.joining(" "));
+    }
 }

@@ -7,12 +7,14 @@ import lombok.Getter;
 @Builder
 @Getter
 public class CustomerSearchResponse {
-    private String name;
+    private String firstName;
+    private String lastName;
     private String uuid;
 
     public static CustomerSearchResponse from(final CustomerSearchProjection customerSearchProjection) {
         return CustomerSearchResponse.builder()
-                .name(customerSearchProjection.getName())
+                .firstName(customerSearchProjection.getFirstName())
+                .lastName(customerSearchProjection.getLastName())
                 .uuid(customerSearchProjection.getUuid())
                 .build();
     }

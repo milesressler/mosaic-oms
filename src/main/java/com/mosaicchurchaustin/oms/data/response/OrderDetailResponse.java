@@ -35,7 +35,8 @@ public class OrderDetailResponse extends OrderResponse {
                 .orderStatus(orderEntity.getOrderStatus())
                 .customer(
                         OrderResponse.Customer.builder()
-                                .name(orderEntity.getCustomer().getName())
+                                .firstName(orderEntity.getCustomer().getFirstName())
+                                .lastName(orderEntity.getCustomer().getLastName())
                                 .build()
                 )
                 .assignee(
@@ -56,7 +57,8 @@ public class OrderDetailResponse extends OrderResponse {
     @Builder
     @Data
     public static class Customer {
-        private String name;
+        private String firstName;
+        private String lastName;
     }
 
 

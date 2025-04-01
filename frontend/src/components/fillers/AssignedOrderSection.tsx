@@ -16,7 +16,7 @@ export function AssignedOrderSection({order}: AssignedOrderSectionProps) {
     }, [order]);
 
     return (<>
-        <Text><Text span fw={500}>Customer:</Text> {orderDetailApi.data?.customer?.name}</Text>
+        <Text><Text span fw={500}>Customer:</Text> {orderDetailApi.data?.customer?.firstName} {orderDetailApi.data?.customer?.lastName}</Text>
         <Divider></Divider>
         <ul>
         {orderDetailApi.data?.items?.map((item) => {

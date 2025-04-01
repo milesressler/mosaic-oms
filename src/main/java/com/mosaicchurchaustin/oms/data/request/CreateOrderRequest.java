@@ -9,7 +9,8 @@ import java.util.UUID;
 
 @Valid
 public record CreateOrderRequest(
-        String customerName,
+        String customerFirstName,
+        String customerLastName,
         UUID customerUuid,
         @Pattern(regexp="(^$|[0-9]{10})", message = "customerPhone should be 10 digits")
         String customerPhone,

@@ -1,7 +1,8 @@
 package com.mosaicchurchaustin.oms.data.projections;
 
 public interface CustomerSearchProjection {
-    String getName();
+    String getFirstName();
+    String getLastName();
     String getUuid();
     int getMatchScore();
 }

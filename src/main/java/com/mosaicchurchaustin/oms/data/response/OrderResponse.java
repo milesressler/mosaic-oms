@@ -37,7 +37,8 @@ public class OrderResponse {
                 .orderStatus(orderEntity.getOrderStatus())
                 .customer(
                         Customer.builder()
-                                .name(orderEntity.getCustomer().getName())
+                                .firstName(orderEntity.getCustomer().getFirstName())
+                                .lastName(orderEntity.getCustomer().getLastName())
                                 .build()
                 )
                 .build();
@@ -46,6 +47,7 @@ public class OrderResponse {
     @Builder
     @Data
     public static class Customer {
-        private String name;
+        private String firstName;
+        private String lastName;
     }
 }
