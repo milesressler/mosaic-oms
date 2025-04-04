@@ -11,6 +11,7 @@ import {
 } from "@mantine/core";
 import useApi from "src/hooks/useApi.tsx";
 import ItemsApi from "src/services/itemsApi.tsx";
+import AdminUserApi from "src/services/adminUserApi.tsx";
 import {useEffect, useState} from "react";
 import {AdminItem, Category, categoryDisplayNames, Item} from "src/models/types.tsx";
 import {IconPencil, IconSearch, IconTableImport, IconX} from "@tabler/icons-react";
@@ -76,6 +77,7 @@ export function ItemsManagementPage() {
     const adminItemsApi = useApi(ItemsApi.getAdminItemsPageSort);
     const deleteItemApi = useApi(ItemsApi.deleteAdminItem);
     const updateItemApi = useApi(ItemsApi.updateAdminItem);
+    const roleFilterApi = useApi(AdminUserApi.getUsers);
 
     const [deletingId, setDeleting] = useState<number|null>(null);
     const [updatingId, setUpdatingId] = useState<number|null>(null);
@@ -94,6 +96,12 @@ export function ItemsManagementPage() {
             setPageContent(adminItemsApi.data.content ?? []);
         }
     }, [adminItemsApi.data]);
+
+    useEffect(() => {
+        if(roleFilterApi.data) {
+            setPageContent(roleFilterApi.request(???));
+        }
+    }, [roleFilterApi.data]);
 
     useEffect(() => {
         refreshData();
