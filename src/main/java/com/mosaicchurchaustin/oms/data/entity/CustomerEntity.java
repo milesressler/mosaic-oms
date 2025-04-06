@@ -4,6 +4,8 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 import lombok.*;
+import org.apache.commons.lang3.StringUtils;
+
 
 import java.util.Calendar;
 import java.util.stream.Collectors;
@@ -36,7 +38,7 @@ public class CustomerEntity extends BaseUuidEntity {
 
     public String fullName() {
         return Stream.of(firstName, lastName)
-                .filter(String::isBlank)
+                .filter(StringUtils::isNotBlank)
                 .collect(Collectors.joining(" "));
     }
 }
