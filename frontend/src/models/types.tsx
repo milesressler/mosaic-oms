@@ -226,6 +226,13 @@ export interface FeatureConfig {
     printOnTransitionToStatus: OrderStatus
 }
 
+export interface Device extends BaseObject{
+    userAgent?: string,
+    name: string,
+    expiration?: string,
+    lastAccessed?: string,
+}
+
 export enum Category{
     CLOTHING = "CLOTHING",
     GEAR = "GEAR",

@@ -53,10 +53,18 @@ public class OrderController {
 
 
     @ResponseBody
+    @GetMapping(path = "/order/public/dashboard", produces = MediaType.APPLICATION_JSON_VALUE)
+    public List<OrderResponse> getDashboardOrdersForKiosk(final Pageable pageable) {
+        return orderService.getDashboardOrders(pageable).stream().map(OrderResponse::from).toList();
+    }
+
+
+    @ResponseBody
     @GetMapping(path = "/order/view/dashboard", produces = MediaType.APPLICATION_JSON_VALUE)
     public List<OrderResponse> getDashboardOrders(final Pageable pageable) {
         return orderService.getDashboardOrders(pageable).stream().map(OrderResponse::from).toList();
     }
+
     @ResponseBody
     @GetMapping(path = "/order", produces = MediaType.APPLICATION_JSON_VALUE)
     public Page<OrderResponse> getOrders(final Pageable pageable,

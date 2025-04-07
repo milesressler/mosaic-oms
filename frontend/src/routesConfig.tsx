@@ -5,7 +5,7 @@ import OrderDetailsPage from "src/pages/orders/OrderDetailsPage.tsx";
 import OrderFormPage from "src/pages/orders/OrderFormPage.tsx";
 import {Navigate} from "react-router-dom";
 import AuthCallbackPage from "src/pages/AuthCallback.tsx";
-import {IconDashboard, IconHome, IconUser, IconReport } from "@tabler/icons-react";
+import {IconDashboard, IconHome, IconUser, IconReport, IconMovie} from "@tabler/icons-react";
 import ItemsManagementPage from "src/pages/admin/ItemsManagementPage.tsx";
 import OrderTakerDashboard from "src/pages/dashboards/OrderTakerDashboard.tsx";
 import OrderFillerDashboard from "src/pages/dashboards/OrderFillerDashboard.tsx";
@@ -19,6 +19,7 @@ import RunnerDashboard from "src/pages/dashboards/RunnerDashboard.tsx";
 import DistributorDashboard from "src/pages/dashboards/DistributorDashboard.tsx";
 import AdminSettingsPage from "src/pages/admin/AdminSettingsPage.tsx";
 import CustomerMgmtPage from "src/pages/admin/CustomerMgmtPage.tsx";
+import DevicesPage from "src/pages/admin/DevicesPage.tsx";
 
 
 const routes = [
@@ -31,6 +32,17 @@ const routes = [
         title: 'Home',
         icon: IconHome,
         showInNavBar: false,
+    },{
+        key: 'kiosk',
+        path: '/kiosk',
+        element: CustomerDashboard,
+        errorElement: ErrorPage,
+        public: true,
+        title: 'Kiosk',
+        icon: IconMovie,
+        showInNavBar: false,
+        isMonitor: true,
+        hideNotifications: true,
     },
     {
         key: 'dashboards',
@@ -155,6 +167,13 @@ const routes = [
                 element: OrderDetailsPage,
                 title: 'Order Details',
                 showInNavBar: false,
+            },
+            {
+                key: 'devices',
+                path: '/devices',
+                element: DevicesPage,
+                title: 'Devices',
+                showInNavBar: true,
             },
             {
                 key: 'settings',

@@ -72,7 +72,7 @@ export function OrdersTable({
     const refreshPercent = refreshInterval/100;
 
     const getOrdersApi =
-        view === OrdersView.PUBLIC ? useApi(ordersApi.getOrdersDashboardView) : useApi(ordersApi.getOrdersWithDetails);
+        view === OrdersView.PUBLIC ? useApi(ordersApi.getOrdersDashboardViewKiosk) : useApi(ordersApi.getOrdersWithDetails);
     const [counter, setCounter] = useState(0);
     const [progress, setProgress] = useState(0);
 

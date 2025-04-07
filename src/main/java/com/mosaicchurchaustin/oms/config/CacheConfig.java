@@ -1,11 +1,11 @@
 package com.mosaicchurchaustin.oms.config;
 
-import com.github.benmanes.caffeine.cache.Caffeine;
 import com.mosaicchurchaustin.oms.services.bus.TransitService;
+import com.mosaicchurchaustin.oms.support.cache.CustomCaffeineCacheManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.EnableCaching;
-import org.springframework.cache.caffeine.CaffeineCacheManager;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -17,15 +17,8 @@ import java.util.concurrent.TimeUnit;
 public class CacheConfig {
 
     @Bean("transitCacheManager")
-    public CacheManager cacheManager() {
-        final CaffeineCacheManager cacheManager = new CaffeineCacheManager(
-                "transitData",
-                "items",
-                "features");
-        cacheManager.setCaffeine(Caffeine.newBuilder()
-                .expireAfterWrite(5, TimeUnit.MINUTES)
-                .maximumSize(100));
-        return cacheManager;
+    public CacheManager cacheManager(ApplicationEventPublisher publisher) {
+        return new CustomCaffeineCacheManager(publisher, "transitData", "items", "features", "kiosk");
     }
 
     @Configuration

@@ -1,4 +1,4 @@
-import {Blockquote, Group, Paper, Text, Title} from "@mantine/core";
+import {Blockquote, Box, Group, Paper, Text, Title} from "@mantine/core";
 import {OrderDetails, OrderStatus} from "src/models/types.tsx";
 import OrderActionButton from "src/components/fillers/actionButton/OrderActionButton.tsx";
 import {IconNotes} from "@tabler/icons-react";
@@ -13,8 +13,8 @@ interface props {
 export function OrderInfoBlock({ orderDetails, loading, changeState, toggleAssigned}: props) {
 
     return (<>
-        <Paper  shadow="xs" p="xl">
-            <Group justify={'space-between'} pr={10} mb={10}>
+        <Box>
+            <Group justify={'space-between'} mb={10}>
                 <Title order={2}>Order: {orderDetails?.id}</Title>
                 <OrderActionButton
                     onStateChange={changeState}
@@ -36,7 +36,7 @@ export function OrderInfoBlock({ orderDetails, loading, changeState, toggleAssig
                     {orderDetails?.specialInstructions}
                 </Blockquote>
             </Text> }
-        </Paper>
+        </Box>
     </>)
 }
 

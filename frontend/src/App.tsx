@@ -2,6 +2,7 @@ import './App.css'
 import {Auth0ProviderWithNavigate} from "src/components/auth0/Auth0ProviderWithNavigate.tsx";
 import {AuthContextProvider, useAuthContext} from "src/contexts/AuthContext";
 import '@mantine/core/styles.css';
+import '@mantine/dates/styles.css';
 
 import {createTheme, MantineProvider} from '@mantine/core';
 import { Notifications } from '@mantine/notifications';
@@ -12,6 +13,7 @@ import { CookiesProvider, useCookies} from "react-cookie";
 import {useAuth0} from "@auth0/auth0-react";
 import {PreferencesProvider} from "src/contexts/PreferencesContext.tsx";
 import {FeaturesProvider} from "src/contexts/FeaturesContext.tsx";
+import {ModalsProvider} from "@mantine/modals";
 const WS_URL = import.meta.env.VITE_API_WEBSOCKET_URL;
 
 
@@ -65,16 +67,18 @@ function Interior({}) {
 function App() {
   return (
     <><MantineProvider theme={theme}>
-        <PreferencesProvider>
-            <Notifications/>
-                <CookiesProvider defaultSetOptions >
-                    <Auth0ProviderWithNavigate>
-                            <AuthContextProvider>
-                                    <Interior/>
-                            </AuthContextProvider>
-                    </Auth0ProviderWithNavigate>
-                </CookiesProvider>
-        </PreferencesProvider>
+        <ModalsProvider>
+            <PreferencesProvider>
+                <Notifications/>
+                    <CookiesProvider defaultSetOptions >
+                        <Auth0ProviderWithNavigate>
+                                <AuthContextProvider>
+                                        <Interior/>
+                                </AuthContextProvider>
+                        </Auth0ProviderWithNavigate>
+                    </CookiesProvider>
+            </PreferencesProvider>
+        </ModalsProvider>
     </MantineProvider>
     </>
   )

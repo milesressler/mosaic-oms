@@ -55,6 +55,7 @@ public class GroupMeService {
                         orderItem.getItemEntity().getDescription()));
 
               Optional.ofNullable(orderItem.getAttributes())
+                  .filter(attributes -> !attributes.isEmpty())
                     .map(attributes -> attributes.entrySet().stream()
                         .map(entry -> entry.getKey() + ":" + entry.getValue().toString())
                         .collect(Collectors.joining(", "))

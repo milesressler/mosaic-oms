@@ -1,7 +1,11 @@
 package com.mosaicchurchaustin.oms.config;
 
 import com.mosaicchurchaustin.oms.data.constants.MosaicAuthority;
+import com.mosaicchurchaustin.oms.data.constants.MosaicRole;
+import com.mosaicchurchaustin.oms.services.DeviceService;
 import com.mosaicchurchaustin.oms.services.security.CustomJwtGrantedAuthoritiesConverter;
+import com.mosaicchurchaustin.oms.services.security.DeviceTokenAuthenticationFilter;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -16,7 +20,9 @@ import org.springframework.security.config.annotation.web.configurers.HeadersCon
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
+import org.springframework.security.oauth2.server.resource.web.authentication.BearerTokenAuthenticationFilter;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.access.expression.WebExpressionAuthorizationManager;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 import org.springframework.web.cors.CorsConfiguration;
@@ -26,6 +32,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @EnableWebSecurity
 @Configuration
@@ -33,8 +40,12 @@ public class SecurityConfig {
 
     @Value("${mosaic.oms.frontend.url}")
     private String frontendUrl;
-    @Bean
 
+    @Autowired
+    DeviceService deviceService;
+
+    @Autowired
+    @Bean
     public AuthenticationManager authenticationManager(
             final AuthenticationConfiguration authenticationConfiguration) throws Exception {
         return authenticationConfiguration.getAuthenticationManager();
@@ -55,7 +66,16 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(final HttpSecurity http, final JwtAuthenticationConverter jwtAuthenticationConverter) throws Exception {
-        CsrfTokenRequestAttributeHandler csrfTokenRequestAttributeHandler = new CsrfTokenRequestAttributeHandler();
+        final CsrfTokenRequestAttributeHandler csrfTokenRequestAttributeHandler = new CsrfTokenRequestAttributeHandler();
+        final String mosaicRoles = Arrays.stream(MosaicRole.values())
+                .map(MosaicRole::name)
+                .map(String::toUpperCase)
+                .collect(Collectors.joining("','", "'", "'"));
+
+        final var KIOSK_OR_ANY_AUTHORITY = new WebExpressionAuthorizationManager(
+                "hasAnyRole(" + mosaicRoles + ") or hasAuthority('" + MosaicAuthority.KIOSK.getAuthority() + "')"
+        );
+
         csrfTokenRequestAttributeHandler.setCsrfRequestAttributeName(null);
         http
                 .csrf(csrf ->
@@ -74,18 +94,38 @@ public class SecurityConfig {
                         )
                 )
                 .authorizeHttpRequests((registry) -> {
-                    registry.requestMatchers("/api/admin/**").hasAuthority(MosaicAuthority.ADMIN.getAuthority());
-                    registry.requestMatchers(HttpMethod.GET, "/api/item").permitAll();
-                    registry.requestMatchers(HttpMethod.GET, "/api/actuator/**").permitAll();
-                    registry.requestMatchers("/api/ws").permitAll();
-                    registry.requestMatchers("/api/**").authenticated();
+                    registry.requestMatchers("/api/admin/**")
+                            .hasAuthority(MosaicAuthority.ADMIN.getAuthority());
+                    registry.requestMatchers(HttpMethod.GET, "/api/actuator/**")
+                            .permitAll();
+
+                    registry.requestMatchers(HttpMethod.GET, "/api/order/public/dashboard")
+                            .access(KIOSK_OR_ANY_AUTHORITY);
+
+                    registry.requestMatchers(HttpMethod.GET, "/api/transit/bus/arrivals")
+                            .access(KIOSK_OR_ANY_AUTHORITY);
+
+                    registry.requestMatchers(HttpMethod.GET, "/api/device/me")
+                            .access(KIOSK_OR_ANY_AUTHORITY);
+
+                    registry.requestMatchers(HttpMethod.GET, "/api/device/logout")
+                            .permitAll();
+                    registry.requestMatchers("/api/ws")
+                            .permitAll();
+                    registry.requestMatchers("/api/**")
+                            .hasAnyRole(Arrays.stream(MosaicRole.values())
+                                    .map(MosaicRole::name)
+                                    .map(String::toUpperCase)
+                                    .toArray(String[]::new));
                     registry.anyRequest().permitAll();
                 })
                 .httpBasic(AbstractHttpConfigurer::disable)
                 .cors((cors) -> cors.configurationSource(corsConfigurationSource()))
                 .oauth2ResourceServer((oauth2) -> oauth2.jwt(
                         jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter)
-                ));
+                ))
+                .addFilterBefore(new DeviceTokenAuthenticationFilter(deviceService), BearerTokenAuthenticationFilter.class);
+        ;
         return http.build();
     }
 
@@ -103,3 +143,4 @@ public class SecurityConfig {
 
 
 }
+

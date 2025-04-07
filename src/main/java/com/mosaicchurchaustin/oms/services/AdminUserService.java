@@ -42,7 +42,8 @@ public class AdminUserService {
         user.setEmail(request.email());
         user.setName(request.name());
         user.setPassword(RandomStringUtils.randomAlphanumeric(32).toCharArray());
-        return AdminUserResponse.from(auth0Client.getUserById(user.getId()));
+        final var createdUser = managementAPI.users().create(user).execute().getBody();
+        return AdminUserResponse.from(auth0Client.getUserById(createdUser.getId()));
     }
 
     public Page<AdminUserResponse> getUsers(final Pageable pageable, final String roleFilter) throws Auth0Exception {

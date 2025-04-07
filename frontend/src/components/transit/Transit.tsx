@@ -3,9 +3,10 @@ import transitApi from "src/services/transitApi.tsx";
 import {useEffect} from "react";
 import {TransitInfoComponent} from "src/components/transit/TransitInfoComponent.tsx";
 import {Box} from "@mantine/core";
+import kioskApi from "src/services/kioskApi.tsx";
 
 export function Transit() {
-    const transit = useApi(transitApi.getTransitInfo);
+    const transit = useApi(kioskApi.getTransitInfo);
     useEffect(() => {
         // Initial request
         transit.request();

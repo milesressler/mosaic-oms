@@ -4,7 +4,9 @@ import java.util.Arrays;
 import java.util.Optional;
 
 public enum MosaicAuthority {
-    ADMIN("admin");
+    ADMIN("admin"),
+    KIOSK("kiosk"),
+    ;
 
     private final String authority;
 

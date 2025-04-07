@@ -16,6 +16,7 @@ import UserApi from "src/services/userApi.tsx";
 import {IconArrowsMaximize, IconArrowsMinimize} from "@tabler/icons-react";
 import { SelectedOrderProvider} from "src/contexts/SelectedOrderContext.tsx";
 import NotificationsHandler from "src/components/notifications/NotificationsHandler.tsx";
+import {DeviceLogoutButton} from "src/components/admin/devices/DeviceLogoutButton.tsx";
 
 const mappedRoutes = routes.flatMap((route: any) => route.children || [route]).map((route) => {
     const Element = route.public
@@ -51,7 +52,7 @@ export function AppShellComponent() {
     const [activeRoute, setActiveRoute] = useState(routes[0])
 
     const fullscreenAvailable = document.fullscreenEnabled;
-    const headerIsVisible = (!fullscreen || !activeRoute.isMonitor);
+    const headerIsVisible = (!fullscreen && !activeRoute.isMonitor);
     const isMobile = useMediaQuery(`(max-width: ${DEFAULT_THEME.breakpoints.lg})`);
 
 
@@ -154,6 +155,7 @@ export function AppShellComponent() {
                                 {isAuthenticated && <UserCard />}
                                 {isAuthenticated && <LogoutButton></LogoutButton>}
                                 {!isAuthenticated && <LoginButton></LoginButton>}
+                                <DeviceLogoutButton/>
 
                             { isAuthenticated && <Burger opened={asideOpened} size="sm"   onClick={() => {
                                 asideHandler.toggle()
