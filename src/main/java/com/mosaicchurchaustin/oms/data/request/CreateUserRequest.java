@@ -15,5 +15,5 @@ public record CreateUserRequest(
         @NotBlank(message = "name cannot be blank")
         String name,
 
-        @NotEmpty List<@NotBlank String> roles) {
+        List<@NotBlank String> roles) {
 }
