@@ -1,57 +1,42 @@
-import {OrderStatus} from "src/models/types.tsx";
-import {Button, Group, Paper, Text} from "@mantine/core";
-import {useSelectedOrder} from "src/contexts/SelectedOrderContext.tsx";
-import {useNavigate, useParams} from "react-router-dom";
-import {useAuth0} from "@auth0/auth0-react";
-import useApi from "src/hooks/useApi.tsx";
-import ordersApi from "src/services/ordersApi.tsx";
+import {Badge, Button, Group, Paper, Text} from '@mantine/core';
+import { OrderStatus } from 'src/models/types.tsx';
+import { useSelectedOrder } from 'src/contexts/SelectedOrderContext.tsx';
+import { useNavigate, useParams } from 'react-router-dom';
 
-export function OrderItemListView({}) {
-    const {selectedOrder} = useSelectedOrder();
-    const {user} = useAuth0();
-    const changeAssigneeApi = useApi(ordersApi.changeAssignee);
+function OrderItemListView() {
+    const { selectedOrder } = useSelectedOrder();
     const navigate = useNavigate();
-    const assignedToMe = selectedOrder?.assignee?.externalId === user?.sub;
-    const {id} = useParams();
-
-    const unassign = () => {
-        changeAssigneeApi.request(selectedOrder!.uuid, true);
-    }
-
-    const toggleAssigned = () => {
-        if (assignedToMe) {
-            return unassign();
-        } else {
-            return changeAssigneeApi.request(selectedOrder!.uuid, false);
-        }
-    }
+    const { id } = useParams();
 
     const startFilling = () => {
-        if (!assignedToMe) {
-            toggleAssigned()
-            navigate(`/dashboard/filler/fill/${id}`);
-        } else {
-            navigate(`/dashboard/filler/fill/${id}`);
-        }
-    }
+        navigate(`/dashboard/filler/fill/${id}`);
+    };
 
+    if (!selectedOrder) return null;
 
     return (
         <>
-            {selectedOrder?.orderStatus === OrderStatus.ACCEPTED && <Group grow my={10}>
-                <Button onClick={startFilling} disabled={!assignedToMe}>
-                    Begin Filling
-                </Button>
-            </Group>}
-            <Paper shadow="xs" mt={5}>
-                {selectedOrder?.items?.map((item) => {
-                    return (
-                        <div key={item.id}>
-                            <Text span fw={500}> {item.quantityRequested}</Text> {item.description} &nbsp;
-                            <Text span c={'dimmed'}>{item.notes}</Text>
-                        </div>
-                    )
-                })}
+            {selectedOrder?.orderStatus === OrderStatus.ACCEPTED && (
+                <Group justify="center" my="md">
+                    <Button onClick={startFilling}>Begin Filling</Button>
+                </Group>
+            )}
+            <Paper shadow="xs" p="md">
+                {selectedOrder?.items?.map((item) => (<>
+                    <Group key={item.id} justify={'space-between'}>
+                        <Text>
+                            <strong>{item.quantityRequested}</strong> {item.description} <Text c="dimmed">{item.notes}</Text>
+                        </Text>
+                    </Group>
+                    <Group key={item.id} justify={'space-between'} mb="sm">
+                            {
+                                Object.entries(item.attributes)?.map(([k,v]) =>
+                                    <Badge variant={'outline'} size={'xs'} c={'dimmed'}>{k}:{v}</Badge>
+                                )
+                            }
+                    </Group>
+            </>
+                ))}
             </Paper>
         </>
     );

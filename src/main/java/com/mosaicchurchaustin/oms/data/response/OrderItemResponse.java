@@ -6,6 +6,9 @@ import com.mosaicchurchaustin.oms.data.entity.order.OrderItemEntity;
 import lombok.Builder;
 import lombok.Getter;
 
+import java.util.Map;
+import java.util.stream.Collectors;
+
 @Getter
 @Builder
 public class OrderItemResponse {
@@ -15,6 +18,7 @@ public class OrderItemResponse {
     private Integer quantityFulfilled;
     private String notes;
     private Long id;
+    private Map<String, String> attributes;
 
     public static OrderItemResponse from(final OrderItemEntity orderItemEntity) {
         return OrderItemResponse.builder()
@@ -24,6 +28,8 @@ public class OrderItemResponse {
                 .quantityRequested(orderItemEntity.getQuantity())
                 .notes(orderItemEntity.getNotes())
                 .id(orderItemEntity.getId())
+                .attributes(orderItemEntity.getAttributes().entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey,
+                        (val) -> val.getValue().toString())))
                 .build();
 
     }

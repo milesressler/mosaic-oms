@@ -55,7 +55,7 @@ export function OrderActionButton({ loading, order, onStateChange, toggleAssigne
             action: () => onStateChange(OrderStatus.COMPLETED)
         },
         {
-            label: "Cancel",
+            label: "Cancel Order",
             icon: IconTrash,
             action: () => onStateChange(OrderStatus.CANCELLED)
         },

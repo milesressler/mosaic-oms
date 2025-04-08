@@ -199,6 +199,7 @@ export interface OrderItem {
     description: string;
     quantityRequested: number;
     quantityFulfilled: number;
+    attributes: { [key: string]: string };
     notes: string | null;
     id: number;
 }

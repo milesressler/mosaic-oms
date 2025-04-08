@@ -1,7 +1,6 @@
-import {DEFAULT_THEME, Grid, Modal} from "@mantine/core";
+import {Grid, Modal} from "@mantine/core";
 import {Order, OrderDetails, OrderStatus} from "src/models/types.tsx";
 import OrdersTable from "src/components/orders/OrdersTable.tsx";
-import {useMediaQuery} from "@mantine/hooks";
 import {useNavigate, useParams} from "react-router-dom";
 import {SelectedOrderProvider, useSelectedOrder} from "src/contexts/SelectedOrderContext.tsx";
 import OrderDetailSection from "src/components/fillers/OrderDetailSection.tsx";
@@ -10,7 +9,6 @@ import {useState} from "react";
 import {useAuth0} from "@auth0/auth0-react";
 
 export function OrderFillerDashboard() {
-    const isMobile = useMediaQuery(`(max-width: ${DEFAULT_THEME.breakpoints.lg})`);
     const navigate = useNavigate();
     const { id } = useParams();
     const [ forceRefreshTable, setForceRefreshTable ] = useState(false);
