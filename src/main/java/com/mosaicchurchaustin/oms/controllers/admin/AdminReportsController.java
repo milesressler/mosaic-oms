@@ -9,7 +9,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class AdminReportsController {
 
-//    final ItemService itemService;
 //
 //    @ResponseBody
 //    @GetMapping(path = "/r", produces = MediaType.APPLICATION_JSON_VALUE)

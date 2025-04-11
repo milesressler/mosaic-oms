@@ -52,7 +52,7 @@ resource "aws_iam_policy" "lambda_ecs_policy" {
           "ecs:UpdateService",
           "ecs:DescribeServices"
         ]
-        Resource = "arn:aws:ecs:us-west-2:638820400855:service/mosaic-oms-prod/mosaic-oms-service"
+        Resource = "arn:aws:ecs:us-west-2:638820400855:service/mosaic-oms-cluster/mosaic-oms-service"
       }
     ]
   })

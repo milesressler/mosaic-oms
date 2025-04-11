@@ -16,6 +16,7 @@ If you see a version output, you're good to go!
 Step 2: Configure AWS Credentials via SSO:
 ```
 aws configure sso
+aws sso login --profile AdministratorAccess-638820400855
 ```
 
 Amazon will take you through the process, but worth noting that your `~/.aws/config` will include two profiles. One for your user,

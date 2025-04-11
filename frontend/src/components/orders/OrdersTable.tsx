@@ -71,8 +71,7 @@ export function OrdersTable({
 }: OrdersTable){
     const refreshPercent = refreshInterval/100;
 
-    const getOrdersApi =
-        view === OrdersView.PUBLIC ? useApi(ordersApi.getOrdersDashboardViewKiosk) : useApi(ordersApi.getOrdersWithDetails);
+    const getOrdersApi = useApi(ordersApi.getOrdersWithDetails);
     const [counter, setCounter] = useState(0);
     const [progress, setProgress] = useState(0);
 
@@ -136,14 +135,6 @@ export function OrdersTable({
         refreshOrders();
     };
 
-    const getObfusgatedStatus = (status: OrderStatus) => {
-        const inProgressStatuses = [
-            OrderStatus.ACCEPTED, OrderStatus.PACKING, OrderStatus.PACKED,
-            OrderStatus.IN_TRANSIT,
-        ]
-
-        return inProgressStatuses.indexOf(status) == -1 ? status : OrderStatus.IN_PROGRESS;
-    }
 
     const data = view === OrdersView.PUBLIC ? getOrdersApi.data : getOrdersApi.data?.content;
     const rows = data?.map((order: Order) => (
@@ -173,7 +164,6 @@ export function OrdersTable({
                         <Text c={'dimmed'} size={'xs'}>{DateTime.fromISO(order.lastStatusChange?.timestamp).toRelative()}</Text>
                     </div>}
                     {key === 'Customer' && `${order.customer?.firstName || ''} ${order.customer?.lastName || ''}`.trim()}
-                    {key === 'statusObfuscated' && <StatusBadge orderStatus={getObfusgatedStatus(order.orderStatus)}/> }
                 </Table.Td>
             )})}
         </Table.Tr>

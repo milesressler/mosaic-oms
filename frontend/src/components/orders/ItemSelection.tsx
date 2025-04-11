@@ -175,7 +175,7 @@ export function ItemSelection ({currentSelection, onItemSelectionChange}: props)
                 </Stack>
             )}
             {/*<Modal opened={false} onClose={}></Modal>*/}
-            <Button variant={'outline'} onClick={handleNewItem}>New Item</Button>
+            <Button variant={'outline'} onClick={handleNewItem} display={'none'}>New Item</Button>
         </Stack>
     );
 }
