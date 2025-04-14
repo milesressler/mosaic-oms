@@ -14,7 +14,10 @@ const CustomerDashboard = () => {
 
     const refreshInterval = 30000;
     const refreshPercent = refreshInterval/100;
-
+    useEffect(() => {
+        console.log("Mounted CustomerDashboard");
+        return () => console.log("Unmounted CustomerDashboard");
+    }, []);
 
     const getObfusgatedStatus = (status: OrderStatus) => {
         const inProgressStatuses = [
@@ -54,15 +57,17 @@ const CustomerDashboard = () => {
         <GridCol span={8}>
             <Table>
                 <Table.Thead>
-                    <Table.Th>
-                        Friend
-                    </Table.Th>
-                    <Table.Th align={'right'}>
-                        Status
-                    </Table.Th>
+                    <Table.Tr>
+                        <Table.Th>
+                            Friend
+                        </Table.Th>
+                        <Table.Th align={'right'}>
+                            Status
+                        </Table.Th>
+                    </Table.Tr>
                 </Table.Thead>
                 <Table.Tbody>
-                    {getOrdersApi.data?.map(order => <Table.Tr>
+                    {getOrdersApi.data?.map(order => <Table.Tr key={order.id}>
                         <Table.Td>
                             { order.customer?.firstName} {order.customer?.lastName}
                         </Table.Td>

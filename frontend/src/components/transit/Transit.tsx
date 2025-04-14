@@ -1,27 +1,29 @@
 import useApi from "src/hooks/useApi.tsx";
-import transitApi from "src/services/transitApi.tsx";
-import {useEffect} from "react";
 import {TransitInfoComponent} from "src/components/transit/TransitInfoComponent.tsx";
 import {Box} from "@mantine/core";
 import kioskApi from "src/services/kioskApi.tsx";
+import {useInterval} from "@mantine/hooks";
+import {useEffect} from "react";
 
 export function Transit() {
     const transit = useApi(kioskApi.getTransitInfo);
+
+    const transitInterval = useInterval(
+        transit.request,
+        15000,
+        { autoInvoke: true }
+    );
+
     useEffect(() => {
-        // Initial request
+        transitInterval.start();
         transit.request();
-
-        // Set up the interval to refresh every 30 seconds (30000 milliseconds)
-        const interval = setInterval(() => {
-            transit.request();
-        }, 30000);
-
-        // Clean up the interval on component unmount
-        return () => clearInterval(interval);
+        return transitInterval.stop;
     }, []);
 
-    return (<Box px={'10px'}>
-        {transit.data?.map(transit => <TransitInfoComponent transitInfo={transit}/>)}
+    return (
+        <Box px={'10px'}>
+            {transit.data?.map(transit =>
+                <TransitInfoComponent key={transit.stopId} transitInfo={transit}/>)}
         </Box>);
 }
 
