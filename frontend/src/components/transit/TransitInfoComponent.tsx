@@ -18,6 +18,7 @@ function getArrivalMessage(nextArrivalTime: number, now: DateTime) {
         return "Arrives " + nextArrivalDateTime.toRelative({ base: now });
     }
 }
+
 export function TransitInfoComponent({transitInfo}: TransitInfoComponentProps) {
     const [currentTime, setCurrentTime] = useState(DateTime.now());
 

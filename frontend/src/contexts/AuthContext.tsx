@@ -17,26 +17,19 @@ export const AuthContextProvider = (props: any) => {
     const [token, setToken] = useState("")
 
     async function authorizeSocket() {
-        const token: string = await getAccessTokenSilently();
-        setToken(token);
-
+        try {
+            const token = await getAccessTokenSilently();
+            setToken(token);
+            // If needed: stompClient?.connect(headersUsing(token));
+        } catch {
+            setToken("");
+        }
     }
 
     useEffect(() => {
         addAccessTokenInterceptor(getAccessTokenSilently);
         authorizeSocket();
     }, [getAccessTokenSilently]);
-
-    // useEffect(() => {
-    //     console.log(`${!!token} ${!!stompClient}`);
-    //     if (token && stompClient) {
-    //         stompClient.publish({
-    //             destination: "/app/authorize",
-    //             body: token,
-    //         });
-    //     }
-    //
-    // }, [token, stompClient]);
 
     return (
         <AuthContext.Provider value={{

@@ -7,10 +7,19 @@ const client: AxiosInstance = axios.create({
     },
 });
 
-export const addAccessTokenInterceptor = (getAccessTokenSilently: any) => {
+let interceptorAttached = false;
+
+export const addAccessTokenInterceptor = (
+    getAccessTokenSilently: () => Promise<string>
+) => {
+    if (interceptorAttached) return;
+    interceptorAttached = true;
+
     client.interceptors.request.use(async (config) => {
-        const token: string = await getAccessTokenSilently();
-        config.headers.authorization = `Bearer ${token}`;
+        const token = await getAccessTokenSilently().catch(() => null);
+        if (token) {
+            config.headers.authorization = `Bearer ${token}`;
+        }
         return config;
     });
 };

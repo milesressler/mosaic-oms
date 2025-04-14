@@ -3,7 +3,7 @@ import {Grid, GridCol, Table} from "@mantine/core";
 import Transit from "src/components/transit/Transit.tsx";
 import useApi from "src/hooks/useApi.tsx";
 import ordersApi from "src/services/ordersApi.tsx";
-import {useEffect, useState} from "react";
+import {useCallback, useEffect, useState} from "react";
 import {useInterval} from "@mantine/hooks";
 import StatusBadge from "src/components/StatusBadge.tsx";
 
@@ -14,30 +14,24 @@ const CustomerDashboard = () => {
 
     const refreshInterval = 30000;
     const refreshPercent = refreshInterval/100;
-    useEffect(() => {
-        console.log("Mounted CustomerDashboard");
-        return () => console.log("Unmounted CustomerDashboard");
-    }, []);
+    const pageParams = {
+        size: 25,
+    };
 
-    const getObfusgatedStatus = (status: OrderStatus) => {
+    const getObfusgatedStatus = useCallback((status: OrderStatus) => {
         const inProgressStatuses = [
             OrderStatus.ACCEPTED, OrderStatus.PACKING, OrderStatus.PACKED,
             OrderStatus.IN_TRANSIT,
         ]
 
         return inProgressStatuses.indexOf(status) == -1 ? status : OrderStatus.IN_PROGRESS;
-    }
-    const refreshOrders: () => void = () => {
-        getOrdersApi.request({
-            size: 25,
-        });
-    }
+    }, []);
 
     const interval = useInterval(() => {
         setCounter(prevCounter => {
             const newCounter = prevCounter + refreshPercent; // Update every 100ms
             if (newCounter >= refreshInterval) {
-                !getOrdersApi.loading && refreshOrders()
+                !getOrdersApi.loading && getOrdersApi.request(pageParams);
                 return 0; // Reset counter after reaching refresh interval
             }
             return newCounter;
@@ -45,23 +39,31 @@ const CustomerDashboard = () => {
     }, refreshPercent);
 
     useEffect(() => {
+        const interval = setInterval(() => {
+            window.location.reload();
+        }, 30 * 60 * 1000); // 30 minutes
+
+        return () => clearInterval(interval); // cleanup on unmount
+    }, []);
+
+    useEffect(() => {
         setProgress((counter / refreshInterval) * 100);
     }, [counter]);
 
     useEffect(() => {
         interval.start();
-        refreshOrders();
+        getOrdersApi.request(pageParams);
     }, []);
 
     return (<Grid>
         <GridCol span={8}>
             <Table>
                 <Table.Thead>
-                    <Table.Tr>
-                        <Table.Th>
+                    <Table.Tr key={'headerRow'}>
+                        <Table.Th key={'friend'}>
                             Friend
                         </Table.Th>
-                        <Table.Th align={'right'}>
+                        <Table.Th key={'status'} align={'right'}>
                             Status
                         </Table.Th>
                     </Table.Tr>
