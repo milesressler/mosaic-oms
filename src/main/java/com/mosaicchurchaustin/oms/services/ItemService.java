@@ -10,6 +10,7 @@ import com.mosaicchurchaustin.oms.data.entity.item.ItemEntity;
 import com.mosaicchurchaustin.oms.data.request.CreateItemRequest;
 import com.mosaicchurchaustin.oms.data.request.ItemAttributeRequest;
 import com.mosaicchurchaustin.oms.data.request.UpdateItemRequest;
+import com.mosaicchurchaustin.oms.data.response.SuggestedItemResponse;
 import com.mosaicchurchaustin.oms.exception.EntityNotFoundException;
 import com.mosaicchurchaustin.oms.exception.InvalidRequestException;
 import com.mosaicchurchaustin.oms.repositories.ItemAttributeOptionRepository;
@@ -47,8 +48,10 @@ public class ItemService {
 
     @Transactional
     @Cacheable(value = "items", key = "#root.target.ITEMS_KEY")
-    public Map<ItemCategory, List<ItemEntity>> getSuggestedItems() {
-        return itemRepository.findAllManagedItems().collect(
+    public Map<ItemCategory, List<SuggestedItemResponse>> getSuggestedItems() {
+        return itemRepository.findAllManagedItems()
+                .map(SuggestedItemResponse::from)
+                .collect(
                 Collectors.groupingBy(
                         (item) -> item.getCategory() == null ? ItemCategory.OTHER : item.getCategory(),
                         Collectors.toList())

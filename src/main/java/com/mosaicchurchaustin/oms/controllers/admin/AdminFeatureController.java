@@ -23,12 +23,12 @@ public class AdminFeatureController {
     @PutMapping(path = "feature", produces = MediaType.APPLICATION_JSON_VALUE)
     public FeatureConfigResponse updateItem(
             @RequestBody final UpdateFeatureConfigRequest request) {
-        return FeatureConfigResponse.from(featuresService.updateFeaturesConfig(request));
+        return featuresService.updateFeaturesConfig(request);
     }
 
     @ResponseBody
     @GetMapping(path = "/feature", produces = MediaType.APPLICATION_JSON_VALUE)
     public FeatureConfigResponse getFeatureConfig() {
-        return FeatureConfigResponse.from(featuresService.getFeaturesConfig());
+        return featuresService.getFeaturesConfig();
     }
 }

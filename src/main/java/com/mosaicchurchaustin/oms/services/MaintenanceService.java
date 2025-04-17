@@ -15,7 +15,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-import java.util.Calendar;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
@@ -39,14 +40,14 @@ public class MaintenanceService {
     @Transactional
     @Scheduled(fixedRate = 1, timeUnit = TimeUnit.DAYS)
     void cleanupOldOrders() {
-        final Calendar calendar = Calendar.getInstance();
-        calendar.add(Calendar.DAY_OF_MONTH, -6);
+        final Instant instant = Instant.now();
+        instant.plus(-6, ChronoUnit.DAYS);
 
         final UserEntity user = userRepository.findBySource(UserSource.SYSTEM)
                 .findAny()
                 .orElseThrow(() -> new RuntimeException("System user not found"));
         final Stream<OrderEntity> expiredOrders =
-                orderRepository.findByCreatedBeforeAndOrderStatusNotIn(calendar, TERMINAL_STATES);
+                orderRepository.findByCreatedBeforeAndOrderStatusNotIn(instant, TERMINAL_STATES);
 
         expiredOrders.forEach(order -> {
             log.info("Cleaning up order {}", order.getId());

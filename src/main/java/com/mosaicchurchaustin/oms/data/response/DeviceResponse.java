@@ -21,8 +21,8 @@ public record DeviceResponse(
                 .userAgent(entity.getUserAgent())
                 .name(entity.getName());
 
-        Optional.ofNullable(entity.getExpiration()).map(expiration -> expiration.toInstant().atOffset(ZoneOffset.UTC)).ifPresent(builder::expiration);
-        Optional.ofNullable(entity.getLastAccessed()).map(lastAccess -> lastAccess.toInstant().atOffset(ZoneOffset.UTC)).ifPresent(builder::lastAccessed);
+        Optional.ofNullable(entity.getExpiration()).map(expiration -> expiration.atOffset(ZoneOffset.UTC)).ifPresent(builder::expiration);
+        Optional.ofNullable(entity.getLastAccessed()).map(lastAccess -> lastAccess.atOffset(ZoneOffset.UTC)).ifPresent(builder::lastAccessed);
 
         return builder.build();
     }

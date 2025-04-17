@@ -18,6 +18,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.io.Serializable;
 import java.util.Map;
 
 @Entity
@@ -28,7 +29,7 @@ import java.util.Map;
 @AllArgsConstructor
 @NoArgsConstructor
 @EntityListeners(AuditLogListener.class)
-public class FeatureConfigEntity extends BaseEntity implements Auditable {
+public class FeatureConfigEntity extends BaseEntity implements Auditable, Serializable {
 
 
     public static String ENTITY_NAME = "FeatureConfig";

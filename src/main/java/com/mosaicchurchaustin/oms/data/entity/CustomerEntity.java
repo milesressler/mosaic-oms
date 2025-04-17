@@ -6,7 +6,7 @@ import jakarta.persistence.Table;
 import lombok.*;
 import org.apache.commons.lang3.StringUtils;
 
-import java.util.Calendar;
+import java.time.Instant;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -33,7 +33,7 @@ public class CustomerEntity extends BaseUuidEntity {
     String lastName;
 
     @Column(name = "shower_waiver_completed")
-    Calendar showerWaiverCompleted;
+    Instant showerWaiverCompleted;
 
     public String fullName() {
         return Stream.of(firstName, lastName)

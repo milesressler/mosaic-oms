@@ -1,8 +1,8 @@
 package com.mosaicchurchaustin.oms.services;
 
-import com.mosaicchurchaustin.oms.data.entity.feature.FeatureConfigEntity;
 import com.mosaicchurchaustin.oms.data.entity.order.OrderStatus;
 import com.mosaicchurchaustin.oms.data.request.UpdateFeatureConfigRequest;
+import com.mosaicchurchaustin.oms.data.response.FeatureConfigResponse;
 import com.mosaicchurchaustin.oms.exception.InvalidRequestException;
 import com.mosaicchurchaustin.oms.repositories.FeatureConfigRepository;
 import com.mosaicchurchaustin.oms.services.sockets.FeaturesNotifier;
@@ -19,6 +19,7 @@ public class FeaturesService {
 
     @Autowired
     FeaturesNotifier featuresNotifier;
+
     @Autowired
     FeatureConfigRepository featureConfigRepository;
     public static final String FEATURES_KEY = "featuresKey";
@@ -26,12 +27,12 @@ public class FeaturesService {
 
     @Cacheable(value = "features", key = "#root.target.FEATURES_KEY")
     @Transactional
-    public FeatureConfigEntity getFeaturesConfig() {
-        return featureConfigRepository.findFirstByOrderByIdDesc();
+    public FeatureConfigResponse getFeaturesConfig() {
+        return FeatureConfigResponse.from(featureConfigRepository.findFirstByOrderByIdDesc());
     }
 
     @CachePut(value = "features", key = "#root.target.FEATURES_KEY")
-    public FeatureConfigEntity updateFeaturesConfig(final UpdateFeatureConfigRequest request) {
+    public FeatureConfigResponse updateFeaturesConfig(final UpdateFeatureConfigRequest request) {
         final var existing = featureConfigRepository.findFirstByOrderByIdDesc();
         if (request.groupMeEnabled() != null) {
             existing.setGroupMeEnabled(request.groupMeEnabled());
@@ -52,6 +53,6 @@ public class FeaturesService {
         }
         final var result = featureConfigRepository.save(existing);
         featuresNotifier.notifyFeaturesChange(existing);
-        return result;
+        return FeatureConfigResponse.from(result);
     }
 }

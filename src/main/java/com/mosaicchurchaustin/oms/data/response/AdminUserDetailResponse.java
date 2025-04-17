@@ -31,7 +31,7 @@ public class AdminUserDetailResponse extends AdminUserResponse {
                         .map(Optional::get)
                         .map(MosaicRole::getRoleName)
                         .toList())
-                .userActions(actions.stream().map(history -> new AdminUserAction(history.getOrderStatus().name(), history.getTimestamp().getTimeInMillis(), history.getOrderEntity().getId())).toList())
+                .userActions(actions.stream().map(history -> new AdminUserAction(history.getOrderStatus().name(), history.getTimestamp().toEpochMilli(), history.getOrderEntity().getId())).toList())
                 .build();
 
     }

@@ -1,19 +1,13 @@
 package com.mosaicchurchaustin.oms.data.domain.transit;
-public class StopInfo {
+
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+
+import java.io.Serializable;
+
+@Getter
+@AllArgsConstructor
+public class StopInfo implements Serializable {
     private String stopId;
     private String stopName;
-
-    public StopInfo(String stopId, String stopName) {
-        this.stopId = stopId;
-        this.stopName = stopName;
-    }
-
-    // Getters
-    public String getStopId() {
-        return stopId;
-    }
-
-    public String getStopName() {
-        return stopName;
-    }
 }

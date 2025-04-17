@@ -7,12 +7,13 @@ import com.mosaicchurchaustin.oms.data.entity.item.ItemEntity;
 import lombok.Builder;
 import lombok.Getter;
 
+import java.io.Serializable;
 import java.util.Collections;
 import java.util.List;
 
 @Getter
 @Builder
-public class SuggestedItemResponse {
+public class SuggestedItemResponse implements Serializable {
     private String description;
     private String placeholder;
     private ItemCategory category;

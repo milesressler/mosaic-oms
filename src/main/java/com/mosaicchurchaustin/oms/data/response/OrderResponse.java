@@ -3,10 +3,13 @@ package com.mosaicchurchaustin.oms.data.response;
 import com.mosaicchurchaustin.oms.data.entity.order.OrderEntity;
 import com.mosaicchurchaustin.oms.data.entity.order.OrderHistoryEntity;
 import com.mosaicchurchaustin.oms.data.entity.order.OrderStatus;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.Getter;
 import lombok.experimental.SuperBuilder;
 
-import java.util.Calendar;
+import java.time.Instant;
 import java.util.Optional;
 
 @Data
@@ -14,9 +17,9 @@ import java.util.Optional;
 @Getter
 @AllArgsConstructor
 public class OrderResponse {
-    private Calendar created;
-    private Calendar lastStatusUpdate;
-    private Calendar postedToGroupMe;
+    private Instant created;
+    private Instant lastStatusUpdate;
+    private Instant postedToGroupMe;
     private Long id;
     private String uuid;
     private Customer customer;

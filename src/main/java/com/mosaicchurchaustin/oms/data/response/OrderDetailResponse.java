@@ -10,7 +10,7 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.experimental.SuperBuilder;
 
-import java.util.Calendar;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -70,7 +70,7 @@ public class OrderDetailResponse extends OrderResponse {
         private OrderStatus previousStatus;
         private OrderEventType eventType;
         private OrderExportType exportType;
-        private Calendar timestamp;
+        private Instant timestamp;
 
         public static History from(final OrderHistoryEntity orderHistoryEntity) {
             return History.builder()

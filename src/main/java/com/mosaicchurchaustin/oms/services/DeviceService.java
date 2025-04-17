@@ -7,8 +7,6 @@ import com.mosaicchurchaustin.oms.exception.EntityNotFoundException;
 import com.mosaicchurchaustin.oms.repositories.DeviceRepository;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.Cache;
-import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.data.domain.Page;
@@ -16,7 +14,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.nio.charset.StandardCharsets;
-import java.util.Calendar;
+import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -26,8 +24,8 @@ public class DeviceService {
     @Autowired
     private DeviceRepository deviceRepository;
 
-    @Autowired
-    private CacheManager cacheManager;
+//    @Autowired
+//    private CacheManager cacheManager;
 
     /**
      * Updates the device's last access timestamp in the "kiosk" cache.
@@ -54,8 +52,7 @@ public class DeviceService {
         device.setUserAgent(userAgent);
 
         if (request.expireAt() != null) {
-            final var expireAtCalendar = Calendar.getInstance();
-            expireAtCalendar.setTimeInMillis(request.expireAt().toEpochSecond() * 1000);
+            final var expireAtCalendar = Instant.ofEpochMilli(request.expireAt().toEpochSecond() * 1000);
             device.setExpiration(expireAtCalendar);
         }
 
@@ -73,17 +70,17 @@ public class DeviceService {
 
     public Page<DeviceEntity> getDevices(Pageable pageable) {
         final Page<DeviceEntity> results = deviceRepository.findAll(pageable);
-        final Cache cache = cacheManager.getCache("kiosk");
+//        final Cache cache = cacheManager.getCache("kiosk");
 
         results.getContent().forEach(device -> {
-            if (cache != null) {
-                final Long lastAccessed = cache.get(device.getUuid(), Long.class);
-                if (lastAccessed != null) {
-                    final var lastAccessCal = Calendar.getInstance();
-                    lastAccessCal.setTimeInMillis(lastAccessed);
-                    device.setLastAccessed(lastAccessCal);
-                }
-            }
+//            if (cache != null) {
+//                final Long lastAccessed = cache.get(device.getUuid(), Long.class);
+//                if (lastAccessed != null) {
+//                    final var lastAccessCal = Calendar.getInstance();
+//                    lastAccessCal.setTimeInMillis(lastAccessed);
+//                    device.setLastAccessed(lastAccessCal);
+//                }
+//            }
         });
         return results;
     }
@@ -98,8 +95,7 @@ public class DeviceService {
     }
 
     public void handleDeviceInactive(final String deviceUuid, final Long lastAccessed) {
-        final var lastAccessCal = Calendar.getInstance();
-        lastAccessCal.setTimeInMillis(lastAccessed);
+        final var lastAccessCal = Instant.ofEpochMilli(lastAccessed);
         getDevice(deviceUuid).ifPresent(device -> {
             device.setLastAccessed(lastAccessCal);
             deviceRepository.save(device);

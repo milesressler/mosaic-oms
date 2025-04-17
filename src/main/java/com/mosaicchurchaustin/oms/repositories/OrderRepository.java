@@ -9,14 +9,14 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.util.Calendar;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
 @Repository
 public interface OrderRepository extends JpaRepository<OrderEntity, Long> {
-    Stream<OrderEntity> findByCreatedBeforeAndOrderStatusNotIn(@Param("tenDaysAgo") Calendar tenDaysAgo, List<OrderStatus> orderStatuses);
+    Stream<OrderEntity> findByCreatedBeforeAndOrderStatusNotIn(@Param("tenDaysAgo") Instant tenDaysAgo, List<OrderStatus> orderStatuses);
 
     List<OrderEntity> findAllByUuidIn(List<String> uuids);
 

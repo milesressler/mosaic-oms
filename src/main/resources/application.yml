@@ -8,6 +8,9 @@ server:
     include-stacktrace: never
 
 spring:
+  devtools:
+    restart:
+      enabled: false
   jpa:
     properties:
       hibernate:
@@ -41,12 +44,10 @@ cap-metro:
     trip-updates:
       path: https://data.texas.gov/download/rmk2-acnw/application%2Foctet-stream
 ---
-
 spring:
   config:
     activate:
       on-profile: dev
-  devtools:
     livereload:
       enabled: false
 
@@ -67,6 +68,13 @@ management:
     web:
       exposure:
         include: health,info,env,beans
+
+hazelcast:
+  network:
+    join:
+      multicast:
+        enabled: false
+
 
 ---
 
@@ -103,3 +111,17 @@ management:
     web:
       exposure:
         include: health,info
+
+hazelcast:
+  network:
+    join:
+      multicast:
+        enabled: false
+      tcp-ip:
+        enabled: false
+      aws:
+        enabled: true
+    interfaces:
+      enabled: true
+      interfaces:
+        - 172.30.*.*

@@ -19,7 +19,7 @@ public class OrderFeedResponse {
                 .orderId(orderHistoryEntity.getOrderEntity().getId())
                 .orderStatus(orderHistoryEntity.getOrderStatus())
                 .user(UserResponse.from(orderHistoryEntity.getUserEntity()))
-                .timestamp(orderHistoryEntity.getTimestamp().getTimeInMillis())
+                .timestamp(orderHistoryEntity.getTimestamp().toEpochMilli())
                 .build();
 
     }

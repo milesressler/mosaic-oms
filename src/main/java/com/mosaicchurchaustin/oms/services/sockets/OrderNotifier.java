@@ -17,7 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Component;
 
-import java.util.Calendar;
+import java.time.Instant;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -73,7 +73,7 @@ public class OrderNotifier {
                         .eventType(OrderEventType.EXPORT)
                         .exportType(OrderExportType.GROUPME)
                         .userEntity(userEntity)
-                        .timestamp(Calendar.getInstance())
+                        .timestamp(Instant.now())
                 .build()
             );
             orderEntity.setLastStatusChange(newHistory);

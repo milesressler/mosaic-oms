@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
-import java.util.Calendar;
+import java.time.Instant;
 
 @Entity
 @Table(name = "devices")
@@ -42,8 +42,8 @@ public class DeviceEntity extends BaseUuidEntity {
     String rawToken;
 
     @Column(name = "last_accessed")
-    Calendar lastAccessed;
+    Instant lastAccessed;
 
     @Column(name = "expiration")
-    Calendar expiration;
+    Instant expiration;
 }

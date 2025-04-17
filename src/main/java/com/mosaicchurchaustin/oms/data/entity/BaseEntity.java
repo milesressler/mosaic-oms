@@ -11,7 +11,7 @@ import lombok.Getter;
 import lombok.ToString;
 import org.hibernate.Hibernate;
 
-import java.util.Calendar;
+import java.time.Instant;
 import java.util.Objects;
 
 @MappedSuperclass
@@ -27,19 +27,19 @@ public abstract class BaseEntity {
     Long id;
 
     @Column(name = "created", updatable = false)
-    Calendar created;
+    Instant created;
 
     @Column(name = "updated")
-    Calendar updated;
+    Instant updated;
 
     @PrePersist
     protected void onCreate() {
-        this.created = Calendar.getInstance();
+        this.created = Instant.now();
     }
 
     @PreUpdate
     protected void onUpdate() {
-        this.updated = Calendar.getInstance();
+        this.updated = Instant.now();
     }
 
     @Override

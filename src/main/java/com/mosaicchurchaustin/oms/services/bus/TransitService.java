@@ -6,7 +6,6 @@ import com.mosaicchurchaustin.oms.data.domain.transit.BusStopInfo;
 import com.mosaicchurchaustin.oms.data.domain.transit.StopInfo;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Component;
 
@@ -30,8 +29,8 @@ public class TransitService {
         return busStopInfoList;
     }
 
-    @CacheEvict(allEntries = true, value = "transitData")
-    public void clearCached() {
-        log.debug("cleared transit cache.");
-    }
+//    @CacheEvict(allEntries = true, value = "transitData")
+//    public void clearCached() {
+//        log.debug("cleared transit cache.");
+//    }
 }

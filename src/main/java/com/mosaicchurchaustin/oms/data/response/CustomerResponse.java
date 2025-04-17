@@ -4,7 +4,7 @@ import com.mosaicchurchaustin.oms.data.entity.CustomerEntity;
 import lombok.Builder;
 import lombok.Getter;
 
-import java.util.Calendar;
+import java.time.Instant;
 import java.util.Optional;
 
 @Builder
@@ -22,9 +22,9 @@ public class CustomerResponse {
                 .firstName(customerEntity.getFirstName())
                 .lastName(customerEntity.getLastName())
                 .uuid(customerEntity.getUuid())
-                .created(customerEntity.getCreated().getTimeInMillis())
+                .created(customerEntity.getCreated().toEpochMilli())
 //                .visits(cus)
-                .showerWaiverCompleted(Optional.ofNullable(customerEntity.getShowerWaiverCompleted()).map(Calendar::getTimeInMillis).orElse(null))
+                .showerWaiverCompleted(Optional.ofNullable(customerEntity.getShowerWaiverCompleted()).map(Instant::toEpochMilli).orElse(null))
                 .build();
     }
 }

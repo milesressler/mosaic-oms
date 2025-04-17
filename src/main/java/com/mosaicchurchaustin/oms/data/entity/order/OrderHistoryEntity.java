@@ -18,7 +18,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
-import java.util.Calendar;
+import java.time.Instant;
 
 @Entity
 @Table(name = "order_history")
@@ -44,7 +44,7 @@ public class OrderHistoryEntity {
     UserEntity userEntity;
 
     @Column(name = "timestamp", nullable = false)
-    Calendar timestamp;
+    Instant timestamp;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "export_type")
@@ -69,7 +69,7 @@ public class OrderHistoryEntity {
     @PrePersist
     protected void onCreate() {
         if (this.timestamp == null) {
-            this.timestamp = Calendar.getInstance();
+            this.timestamp = Instant.now();
         }
     }
 

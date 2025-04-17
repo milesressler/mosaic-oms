@@ -23,8 +23,8 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.time.Instant;
 import java.util.Arrays;
-import java.util.Calendar;
 
 @RestController
 @RequestMapping("/api")
@@ -81,8 +81,7 @@ public class DeviceController {
 
         if (device.getExpiration() != null) {
             // Calculate max age from device expiration
-            final Calendar now = Calendar.getInstance();
-            final long diffInMillis = device.getExpiration().getTimeInMillis() - now.getTimeInMillis();
+            final long diffInMillis = device.getExpiration().toEpochMilli() - Instant.now().toEpochMilli();
             final int maxAge = (int) (diffInMillis / 1000);  // convert milliseconds to seconds
             cookie.setMaxAge(maxAge);
         }
