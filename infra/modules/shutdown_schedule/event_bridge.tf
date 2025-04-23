@@ -7,7 +7,7 @@ resource "aws_cloudwatch_event_target" "stop_rds_ecs_lambda" {
   rule      = aws_cloudwatch_event_rule.stop_rds_ecs.name
   target_id = "LambdaFunction"
   arn       = aws_lambda_function.rds_control.arn
-  input     = jsonencode({ "action": "stop_rds_ecs" })
+  input     = jsonencode({ "action": "stop_rds_ecs", "db_instance": "mosaic-oms-dem-db", "ecs_cluster": "mosaic-oms-prod", "ecs_service": "mosaic-oms-service" })
 }
 
 
@@ -21,7 +21,7 @@ resource "aws_cloudwatch_event_target" "start_rds_lambda" {
   rule      = aws_cloudwatch_event_rule.start_rds.name
   target_id = "LambdaFunction"
   arn       = aws_lambda_function.rds_control.arn
-  input     = jsonencode({ "action": "start_rds" })
+  input     = jsonencode({ "action": "start_rds", "db_instance": "mosaic-oms-dem-db" })
 }
 
 
@@ -35,7 +35,7 @@ resource "aws_cloudwatch_event_target" "start_ecs_lambda" {
   rule      = aws_cloudwatch_event_rule.start_ecs.name
   target_id = "LambdaFunction"
   arn       = aws_lambda_function.rds_control.arn
-  input     = jsonencode({ "action": "start_ecs" })
+  input     = jsonencode({ "action": "start_ecs", "ecs_cluster": "mosaic-oms-prod", "ecs_service": "mosaic-oms-service" })
 }
 
 

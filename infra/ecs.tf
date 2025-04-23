@@ -57,7 +57,7 @@ resource "aws_ecs_service" "mosaic" {
     assign_public_ip = true
   }
 
-  health_check_grace_period_seconds = 120
+  health_check_grace_period_seconds = 180
 
   load_balancer {
     target_group_arn = "arn:aws:elasticloadbalancing:us-west-2:638820400855:targetgroup/mosaic-oms-service-tg/56a1fefd31f9f0fd"

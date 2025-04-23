@@ -1,17 +1,18 @@
 import boto3
 import os
+import traceback
 
 region = "us-west-2"
 
 rds_client = boto3.client("rds", region_name=region)
 ecs_client = boto3.client("ecs", region_name=region)
 
-DB_INSTANCE_ID = "mosaic-oms-dem-db"
-ECS_CLUSTER = "mosaic-oms-cluster"
-ECS_SERVICE = "mosaic-oms-service"
 
 def lambda_handler(event, context):
     action = event.get("action", "")
+    ECS_CLUSTER = event.get("ecs_cluster", "")
+    ECS_SERVICE = event.get("ecs_service", "")
+    DB_INSTANCE_ID = event.get("db_instance", "")
 
     if action == "stop_rds_ecs":
         try:
@@ -21,15 +22,19 @@ def lambda_handler(event, context):
             print("Failed stopping RDS instance.")
 
 
+
         try:
             print("Stopping ECS service...")
-            ecs_client.update_service(
+            response = ecs_client.update_service(
                 cluster=ECS_CLUSTER,
                 service=ECS_SERVICE,
                 desiredCount=0
             )
-        except:
+            print("Update service response:", response)
+        except Exception as e:
             print("Failed stopping ECS service.")
+            print("Exception:", str(e))
+            traceback.print_exc()
 
 
     elif action == "start_rds":
