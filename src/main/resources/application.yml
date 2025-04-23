@@ -28,7 +28,7 @@ spring:
 
 auth0:
   domain: dev-milessmiles.auth0.com
-  managementAudience: "https://dev-milessmiles.auth0.com/api/v2/"
+  managementAudience: "https://${auth0.domain}/api/v2/"
 
 mosaic:
   oms:
