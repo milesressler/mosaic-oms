@@ -93,7 +93,7 @@ spring:
           audiences: "https://mosaic.miles-smiles.us"
 
 auth0:
-  domain: mosaicchurch.auth0.com
+  domain: mosaicchurch.us.auth0.com
 
 mosaic:
   oms:
