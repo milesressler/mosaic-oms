@@ -46,9 +46,7 @@ resource "aws_ecs_service" "mosaic" {
   network_configuration {
     subnets          = [
       "subnet-0d360461e819e2161",
-      "subnet-051b4bbd1865b5c25",
-      "subnet-02f5308c26435a648",
-      "subnet-0f97fdcf812725e07"
+      "subnet-051b4bbd1865b5c25"
     ]
     security_groups  = [
       "sg-05753e4aa9297ac77",      # existing SG (used for ALB, etc.)
