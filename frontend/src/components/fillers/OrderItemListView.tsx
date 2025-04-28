@@ -9,7 +9,7 @@ function OrderItemListView() {
     const { id } = useParams();
 
     const startFilling = () => {
-        navigate(`/dashboard/filler/fill/${id}`);
+        navigate(`/dashboard/filler/order/${id}`);
     };
 
     if (!selectedOrder) return null;

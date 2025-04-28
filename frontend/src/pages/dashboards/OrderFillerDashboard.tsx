@@ -24,18 +24,13 @@ export function OrderFillerDashboard() {
         if (id && order.id === +id) {
             navigate(`/dashboard/filler/`)
         } else {
-            const assignedToMe = (order as OrderDetails)?.assignee?.externalId === user?.sub;
-            if (assignedToMe) {
-                navigate(`/dashboard/filler/fill/${order.id}`)
-            } else {
-                navigate(`/dashboard/filler/order/${order.id}`)
-            }
+            navigate(`/dashboard/filler/order/${order.id}`)
         }
     }
 
     return (
         <SelectedOrderProvider>
-            <Modal opened={!!selectedOrder} title={`Order Detail`} onClose={() => {
+            <Modal size={'md'} opened={!!selectedOrder} title={`Order Detail`} onClose={() => {
                 navigate(`/dashboard/filler/`)}}>
                 <OrderDetailSection  onUpdate={triggerTableRefresh}/>
             </Modal>

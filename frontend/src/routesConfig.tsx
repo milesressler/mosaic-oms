@@ -78,11 +78,6 @@ const routes = [
                     {
                         key: 'filler-dashboard-view',
                         path: 'order/:id',
-                        element: OrderItemListView
-                    },
-                    {
-                        key: 'filler-dashboard-fill',
-                        path: 'fill/:id',
                         element: PackingView
                     }
                 ]

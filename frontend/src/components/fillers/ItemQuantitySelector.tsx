@@ -8,7 +8,7 @@ interface Props {
 
 function ItemQuantitySelector({ max, onValueChange, quantitySelected }: Props) {
     return (
-        <Box mt="sm">
+        <Box mt="5">
             <Slider
                 min={0}
                 max={max}

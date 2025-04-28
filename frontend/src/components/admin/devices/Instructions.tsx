@@ -32,19 +32,19 @@ GNOME-Autostart-enabled=true
             </Text>
 
             <List spacing="sm" size="sm" mt="md">
-               <List.Item>
-                    Download and save <Button
-                       component="a"
-                       href={downloadUrl}
-                       download="mosaic.desktop"
-                       variant="light"
-                       size="xs"
-                   >mosaic.desktop
-               </Button> to <Code>~/.config/autostart/mosaic.desktop</Code>  to open app in kiosk mode on startup (may need to make file executable)
-                </List.Item>
-                <List.Item>
-                    <Code block>{fileContent}</Code>
-                </List.Item>
+               {/*<List.Item>*/}
+               {/*     Download and save <Button*/}
+               {/*        component="a"*/}
+               {/*        href={downloadUrl}*/}
+               {/*        download="mosaic.desktop"*/}
+               {/*        variant="light"*/}
+               {/*        size="xs"*/}
+               {/*    >mosaic.desktop*/}
+               {/*</Button> to <Code>~/.config/autostart/mosaic.desktop</Code>  to open app in kiosk mode on startup (may need to make file executable)*/}
+               {/* </List.Item>*/}
+               {/* <List.Item>*/}
+               {/*     <Code block>{fileContent}</Code>*/}
+               {/* </List.Item>*/}
                 <List.Item>
                     Navigate to{" "}
                     <Link to="/kiosk" >

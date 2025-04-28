@@ -1,13 +1,14 @@
 import { Button, Group, Text, Paper, Divider, Box, Loader } from '@mantine/core';
 import { IconPrinter } from '@tabler/icons-react';
 import ItemQuantitySelector from 'src/components/fillers/ItemQuantitySelector.tsx';
-import { OrderItem, OrderStatus } from 'src/models/types.tsx';
+import {OrderDetails, OrderItem, OrderStatus} from 'src/models/types.tsx';
 import { useSelectedOrder } from 'src/contexts/SelectedOrderContext.tsx';
 import { useEffect, useState } from 'react';
 import useApi from 'src/hooks/useApi.tsx';
 import ordersApi from 'src/services/ordersApi.tsx';
 import { useNavigate } from 'react-router-dom';
 import { useFeatures } from 'src/contexts/FeaturesContext.tsx';
+import {useAuth0} from "@auth0/auth0-react";
 
 function PackingView() {
     const { selectedOrder, doForceRefresh } = useSelectedOrder();
@@ -16,6 +17,7 @@ function PackingView() {
     const [draftItems, setDraftItems] = useState<OrderItem[]>([]);
     const navigate = useNavigate();
     const { printOnTransitionToStatus } = useFeatures();
+    const { user } = useAuth0();
 
     useEffect(() => {
         if (updateStatus.data?.orderStatus === OrderStatus.PACKED) {
@@ -77,6 +79,8 @@ function PackingView() {
     );
 
     if (!selectedOrder) return <Loader />;
+    const assignedToMe = (selectedOrder as OrderDetails)?.assignee?.externalId === user?.sub;
+
 
     return (
         <Paper p="md" shadow="xs">
@@ -85,7 +89,7 @@ function PackingView() {
                     <Box key={item.id} mb="sm">
                         <Group justify="space-between">
                             <Text>
-                                <strong>{item.quantityRequested}</strong> {item.description} <Text c="dimmed">{item.notes}</Text>
+                                <strong>{item.quantityRequested}</strong> {item.description}
                             </Text>
                             <Text c="dimmed">
                                 {item.quantityFulfilled === item.quantityRequested
@@ -93,27 +97,31 @@ function PackingView() {
                                     : `${item.quantityFulfilled} / ${item.quantityRequested - item.quantityFulfilled} `}
                             </Text>
                         </Group>
-                        <Group justify="space-between">
+                        <Group justify="start">
+                            <Text c="dimmed" size={'sm'}>{item.notes}</Text>
                             {Object.entries(item.attributes).map(([key, value]) => (
-                                <Group key={key}>
-                                    <Text fw={600}>{key}: </Text>
+                                <Group key={key} gap={0 }>
+                                    <Text fw={600}>{key}:</Text>
                                     <Text>{value}</Text>
                                 </Group>
                                 ))
                             }
                         </Group>
+                        { assignedToMe &&
                         <ItemQuantitySelector
                             quantitySelected={item.quantityFulfilled}
                             onValueChange={(value) => updateDraftItemQuantityFulfilled(item.id, value)}
                             max={item.quantityRequested}
                         />
+                        }
+                        <Divider mt={5}/>
                     </Box>
                 ))}
             </Box>
 
             <Divider my="md" />
 
-            <Group justify="space-between">
+            <Group justify="space-between" gap={2}>
                 <Group gap="xs">
                     <Button variant="light" onClick={clearAll}>Clear All</Button>
                     <Button variant="light" onClick={fillAll}>Fill All</Button>
