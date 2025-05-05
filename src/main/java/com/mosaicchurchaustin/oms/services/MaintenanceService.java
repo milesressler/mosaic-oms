@@ -40,8 +40,7 @@ public class MaintenanceService {
     @Transactional
     @Scheduled(fixedRate = 1, timeUnit = TimeUnit.DAYS)
     void cleanupOldOrders() {
-        final Instant instant = Instant.now();
-        instant.plus(-6, ChronoUnit.DAYS);
+        final Instant instant = Instant.now().minus(6, ChronoUnit.DAYS);
 
         final UserEntity user = userRepository.findBySource(UserSource.SYSTEM)
                 .findAny()

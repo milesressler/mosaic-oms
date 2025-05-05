@@ -9,6 +9,7 @@ import LoginButton from "src/components/auth0/LoginButton.tsx";
 import {getRolesFromAuth0User} from "src/components/auth0/Auth0Utils.tsx";
 import {usePreferences} from "src/contexts/PreferencesContext.tsx";
 import {DeviceLogoutButton} from "src/components/admin/devices/DeviceLogoutButton.tsx";
+import {IconBrandSlack} from "@tabler/icons-react";
 
 
 export function NavbarNested() {
@@ -22,7 +23,7 @@ export function NavbarNested() {
         return userRoles.includes(requiredRole.toLowerCase());
     };
     const renderLinks = (routes: any) => {
-        return routes
+        const links = routes
             .filter((route: any) => route.showInNavBar !== false && hasRequiredRole(route.requiredRole))
             .map((route: any) => {
                 if (route.children) {
@@ -47,6 +48,15 @@ export function NavbarNested() {
                     };
                 }
             });
+        links.push(
+            {
+                label: 'Slack Support',
+                icon: IconBrandSlack,
+                link: "https://join.slack.com/t/mosaicstreetministry/shared_invite/zt-34n12jsn7-m7FS_hCaHnm9DZ5snp_8Ig",
+                key: 'slack_support',
+            }
+        );
+        return links;
     };
 
     const links = renderLinks(routes).map((item: any) => (
