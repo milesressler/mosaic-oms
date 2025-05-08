@@ -45,7 +45,7 @@ export function OrderItemFormv2({formItem,  onSave, onCancel}: OrderItemFormProp
                                 label={attribute.label}
                                 required
                                 size={'lg'}
-                                value={draftItem?.attributes?.[attribute.key] + "" ?? ''}
+                                value={draftItem?.attributes?.[attribute.key]?.value ?? ''}
                                 onChange={(val) => handleAttributeSelect(attribute.key, val)}
                                 data={attribute.options.map(o => ({
                                     value: o.value,

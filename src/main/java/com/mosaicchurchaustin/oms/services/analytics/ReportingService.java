@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Component
 public class ReportingService {
@@ -14,8 +15,6 @@ public class ReportingService {
     AnalyticsRepository analyticsRepository;
 
     public Object ordersReport(final ReportingPeriod reportingPeriod, final int periodCount) {
-
-
         final LocalDate endDate   = LocalDate.now();               // today
         final LocalDate startDate = switch (reportingPeriod) {
             case MONTHLY -> endDate.minusMonths(periodCount - 1).withDayOfMonth(1);
@@ -23,6 +22,8 @@ public class ReportingService {
             default         -> endDate.minusWeeks(periodCount - 1);
         };
         return analyticsRepository.findOrdersCreatedByWeek(startDate, endDate);
-
+    }
+    public List<AnalyticsRepository.TopItemLastWeek> getTopItemsLastWeek() {
+        return analyticsRepository.findTopItemsLastWeek();
     }
 }

@@ -16,6 +16,30 @@ public interface AnalyticsRepository extends JpaRepository<OrderEntity, Long> {
         String getLabel();
         long   getTotal();
     }
+    // Projection for each row
+    interface TopItemLastWeek {
+        LocalDate getWeekStart();
+        Long   getItemEntityId();
+        String getItemName();
+        Long   getRequestCount();
+    }
+
+    // Always returns the top‐10 items from last week (Sunday-to-Saturday)
+    @Query(value = """
+        SELECT
+          w.week_start     AS weekStart,
+          w.item_entity_id    AS itemEntityId,
+          w.item_name         AS itemName,
+          w.request_count     AS requestCount
+        FROM weekly_item_requests_with_names w
+        WHERE w.week_start = DATE_SUB(
+            DATE_SUB(CURDATE(), INTERVAL (DAYOFWEEK(CURDATE()) - 1) DAY),
+            INTERVAL 7 DAY
+          )
+        ORDER BY w.request_count DESC
+        LIMIT 10
+        """, nativeQuery = true)
+    List<TopItemLastWeek> findTopItemsLastWeek();
 
     @Query(value = """
     SELECT
