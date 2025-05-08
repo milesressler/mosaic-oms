@@ -32,10 +32,7 @@ public interface AnalyticsRepository extends JpaRepository<OrderEntity, Long> {
           w.item_name         AS itemName,
           w.request_count     AS requestCount
         FROM weekly_item_requests_with_names w
-        WHERE w.week_start = DATE_SUB(
-            DATE_SUB(CURDATE(), INTERVAL (DAYOFWEEK(CURDATE()) - 1) DAY),
-            INTERVAL 7 DAY
-          )
+        WHERE w.week_start = DATE_SUB(CURDATE(), INTERVAL (DAYOFWEEK(CURDATE()) - 1) DAY)
         ORDER BY w.request_count DESC
         LIMIT 10
         """, nativeQuery = true)
