@@ -1,6 +1,7 @@
 package com.mosaicchurchaustin.oms.services;
 
 import com.google.common.hash.Hashing;
+import com.hazelcast.core.HazelcastInstance;
 import com.mosaicchurchaustin.oms.data.entity.DeviceEntity;
 import com.mosaicchurchaustin.oms.data.request.DeviceRequest;
 import com.mosaicchurchaustin.oms.exception.EntityNotFoundException;
@@ -8,7 +9,6 @@ import com.mosaicchurchaustin.oms.repositories.DeviceRepository;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.CachePut;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -24,19 +24,17 @@ public class DeviceService {
     @Autowired
     private DeviceRepository deviceRepository;
 
-//    @Autowired
-//    private CacheManager cacheManager;
+    @Autowired
+    private HazelcastInstance hazelcastInstance;
 
     /**
      * Updates the device's last access timestamp in the "kiosk" cache.
      *
      * @param deviceUuid the unique identifier for the device
-     * @return the new timestamp (in millis)
      */
-    @CachePut(value = "kiosk", key = "#deviceUuid")
-    public long updateDeviceAccess(String deviceUuid) {
+    public void updateDeviceAccess(final String deviceUuid) {
         // You can choose to use System.currentTimeMillis() or a formatted date
-        return System.currentTimeMillis();
+        hazelcastInstance.getMap("kiosk").put(deviceUuid, Instant.now().toEpochMilli());
     }
 
     @CacheEvict(value = "kiosk", key = "#deviceUuid")
@@ -68,20 +66,13 @@ public class DeviceService {
         return Hashing.sha256().hashString(token, StandardCharsets.UTF_8).toString();
     }
 
-    public Page<DeviceEntity> getDevices(Pageable pageable) {
+    public Page<DeviceEntity> getDevices(final Pageable pageable) {
         final Page<DeviceEntity> results = deviceRepository.findAll(pageable);
-//        final Cache cache = cacheManager.getCache("kiosk");
-
-        results.getContent().forEach(device -> {
-//            if (cache != null) {
-//                final Long lastAccessed = cache.get(device.getUuid(), Long.class);
-//                if (lastAccessed != null) {
-//                    final var lastAccessCal = Calendar.getInstance();
-//                    lastAccessCal.setTimeInMillis(lastAccessed);
-//                    device.setLastAccessed(lastAccessCal);
-//                }
-//            }
-        });
+        results.getContent().forEach(device ->
+                Optional.ofNullable(hazelcastInstance.getMap("kiosk").get(device.getUuid()))
+                .map(Long.class::cast)
+                .map(Instant::ofEpochMilli)
+                .ifPresent(device::setLastAccessed));
         return results;
     }
 
@@ -92,13 +83,5 @@ public class DeviceService {
     public Optional<DeviceEntity> validateDeviceToken(final String token) {
         final String hashed = getSha256hex(token);
         return deviceRepository.findByHashedToken(hashed);
-    }
-
-    public void handleDeviceInactive(final String deviceUuid, final Long lastAccessed) {
-        final var lastAccessCal = Instant.ofEpochMilli(lastAccessed);
-        getDevice(deviceUuid).ifPresent(device -> {
-            device.setLastAccessed(lastAccessCal);
-            deviceRepository.save(device);
-        });
     }
 }

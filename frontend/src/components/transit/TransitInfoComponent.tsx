@@ -18,8 +18,7 @@ function getArrivalMessage(nextArrivalTime: number, now: DateTime) {
         return "Arrives " + nextArrivalDateTime.toRelative({ base: now });
     }
 }
-
-export function TransitInfoComponent({transitInfo}: TransitInfoComponentProps) {
+export function TransitInfoComponent({ transitInfo }: TransitInfoComponentProps) {
     const [currentTime, setCurrentTime] = useState(DateTime.now());
 
     useEffect(() => {
@@ -30,27 +29,37 @@ export function TransitInfoComponent({transitInfo}: TransitInfoComponentProps) {
         return () => clearInterval(interval);
     }, []);
 
-    return (<Paper radius={'md'} shadow="xs" p={30} mb={'md'} bg={'#f8f8f8'} key={transitInfo.stopId}>
-        <Group justify={"space-between"}>
-
-            <div>
+    return (
+        <Paper
+            radius="md"
+            shadow="xs"
+            p={30}
+            mb="md"
+            bg="#f8f8f8"
+            w="100%" // <-- This makes it stretch
+            key={transitInfo.stopId}
+        >
+            <Group justify="space-between">
                 <Center>
-            <IconBus size={'40'} />
-                { transitInfo.routeId && <Badge ml={10} >{transitInfo.routeId}</Badge> }
+                    <IconBus size={40} />
+                    {transitInfo.routeId && <Badge ml={10}>{transitInfo.routeId}</Badge>}
                 </Center>
-            </div>
 
-        <div>
-            <Stack>
-            <Text span>{transitInfo.stopInfo.stopName} <Text span c={'dimmed'} size={'xs'}>{
-                transitInfo.direction === '0' ? 'NB' : 'SB'
-            }</Text>
-            </Text></Stack>
-        </div>
-        </Group>
-
-        <div>{getArrivalMessage(transitInfo.nextArrivalTime, currentTime)}</div>
-        <div><Text c={'dimmed'} size={'xs'}>{DateTime.fromMillis(transitInfo.nextArrivalTime).toLocaleString(DateTime.TIME_SIMPLE)}</Text></div>
-
-    </Paper>)
+                <Stack gap={0} align="flex-end">
+                    <Text span>
+                        {transitInfo.stopInfo.stopName}{" "}
+                        <Text span c="dimmed" size="xs">
+                            {transitInfo.direction === "0" ? "NB" : "SB"}
+                        </Text>
+                    </Text>
+                    <Text>{getArrivalMessage(transitInfo.nextArrivalTime, currentTime)}</Text>
+                    <Text c="dimmed" size="xs">
+                        {DateTime.fromMillis(transitInfo.nextArrivalTime).toLocaleString(
+                            DateTime.TIME_SIMPLE
+                        )}
+                    </Text>
+                </Stack>
+            </Group>
+        </Paper>
+    );
 }

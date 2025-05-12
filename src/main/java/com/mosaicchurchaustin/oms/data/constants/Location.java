@@ -11,7 +11,8 @@ import java.util.stream.Collectors;
 
 @Getter
 public enum Location {
-    MOSAIC_NORTH(List.of("4690", "5671"));
+    //"5671",
+    MOSAIC_NORTH(List.of("4690", "3829"));
 
     private final List<String> stopIds;
 
