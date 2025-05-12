@@ -98,7 +98,8 @@ auth0:
 mosaic:
   oms:
     frontend:
-      url: https://mosaic.miles-smiles.us
+      url: https://portal.mosaicstreetministry.com
+
 
 management:
   info:
