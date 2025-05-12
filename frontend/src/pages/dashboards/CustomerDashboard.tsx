@@ -1,4 +1,4 @@
-import { Box, Grid, GridCol, Table, Title } from "@mantine/core";
+import { Box, Grid, GridCol, Table, Text } from "@mantine/core";
 import Transit from "src/components/transit/Transit.tsx";
 import useApi from "src/hooks/useApi.tsx";
 import ordersApi from "src/services/ordersApi.tsx";
@@ -71,15 +71,15 @@ const CustomerDashboard = () => {
                                     </Table.Tr>
                                 </Table.Thead>
                                 <Table.Tbody>
-                                    {getOrdersApi.data?.map((order) => (
+                                    { Array.from({ length: 25 }, () => getOrdersApi.data || []).flat().map((order) => (
                                         <Table.Tr key={order.id}>
                                             <Table.Td>
-                                                <Title order={1}>
+                                                <Text fz={45}>
                                                     {order.customer?.firstName} {order.customer?.lastName}
-                                                </Title>
+                                                </Text>
                                             </Table.Td>
                                             <Table.Td>
-                                                <StatusBadge size={'xl'}
+                                                <StatusBadge size={'lg'}
                                                     orderStatus={getObfusgatedStatus(order.orderStatus)}
                                                 />
                                             </Table.Td>
