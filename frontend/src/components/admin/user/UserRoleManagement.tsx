@@ -21,6 +21,8 @@ const UserRoleManagement = ({ selectedUser, loading}: UserRoleManagementProps) =
         }
     }
 
+    const user = (updateUserApi?.data && updateUserApi?.data?.userId === selectedUser?.userId) ? updateUserApi?.data : selectedUser;
+
     const checkboxes = ROLE_NAMES.map((value) => (
         <Checkbox
             indeterminate={loading}
@@ -28,7 +30,7 @@ const UserRoleManagement = ({ selectedUser, loading}: UserRoleManagementProps) =
             ml={33}
             label={value}
             key={value}
-            checked={(updateUserApi?.data ?? selectedUser)?.roles?.map(i => i.toLowerCase()).indexOf(value.toLowerCase()) !== -1}
+            checked={user?.roles?.map(i => i.toLowerCase()).indexOf(value.toLowerCase()) !== -1}
             onChange={(event) => handleRoleChange(value, event.currentTarget.checked)}
         />
     ));
@@ -36,7 +38,7 @@ const UserRoleManagement = ({ selectedUser, loading}: UserRoleManagementProps) =
     return (<Box>
         <Title>Roles</Title>
         <Divider/>
-        {selectedUser && <>
+        {selectedUser && !loading && <>
             {checkboxes}
         </>}
     </Box>)

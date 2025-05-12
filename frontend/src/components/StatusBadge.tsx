@@ -1,8 +1,8 @@
 import {OrderStatus} from "src/models/types.tsx";
-import {Badge} from "@mantine/core";
+import {Badge, MantineSize} from "@mantine/core";
 import {statusDisplay} from "src/util/StatusUtils.tsx";
 
-export function StatusBadge({ orderStatus }: { orderStatus: OrderStatus }) {
+export function StatusBadge({ orderStatus, size }: { orderStatus: OrderStatus, size?: MantineSize }) {
     let color: string;
 
     switch (orderStatus) {
@@ -41,7 +41,7 @@ export function StatusBadge({ orderStatus }: { orderStatus: OrderStatus }) {
     }
 
     return (
-        <Badge color={color}>{statusDisplay(orderStatus)}</Badge>
+        <Badge color={color} size={size ?? 'md'}>{statusDisplay(orderStatus)}</Badge>
     );
 }
 

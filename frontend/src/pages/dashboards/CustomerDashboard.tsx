@@ -23,11 +23,13 @@ const CustomerDashboard = () => {
             OrderStatus.PACKED,
             OrderStatus.IN_TRANSIT,
         ];
-        return inProgressStatuses.includes(status) ? OrderStatus.IN_PROGRESS : status;
+        return inProgressStatuses.includes(status)
+            ? OrderStatus.IN_PROGRESS
+            : status;
     }, []);
 
     const interval = useInterval(() => {
-        setCounter(prev => {
+        setCounter((prev) => {
             const next = prev + refreshPercent;
             if (next >= refreshInterval) {
                 !getOrdersApi.loading && getOrdersApi.request(pageParams);
@@ -56,31 +58,36 @@ const CustomerDashboard = () => {
 
     return (
         <Box style={{ height: "100vh", display: "flex", flexDirection: "column" }}>
-            <Box style={{ flexGrow: 1 }}>
-                <Grid style={{ height: "100%" }}>
+            {/* Main content scrolls if too tall */}
+            <Box style={{ flexGrow: 1, overflow: "hidden" }}>
+                <Grid style={{ minHeight: 0 }}>
                     <GridCol span={6}>
-                        <Table>
-                            <Table.Thead>
-                                <Table.Tr>
-                                    <Table.Th>Friend</Table.Th>
-                                    <Table.Th align="right">Status</Table.Th>
-                                </Table.Tr>
-                            </Table.Thead>
-                            <Table.Tbody>
-                                {getOrdersApi.data?.map(order => (
-                                    <Table.Tr key={order.id}>
-                                        <Table.Td>
-                                            <Title order={1}>
-                                                {order.customer?.firstName} {order.customer?.lastName}
-                                            </Title>
-                                        </Table.Td>
-                                        <Table.Td>
-                                            <StatusBadge orderStatus={getObfusgatedStatus(order.orderStatus)} />
-                                        </Table.Td>
+                        <Box style={{ paddingRight: "1rem", overflowY: "auto", maxHeight: "100%" }}>
+                            <Table>
+                                <Table.Thead>
+                                    <Table.Tr>
+                                        <Table.Th>Friend</Table.Th>
+                                        <Table.Th align="right">Status</Table.Th>
                                     </Table.Tr>
-                                ))}
-                            </Table.Tbody>
-                        </Table>
+                                </Table.Thead>
+                                <Table.Tbody>
+                                    {getOrdersApi.data?.map((order) => (
+                                        <Table.Tr key={order.id}>
+                                            <Table.Td>
+                                                <Title order={1}>
+                                                    {order.customer?.firstName} {order.customer?.lastName}
+                                                </Title>
+                                            </Table.Td>
+                                            <Table.Td>
+                                                <StatusBadge size={'xl'}
+                                                    orderStatus={getObfusgatedStatus(order.orderStatus)}
+                                                />
+                                            </Table.Td>
+                                        </Table.Tr>
+                                    ))}
+                                </Table.Tbody>
+                            </Table>
+                        </Box>
                     </GridCol>
                     <GridCol span={6}>
                         <Box>{/* Anything else you want on right */}</Box>
@@ -88,7 +95,7 @@ const CustomerDashboard = () => {
                 </Grid>
             </Box>
 
-            {/* Pinned to bottom */}
+            {/* Always visible at bottom */}
             <Box style={{ borderTop: "1px solid #eee" }}>
                 <Transit />
             </Box>
