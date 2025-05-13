@@ -15,7 +15,7 @@ import useApi from "src/hooks/useApi.tsx";
 import {MouseEvent, useEffect, useState} from "react";
 import AdminUserApi from "src/services/adminUserApi.tsx";
 import {DateTime} from "luxon";
-import {IconCircleCheck} from "@tabler/icons-react";
+import {IconAt, IconBrandGoogleFilled, IconCircleCheck} from "@tabler/icons-react";
 import {User} from "src/models/types.tsx";
 import EmailInputForm from "src/components/auth0/EmailInputForm.tsx";
 import UserRoleManagement from "src/components/admin/user/UserRoleManagement.tsx";
@@ -72,6 +72,10 @@ export function UserManagementPage() {
         >
             <Table.Td><Avatar src={user.picture} alt="Avatar" /></Table.Td>
             <Table.Td>{user.name}</Table.Td>
+            <Table.Td>{user.userId?.toLowerCase()?.startsWith("google") ?
+                <Tooltip label="Google" withArrow><IconBrandGoogleFilled/></Tooltip> :
+                <Tooltip label="Username/password" withArrow>
+                    <IconAt/></Tooltip>}</Table.Td>
             {/*<Table.Td>{DateTime.fromMillis(user.created).toLocaleString(DateTime.DATE_MED)}</Table.Td>*/}
             <Table.Td><Text c='dimmed' size={'xs'}>{user.lastLogin && DateTime.fromMillis(user.lastLogin).toRelative()}</Text></Table.Td>
             <Table.Td>
@@ -96,6 +100,7 @@ export function UserManagementPage() {
                         <Table.Tr>
                             <Table.Th></Table.Th>
                             <Table.Th>Name</Table.Th>
+                            <Table.Th>Source</Table.Th>
                             {/*<Table.Th>Created</Table.Th>*/}
                             <Table.Th>Last Logged In</Table.Th>
                             <Table.Th>Email</Table.Th>

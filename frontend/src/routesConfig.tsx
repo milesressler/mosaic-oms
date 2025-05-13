@@ -5,7 +5,7 @@ import OrderDetailsPage from "src/pages/orders/OrderDetailsPage.tsx";
 import OrderFormPage from "src/pages/orders/OrderFormPage.tsx";
 import {Navigate} from "react-router-dom";
 import AuthCallbackPage from "src/pages/AuthCallback.tsx";
-import {IconDashboard, IconHome, IconUser, IconReport, IconMovie} from "@tabler/icons-react";
+import {IconDashboard, IconHome, IconUser, IconReport, IconMovie, IconExclamationCircle} from "@tabler/icons-react";
 import ItemsManagementPage from "src/pages/admin/ItemsManagementPage.tsx";
 import OrderTakerDashboard from "src/pages/dashboards/OrderTakerDashboard.tsx";
 import OrderFillerDashboard from "src/pages/dashboards/OrderFillerDashboard.tsx";
@@ -20,6 +20,7 @@ import DistributorDashboard from "src/pages/dashboards/DistributorDashboard.tsx"
 import AdminSettingsPage from "src/pages/admin/AdminSettingsPage.tsx";
 import CustomerMgmtPage from "src/pages/admin/CustomerMgmtPage.tsx";
 import DevicesPage from "src/pages/admin/DevicesPage.tsx";
+import NoAccessPage from "src/pages/NoAccess.tsx";
 
 
 const routes = [
@@ -31,6 +32,16 @@ const routes = [
         public: true,
         title: 'Home',
         icon: IconHome,
+        showInNavBar: false,
+    },
+    {
+        key: 'missingPermissions',
+        path: '/access',
+        element: NoAccessPage,
+        errorElement: ErrorPage,
+        public: true,
+        title: 'Access Denied',
+        icon: IconExclamationCircle,
         showInNavBar: false,
     },{
         key: 'kiosk',
