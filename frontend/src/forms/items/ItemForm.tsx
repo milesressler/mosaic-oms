@@ -94,7 +94,7 @@ export function ItemForm({ onItemSave, item }: Props) {
                     options: attr.options.map(i => i.label)})) || [],
         },
         validate: {
-            description: (value) => (value.trim() ? null : "Description is required"),
+            description: (value) => ((value.trim() || item?.description) ? null : "Description is required"),
             category: (value) => (value ? null : "Category is required"),
         },
     });
@@ -122,10 +122,10 @@ export function ItemForm({ onItemSave, item }: Props) {
     return (
         <form onSubmit={form.onSubmit(handleSubmit)}>
             <Stack gap="md">
-                {!item?.description && <TextInput
-                    disabled={!!item?.description}
+                { <TextInput
+                    // disabled={!!item?.description}
                     label="Description"
-                    placeholder="Enter description"
+                    placeholder={item?.description ? item.description : "Enter description"}
                     {...form.getInputProps("description")}
                 />}
                 <Select

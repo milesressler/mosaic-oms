@@ -48,6 +48,7 @@ public class ItemEntity extends BaseEntity implements Auditable {
     @Deprecated
     String placeholder;
 
+    @Setter
     @Column(name = "description", nullable = false, unique = true)
     String description;
 

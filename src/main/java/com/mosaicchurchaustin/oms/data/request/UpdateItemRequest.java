@@ -7,6 +7,7 @@ import java.util.List;
 
 @Valid
 public record UpdateItemRequest(
+        String description,
         Boolean managed,
         String category,
         String placeholder,

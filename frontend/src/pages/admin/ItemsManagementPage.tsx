@@ -16,58 +16,6 @@ import {AdminItem, Category, categoryDisplayNames, Item} from "src/models/types.
 import {IconPencil, IconSearch, IconTableImport, IconX} from "@tabler/icons-react";
 import ItemForm from "src/forms/items/ItemForm.tsx";
 
-// const EditableCell = ({ initialValue, onSave, onCancel, isEditing, onEdit }: any) => {
-//     const [value, setValue] = useState(initialValue);
-//     const inputRef = useRef<any|null>(null);
-//
-//     useEffect(() => {
-//         if (isEditing) {
-//             inputRef?.current?.focus();
-//             setValue(initialValue); // Reset value when editing starts
-//         } else {
-//             setValue(initialValue);
-//         }
-//     }, [isEditing, initialValue]);
-//
-//     const handleSave = () => {
-//         onSave(value);
-//     };
-//
-//     const handleCancel = () => {
-//         onCancel();
-//         setValue(initialValue); // Reset value when editing is cancelled
-//     };
-//     return isEditing ? (
-//         <Group gap="5">
-//             <TextInput
-//                 // variant="unstyled"
-//                 placeholder="Add placeholder"
-//                 ref={inputRef}
-//                 value={value}
-//                 // onBeforeInput={handleCancel}
-//                 rightSection={
-//                     <Group>
-//                     <ActionIcon onClick={handleSave} variant="subtle" color="blue">
-//                         <IconCheck size={16} onClick={handleSave} />
-//                     </ActionIcon>
-//                     </Group>
-//                 }
-//                 onChange={(event) => setValue(event.currentTarget.value)}
-//             />
-//             {/*<ActionIcon onClick={handleSave} variant="outline" color="blue">*/}
-//             {/*    <IconCheck size={16} onClick={handleSave} />*/}
-//             {/*</ActionIcon>*/}
-//             <ActionIcon onClick={handleCancel} variant="outline" color="red">
-//                 <IconX size={16} />
-//             </ActionIcon>
-//         </Group>
-//     ) : (
-//         <div onClick={onEdit} style={{cursor: 'pointer'}}>
-//             <Text size={!initialValue ? 'xs' : 'sm'} fs={!initialValue ? 'italic' : ''} span c={!initialValue ? 'dimmed' : ''}>
-//                 {!!initialValue && initialValue.trim().length > 0 ? initialValue : 'Add text'}
-//             </Text>
-//         </div>);
-// };
 export function ItemsManagementPage() {
     const PAGE_SIZE = 250;
     const [activePage, setPage] = useState(1);

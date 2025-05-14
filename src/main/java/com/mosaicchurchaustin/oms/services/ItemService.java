@@ -99,6 +99,11 @@ public class ItemService {
             itemEntity.setManaged(request.managed());
         }
 
+
+        if (StringUtils.isNotBlank(request.description())) {
+            itemEntity.setDescription(request.description());
+        }
+
         if (request.availability() != null) {
             itemEntity.setAvailability(ItemAvailability.from(request.availability()));
         }
