@@ -144,7 +144,7 @@ export default function OrderDetailsPage() {
             <Title order={4} mb="sm">
                 Items Requested
             </Title>
-            <Card mb="lg">
+            <Card withBorder mb="lg">
                 <Table striped highlightOnHover>
                     <Table.Thead>
                         <Table.Tr>
@@ -170,8 +170,6 @@ export default function OrderDetailsPage() {
                     </Table.Tbody>
                 </Table>
             </Card>
-
-            <Divider my="md" />
 
             {/* History Timeline */}
             <Title order={4} mb="sm">
