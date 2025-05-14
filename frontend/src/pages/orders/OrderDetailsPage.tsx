@@ -1,21 +1,26 @@
-import React, { useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import {useEffect} from 'react';
+import {useParams} from 'react-router-dom';
 import useApi from 'src/hooks/useApi';
 import ordersApi from 'src/services/ordersApi';
-import { DateTime } from 'luxon';
+import {DateTime} from 'luxon';
 import {
-    Container,
-    Title,
-    Text,
-    Group,
-    Badge,
-    Table,
-    Card,
-    Stack,
-    Divider,
-    Timeline,
     Avatar,
+    Badge,
+    Button,
+    Card,
+    Container,
+    Divider,
+    Group,
+    Menu,
+    Stack,
+    Table,
+    Text,
+    Timeline,
+    Title,
 } from '@mantine/core';
+import {Category, categoryDisplayNames, OrderStatus} from "src/models/types.tsx";
+import UserAvatar from 'src/components/common/userAvatar/UserAvatar';
+import {IconChevronDown} from '@tabler/icons-react';
 
 interface OrderDetailsProps {
     id: string;
@@ -41,6 +46,7 @@ const STATUS_COLORS: Record<string, string> = {
 export default function OrderDetailsPage() {
     const { id } = useParams<OrderDetailsProps>();
     const getOrder = useApi(ordersApi.getOrderById);
+    const updateOrder = useApi(ordersApi.updateOrderStatus);
 
     useEffect(() => {
         if (id) {
@@ -50,21 +56,47 @@ export default function OrderDetailsPage() {
 
     const order = getOrder.data;
 
+    const cancel = () => {
+        order && updateOrder.request(order.uuid, OrderStatus.CANCELLED)
+    }
+
+    const complete = () => {
+        order && updateOrder.request(order.uuid, OrderStatus.COMPLETED);
+    }
+
+    useEffect(() => {
+        if (updateOrder.data) {
+            getOrder.request(order!.id);
+        }
+    }, [updateOrder.data]);
+
     if (getOrder.loading) {
         return <Text>Loading order details...</Text>;
     }
     if (!order) {
-        return <Text color="red">Order not found.</Text>;
+        return <Text c="red">Order not found.</Text>;
     }
 
     return (
         <Container size="md" py="lg">
             {/* Header */}
+            <Group justify="space-between" align="flex-end">
+
+                <Text size="md" c="dimmed">
+                    Order #{order.id}
+                </Text>
+                <Menu>
+                    <Menu.Target>
+                        <Button size="sm" rightSection={<IconChevronDown size={14} />}>Actions</Button>
+                    </Menu.Target>
+                    <Menu.Dropdown>
+                        <Menu.Item onClick={cancel}>Cancel</Menu.Item>
+                        <Menu.Item onClick={complete}>Mark Complete</Menu.Item>
+                    </Menu.Dropdown>
+                </Menu>
+            </Group>
             <Group justify="apart" mb="md" align="flex-end">
                 <Stack gap={0}>
-                    <Text size="sm" color="dimmed">
-                        Order #{order.id}
-                    </Text>
                     <Title order={2} mt={4}>
                         {order.customer.firstName} {order.customer.lastName}
                     </Title>
@@ -74,20 +106,32 @@ export default function OrderDetailsPage() {
                 </Badge>
             </Group>
 
+
+
             {/* Timestamps */}
-            <Text size="sm" color="dimmed">
+            <Text size="sm" c="dimmed">
                 Created:{' '}
                 {DateTime.fromISO(order.created).toLocaleString(DateTime.DATETIME_MED)}
             </Text>
             {order.postedToGroupMe && (
-                <Text size="sm" color="dimmed" mt="xs">
+                <Text size="sm" c="dimmed" mt="xs">
                     Posted to GroupMe:{' '}
                     {DateTime.fromISO(order.postedToGroupMe).toRelative()}
                 </Text>
             )}
 
-            <Divider my="md" />
+            {/* Assignee */}
+            {order.assignee ? (<>
+                    <Group>
+                        <Text  size="sm" c="dimmed">Assignee: </Text>
+                        <UserAvatar user={order.assignee} />
+                    </Group>
+                </>
+            ) : (
+                <Text size="sm" c="dimmed" mb="lg" mt="md">Unassigned</Text>
+            )}
 
+            <Divider my="md" />
             {/* Special Instructions */}
             {order.specialInstructions && (
                 <Stack mb="lg">
@@ -100,7 +144,7 @@ export default function OrderDetailsPage() {
             <Title order={4} mb="sm">
                 Items Requested
             </Title>
-            <Card withBorder mb="lg">
+            <Card mb="lg">
                 <Table striped highlightOnHover>
                     <Table.Thead>
                         <Table.Tr>
@@ -115,7 +159,9 @@ export default function OrderDetailsPage() {
                         {order.items.map((item) => (
                             <Table.Tr key={item.id}>
                                 <Table.Td>{item.description}</Table.Td>
-                                <Table.Td>{item.category}</Table.Td>
+                                <Table.Td>
+                                    {categoryDisplayNames[item.category ?? Category.OTHER]}
+                                </Table.Td>
                                 <Table.Td>{item.quantityRequested}</Table.Td>
                                 <Table.Td>{item.quantityFulfilled}</Table.Td>
                                 <Table.Td>{item.notes || '-'}</Table.Td>
@@ -125,26 +171,34 @@ export default function OrderDetailsPage() {
                 </Table>
             </Card>
 
+            <Divider my="md" />
+
             {/* History Timeline */}
             <Title order={4} mb="sm">
                 Status History
             </Title>
             <Timeline active={order.history.length - 1} bulletSize={24} lineWidth={2}>
                 {order.history.map((event, idx) => {
-                    const label = STATUS_LABELS[event.status] || event.status;
-                    const color = STATUS_COLORS[event.status] || 'gray';
+
+                    // Determine label and color
+                    let label: string;
+                    let color: string;
+
+                    if (event.eventType === 'EXPORT') {
+                        label = `Exported to ${event.exportType}`;
+                        color = 'blue';
+                    } else {
+                        label = STATUS_LABELS[event.status] || event.status;
+                        color = STATUS_COLORS[event.status] || 'gray';
+                    }
+
                     const timestamp = DateTime.fromISO(event.timestamp).toLocaleString(DateTime.DATETIME_MED);
-                    const initials = event.user.name
-                        .split(' ')
-                        .map((n) => n[0])
-                        .join('')
-                        .toUpperCase();
 
                     return (
                         <Timeline.Item
                             key={idx}
                             title={label}
-                            bullet={<Avatar size={24}>{initials}</Avatar>}
+                            bullet={<Avatar size={20} src={event.user.avatar} alt={event.user.name} radius="xl" />}
                             color={color}
                         >
                             <Text size="sm" c="dimmed">

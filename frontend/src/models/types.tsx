@@ -197,7 +197,7 @@ export interface CreateItemRequest {
 }
 export interface OrderItem {
     description: string;
-    category?: string;
+    category?: Category;
     quantityRequested: number;
     quantityFulfilled: number;
     attributes: { [key: string]: string };

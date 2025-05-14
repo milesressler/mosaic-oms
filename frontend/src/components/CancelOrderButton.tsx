@@ -37,7 +37,7 @@ const CancelOrderButton = ({ onCancel }: any) => {
                         {...form.getInputProps('comment')}
                     />
 
-                    <Group position="right" mt="md">
+                    <Group justify="right" mt="md">
                         <Button type="submit" color="red">
                             Confirm Cancel
                         </Button>
