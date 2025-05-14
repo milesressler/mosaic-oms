@@ -122,12 +122,18 @@ export function ItemForm({ onItemSave, item }: Props) {
     return (
         <form onSubmit={form.onSubmit(handleSubmit)}>
             <Stack gap="md">
-                { <TextInput
-                    // disabled={!!item?.description}
-                    label="Description"
-                    placeholder={item?.description ? item.description : "Enter description"}
-                    {...form.getInputProps("description")}
-                />}
+                <Stack gap={2}>
+                    <TextInput
+                        label="Description"
+                        placeholder={item?.description ? item.description : "Enter description"}
+                        {...form.getInputProps("description")}
+                    />
+                    {!!form.values.description.trim() && item?.description && form.values.description !== item.description  &&  (
+                        <Text size="xs" c="red">
+                            ⚠ Changing this description will also update it for all prior orders.
+                        </Text>
+                    )}
+                </Stack>
                 <Select
                     label="Category"
                     data={Object.values(Category).map((category) => ({
