@@ -1,4 +1,4 @@
-import {ScrollArea, AppShell, Stack, Switch} from '@mantine/core';
+import {ScrollArea, AppShell, Stack, Switch, Group} from '@mantine/core';
 import classes from './NavbarNested.module.css';
 import {LinksGroup} from "src/components/layout/navbar/NavBarLinksGroup.tsx";
 import UserCard from "src/components/auth0/UserCard.tsx";
@@ -9,11 +9,13 @@ import LoginButton from "src/components/auth0/LoginButton.tsx";
 import {getRolesFromAuth0User} from "src/components/auth0/Auth0Utils.tsx";
 import {usePreferences} from "src/contexts/PreferencesContext.tsx";
 import {DeviceLogoutButton} from "src/components/admin/devices/DeviceLogoutButton.tsx";
-import {IconBrandSlack} from "@tabler/icons-react";
+import {IconBrandSlack, IconLink, IconLinkOff} from "@tabler/icons-react";
+import {useStompConnectionStatus} from "src/hooks/useStompConnectionStatus.tsx";
 
 
 export function NavbarNested() {
 
+    const stompConnected = useStompConnectionStatus();
     const { isAuthenticated, user } = useAuth0();
     const userRoles = getRolesFromAuth0User(user); // Adjust namespace accordingly
 
@@ -78,13 +80,17 @@ export function NavbarNested() {
             </ScrollArea>
 
 
+            <Group justify={'space-between'}>
             <Switch
+                disabled={!stompConnected}
                 my={10}
                 label={'Notifications'}
                 checked={notificationsEnabled}
                 onChange={(event) =>
                     setNotificationsEnabled(event.currentTarget.checked)}
             ></Switch>
+                {stompConnected ? <IconLink color={'green'}/> : <IconLinkOff/>}
+            </Group>
             <Stack className={classes.footer} hiddenFrom={ 'md'}>
                 { isAuthenticated && <UserCard /> }
                 { isAuthenticated && <LogoutButton/> }

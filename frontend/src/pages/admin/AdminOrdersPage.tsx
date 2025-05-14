@@ -124,7 +124,7 @@ const AdminOrdersPage = () => {
     const rows = getOrders.data?.content?.map((order: OrderDetails) => (
         <>
             {/*<LoadingOverlay visible={getOrders.loading}/>*/}
-            <Table.Tr key={order.uuid} pos={'relative'} >
+            <Table.Tr key={order.uuid} pos={'relative'} onClick={() =>  navigate(`/order/${order.id}`)} >
                 <Table.Td><><Group justify={'flex-start'} gap={5}>
                     <Avatar src={order?.assignee?.avatar}  color={order.assignee && !order.assignee?.avatar ? 'indigo' : ''}  size={'sm'} />
                     <Text size={'sm'} c={order.assignee ? '' : 'dimmed'}>
