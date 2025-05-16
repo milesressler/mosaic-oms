@@ -7,14 +7,16 @@ import routes from "src/routesConfig.tsx";
 
 interface LinksGroupProps {
     icon: React.FC<any>;
+    rightSection?: React.ReactNode;
     label: string;
+    onClick?: () => void;
     key: string;
     initiallyOpened?: boolean;
     links?: { label: string; link: string, key: string }[];
     link?: string; // New prop for the group's link
 }
 
-export function LinksGroup({ icon: Icon, label, initiallyOpened, links, link }: LinksGroupProps) {
+export function LinksGroup({ onClick, icon: Icon, rightSection, label, initiallyOpened, links, link }: LinksGroupProps) {
     const location = useLocation();
 
 
@@ -26,7 +28,7 @@ export function LinksGroup({ icon: Icon, label, initiallyOpened, links, link }: 
     const hasLinks = Array.isArray(links);
     const [opened, setOpened] = useState(true);
     const items = (hasLinks ? links : []).map((link) => (
-        <Link className={classes.link} key={link.key} to={link.link}
+        <Link onClick={onClick} className={classes.link} key={link.key} to={link.link}
               data-active={link.key === activeRoute.key || undefined}
 
         >{link.label}</Link>
@@ -41,6 +43,7 @@ export function LinksGroup({ icon: Icon, label, initiallyOpened, links, link }: 
                     </ThemeIcon>
                     <Box ml="md">{label}</Box>
                 </Box>
+                {rightSection}
                 {hasLinks && (
                     <IconChevronRight
                         className={classes.chevron}
@@ -57,7 +60,11 @@ export function LinksGroup({ icon: Icon, label, initiallyOpened, links, link }: 
     );
     return (
         <>
-            {link && !hasLinks ? (
+            {onClick ? (
+                <UnstyledButton onClick={onClick} className={classes.control}>
+                    {controlContent}
+                </UnstyledButton>
+            ) : link && !hasLinks ? (
                 <Link to={link} className={classes.control}>
                     {controlContent}
                 </Link>
@@ -67,6 +74,7 @@ export function LinksGroup({ icon: Icon, label, initiallyOpened, links, link }: 
                 </UnstyledButton>
             )}
             {hasLinks ? <Collapse in={opened}>{items}</Collapse> : null}
+
         </>
     );
 }

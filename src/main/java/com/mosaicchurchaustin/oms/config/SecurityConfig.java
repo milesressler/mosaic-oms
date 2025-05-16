@@ -98,6 +98,8 @@ public class SecurityConfig {
                             .hasAuthority(MosaicAuthority.ADMIN.getAuthority());
                     registry.requestMatchers(HttpMethod.GET, "/api/actuator/**")
                             .permitAll();
+                    registry.requestMatchers(HttpMethod.GET, "/api/announcements/**")
+                            .permitAll();
 
                     registry.requestMatchers(HttpMethod.GET, "/api/order/public/dashboard")
                             .access(KIOSK_OR_ANY_AUTHORITY);

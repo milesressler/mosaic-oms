@@ -11,7 +11,7 @@ import {
     Container,
     Divider,
     Group,
-    Menu,
+    Menu, ScrollArea,
     Stack,
     Table,
     Text,
@@ -21,6 +21,7 @@ import {
 import {Category, categoryDisplayNames, OrderStatus} from "src/models/types.tsx";
 import UserAvatar from 'src/components/common/userAvatar/UserAvatar';
 import {IconChevronDown} from '@tabler/icons-react';
+import React from 'react';
 
 interface OrderDetailsProps {
     id: string;
@@ -77,6 +78,14 @@ export default function OrderDetailsPage() {
         return <Text c="red">Order not found.</Text>;
     }
 
+    // Group items by category
+    const groupedItems = order.items.reduce<Record<string, typeof order.items>>((acc, item) => {
+        const cat = item.category ?? Category.OTHER;
+        if (!acc[cat]) acc[cat] = [];
+        acc[cat].push(item);
+        return acc;
+    }, {});
+
     return (
         <Container size="md" py="lg">
             {/* Header */}
@@ -121,15 +130,15 @@ export default function OrderDetailsPage() {
             )}
 
             {/* Assignee */}
-            {order.assignee ? (<>
+            {/*{order.assignee ? (<>*/}
                     <Group>
                         <Text  size="sm" c="dimmed">Assignee: </Text>
-                        <UserAvatar user={order.assignee} />
+                        <UserAvatar user={{name: 'Unassigned'}} />
                     </Group>
-                </>
-            ) : (
-                <Text size="sm" c="dimmed" mb="lg" mt="md">Unassigned</Text>
-            )}
+            {/*    </>*/}
+            {/*) : (*/}
+            {/*    <Text size="sm" c="dimmed" mb="lg" mt="md">Unassigned</Text>*/}
+            {/*)}*/}
 
             <Divider my="md" />
             {/* Special Instructions */}
@@ -145,30 +154,43 @@ export default function OrderDetailsPage() {
                 Items Requested
             </Title>
             <Card withBorder mb="lg">
+                <ScrollArea>
+
                 <Table striped highlightOnHover>
                     <Table.Thead>
                         <Table.Tr>
-                            <Table.Th>Description</Table.Th>
-                            <Table.Th>Category</Table.Th>
-                            <Table.Th>Requested</Table.Th>
-                            <Table.Th>Fulfilled</Table.Th>
+                            <Table.Th>Item</Table.Th>
+                            {/*<Table.Th>Category</Table.Th>*/}
+                            <Table.Th>#</Table.Th>
+                            <Table.Th>Filled</Table.Th>
                             <Table.Th>Notes</Table.Th>
                         </Table.Tr>
                     </Table.Thead>
                     <Table.Tbody>
-                        {order.items.map((item) => (
-                            <Table.Tr key={item.id}>
-                                <Table.Td>{item.description}</Table.Td>
-                                <Table.Td>
-                                    {categoryDisplayNames[item.category ?? Category.OTHER]}
-                                </Table.Td>
-                                <Table.Td>{item.quantityRequested}</Table.Td>
-                                <Table.Td>{item.quantityFulfilled}</Table.Td>
-                                <Table.Td>{item.notes || '-'}</Table.Td>
-                            </Table.Tr>
+                        {Object.entries(groupedItems).map(([cat, items]) => (
+                            <React.Fragment key={cat}>
+                                {/* Category header row with distinct background */}
+                                <Table.Tr>
+                                    <Table.Th  pl={'md'} colSpan={4} style={{ fontWeight: 600, backgroundColor: '#eee' }} >
+                                        {categoryDisplayNames[cat as Category]}
+                                    </Table.Th>
+                                </Table.Tr>
+                                {/* Item rows indented under category */}
+                                {items.map(item => (
+                                    <Table.Tr key={item.id}>
+                                        <Table.Td pl={'xl'}>
+                                            {item.description}
+                                        </Table.Td>
+                                        <Table.Td>{item.quantityRequested}</Table.Td>
+                                        <Table.Td>{item.quantityFulfilled}</Table.Td>
+                                        <Table.Td>{item.notes || '-'}</Table.Td>
+                                    </Table.Tr>
+                                ))}
+                            </React.Fragment>
                         ))}
                     </Table.Tbody>
                 </Table>
+                </ScrollArea>
             </Card>
 
             {/* History Timeline */}

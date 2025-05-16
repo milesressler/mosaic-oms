@@ -1,4 +1,4 @@
-import {ScrollArea, AppShell, Stack, Switch, Group} from '@mantine/core';
+import {ScrollArea, AppShell, Stack, Switch, Group, Modal, Badge} from '@mantine/core';
 import classes from './NavbarNested.module.css';
 import {LinksGroup} from "src/components/layout/navbar/NavBarLinksGroup.tsx";
 import UserCard from "src/components/auth0/UserCard.tsx";
@@ -9,8 +9,10 @@ import LoginButton from "src/components/auth0/LoginButton.tsx";
 import {getRolesFromAuth0User} from "src/components/auth0/Auth0Utils.tsx";
 import {usePreferences} from "src/contexts/PreferencesContext.tsx";
 import {DeviceLogoutButton} from "src/components/admin/devices/DeviceLogoutButton.tsx";
-import {IconBrandSlack, IconLink, IconLinkOff} from "@tabler/icons-react";
+import {IconBrandSlack, IconLink, IconLinkOff, IconSpeakerphone} from "@tabler/icons-react";
 import {useStompConnectionStatus} from "src/hooks/useStompConnectionStatus.tsx";
+import {useDisclosure} from "@mantine/hooks";
+import ChangelogModalContent from "src/components/announcements/ChangelogModalContent.tsx";
 
 
 export function NavbarNested() {
@@ -24,6 +26,8 @@ export function NavbarNested() {
         if (!requiredRole) return true;
         return userRoles.includes(requiredRole.toLowerCase());
     };
+
+    const [opened, { open, close }] = useDisclosure(false);
     const renderLinks = (routes: any) => {
         const links = routes
             .filter((route: any) => route.showInNavBar !== false && hasRequiredRole(route.requiredRole))
@@ -33,12 +37,14 @@ export function NavbarNested() {
                         label: route.group,
                         icon: route.icon,
                         initiallyOpened: route.initiallyOpened,
+                        onClick: route.onClick, // pass down onClick if defined
                         links: route.children
                             .filter((childRoute: any) => childRoute.showInNavBar !== false)
                             .map((childRoute: any) => ({
                                 label: childRoute.title,
                                 link: childRoute.path,
                                 key: childRoute.key,
+                                onClick: childRoute.onClick, // pass down onClick if defined
                             })),
                     };
                 } else {
@@ -47,6 +53,8 @@ export function NavbarNested() {
                         icon: route.icon,
                         link: route.path,
                         key: route.key,
+                        onClick: route.onClick, // pass down onClick if defined
+
                     };
                 }
             });
@@ -58,6 +66,17 @@ export function NavbarNested() {
                 key: 'slack_support',
             }
         );
+        links.push(
+            {
+                label: 'Changelog',
+                icon: IconSpeakerphone,
+                link: "",
+                onClick: open,
+                key: 'changelog',
+                rightSection: <Badge size="sm" color="red">NEW</Badge>,
+
+            }
+        );
         return links;
     };
 
@@ -67,6 +86,9 @@ export function NavbarNested() {
 
     return (
         <AppShell.Navbar className={classes.navbar}>
+            <Modal opened={opened} onClose={close} title="Changelog" size="xl" scrollAreaComponent={ScrollArea.Autosize}>
+                <ChangelogModalContent/>
+            </Modal>
             {/*This is a header - probably not needed, but keeping in case*/}
             {/*<div className={classes.header}>*/}
                 {/*<Group justify="space-between">*/}

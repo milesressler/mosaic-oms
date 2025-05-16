@@ -16,6 +16,7 @@ import {useAuth0} from "@auth0/auth0-react";
 import {PreferencesProvider} from "src/contexts/PreferencesContext.tsx";
 import {FeaturesProvider} from "src/contexts/FeaturesContext.tsx";
 import {ModalsProvider} from "@mantine/modals";
+import {PostHogProvider} from "posthog-js/react";
 const WS_URL = import.meta.env.VITE_API_WEBSOCKET_URL;
 
 
@@ -65,22 +66,31 @@ function Interior({}) {
         </FeaturesProvider>
     </StompSessionProvider>
 }
+const posthogKey = import.meta.env.VITE_REACT_APP_PUBLIC_POSTHOG_KEY;
+const posthogHost = import.meta.env.VITE_REACT_APP_PUBLIC_POSTHOG_HOST;
 
 function App() {
   return (
     <><MantineProvider theme={theme}>
-        <ModalsProvider>
-            <PreferencesProvider>
-                <Notifications/>
-                    <CookiesProvider defaultSetOptions >
-                        <Auth0ProviderWithNavigate>
-                                <AuthContextProvider>
-                                        <Interior/>
-                                </AuthContextProvider>
-                        </Auth0ProviderWithNavigate>
-                    </CookiesProvider>
-            </PreferencesProvider>
-        </ModalsProvider>
+        <PostHogProvider
+            apiKey={posthogKey}
+            options={{
+                api_host: posthogHost,
+            }}
+        >
+            <ModalsProvider>
+                <PreferencesProvider>
+                    <Notifications/>
+                        <CookiesProvider defaultSetOptions >
+                            <Auth0ProviderWithNavigate>
+                                    <AuthContextProvider>
+                                            <Interior/>
+                                    </AuthContextProvider>
+                            </Auth0ProviderWithNavigate>
+                        </CookiesProvider>
+                </PreferencesProvider>
+            </ModalsProvider>
+        </PostHogProvider>
     </MantineProvider>
     </>
   )

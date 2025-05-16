@@ -15,8 +15,6 @@ export const AuthenticationGuard: React.FC<AuthenticationGuardProps> = ({
         ({ ...props }) => {
             // adjust the claim name to whatever you configured in Auth0
             const roles: string[] = user?.["https://mosaic.miles-smiles.us/roles"] ?? [];
-
-            console.log(roles);
             // if they’re authenticated but have no roles, kick them to /access
             if (roles.length === 0) {
                 return <Navigate to="/access" replace />;
