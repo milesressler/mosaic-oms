@@ -96,6 +96,8 @@ export function OrderFormV2({ form }: Props) {
             });
             setStep("items");
         }
+        posthog.capture('order_funnel_customer_selected', {});
+
     };
 
     const submitOrder = (values: OrderFormValues) => {
@@ -212,7 +214,7 @@ export function OrderFormV2({ form }: Props) {
                                             Back to Search
                                         </Button>
                                     )}
-                                    <Button onClick={() => setStep("items")} disabled={!form.isValid('firstName') || !form.isValid('lastName')}>
+                                    <Button onClick={() => posthog.capture('order_funnel_customer_added', {}) && setStep("items")} disabled={!form.isValid('firstName') || !form.isValid('lastName')}>
                                         Next
                                     </Button>
                                 </Group>
