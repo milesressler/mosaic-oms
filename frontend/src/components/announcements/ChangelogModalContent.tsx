@@ -5,19 +5,17 @@ import announcementsApi from "src/services/announcementsApi.tsx";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 export function ChangelogModalContent() {
-  const changeLogFetch = useApi(announcementsApi.getChangelog);
   const structuredChangeLogFetch = useApi(announcementsApi.getStructuredChangelog);
 
     useEffect(() => {
-        changeLogFetch.request();
         structuredChangeLogFetch.request();
     }, []);
 
-    if (changeLogFetch.loading || structuredChangeLogFetch.loading) {
+    if (structuredChangeLogFetch.loading) {
         return <Loader />;
     }
 
-    if (changeLogFetch.error || structuredChangeLogFetch.error) {
+    if (structuredChangeLogFetch.error) {
         return <Text c="red">Failed to load changelog</Text>;
     }
 
