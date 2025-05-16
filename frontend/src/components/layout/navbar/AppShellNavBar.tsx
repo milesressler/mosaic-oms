@@ -13,6 +13,8 @@ import {IconBrandSlack, IconLink, IconLinkOff, IconSpeakerphone} from "@tabler/i
 import {useStompConnectionStatus} from "src/hooks/useStompConnectionStatus.tsx";
 import {useDisclosure} from "@mantine/hooks";
 import ChangelogModalContent from "src/components/announcements/ChangelogModalContent.tsx";
+import {usePostHog} from "posthog-js/react";
+import {useEffect} from "react";
 
 
 export function NavbarNested() {
@@ -28,6 +30,14 @@ export function NavbarNested() {
     };
 
     const [opened, { open, close }] = useDisclosure(false);
+    const posthog = usePostHog();
+
+    useEffect(() => {
+        if (opened) {
+            posthog?.capture('changelog_opened', { label: 'Changelog Opened' })
+        }
+    }, [opened]);
+
     const renderLinks = (routes: any) => {
         const links = routes
             .filter((route: any) => route.showInNavBar !== false && hasRequiredRole(route.requiredRole))

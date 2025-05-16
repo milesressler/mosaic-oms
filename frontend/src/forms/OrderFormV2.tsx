@@ -25,6 +25,7 @@ import {FormOrderItem, OrderFormValues} from "src/models/forms.tsx";
 import {useFeatures} from "src/contexts/FeaturesContext.tsx";
 import ordersApi from "src/services/ordersApi.tsx";
 import {IconNote, IconNotes, IconSend, IconShoppingBag, IconUserCheck} from "@tabler/icons-react";
+import {usePostHog} from "posthog-js/react";
 
 interface Props {
     form: UseFormReturnType<OrderFormValues>,
@@ -42,12 +43,24 @@ export function OrderFormV2({ form }: Props) {
     const createOrderAPI = useApi(ordersApi.createOrder);
 
     const steps = ["customer", "items", "additional", "confirm"];
+    const posthog = usePostHog();
+
+    const captureOrderStarted = () => {
+        posthog.capture('order_funnel_started', {
+            source: 'order_create_page',
+        });
+    }
+
+    useEffect(() => {
+        captureOrderStarted();
+    }, []);
 
     useEffect(() => {
         if (debouncedSearch) {
             searchCustomersApi.request(debouncedSearch);
         }
     }, [debouncedSearch]);
+
 
     const handleCreateNew = () => {
         const [first, ...rest] = searchString.split(" ")
@@ -61,11 +74,14 @@ export function OrderFormV2({ form }: Props) {
 
     const handleItemSelection = (index: number|null, newItem: FormOrderItem|null) => {
         if (index === null) {
+            posthog.capture('order_funnel_item_selected', {});
             form.insertListItem('items', newItem)
         } else if (newItem !== null) {
+            posthog.capture('order_funnel_item_changed', {});
             form.removeListItem('items', index);
             form.insertListItem('items', newItem)
         } else {
+            posthog.capture('order_funnel_item_removed', {});
             form.removeListItem('items', index);
         }
     };
@@ -98,6 +114,8 @@ export function OrderFormV2({ form }: Props) {
         createOrderAPI.request(request);
     }
 
+
+
     const startOver = () => {
         form.reset();
         setSearchString('');
@@ -107,6 +125,10 @@ export function OrderFormV2({ form }: Props) {
     useEffect(() => {
         if (createOrderAPI.data) {
             startOver();
+            posthog.capture('order_funnel_completed', {
+                orderId: createOrderAPI.data.orderId,
+            });
+            captureOrderStarted();
         }
     }, [createOrderAPI.data]);
 
