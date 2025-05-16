@@ -17,6 +17,7 @@ import {IconArrowsMaximize, IconArrowsMinimize} from "@tabler/icons-react";
 import { SelectedOrderProvider} from "src/contexts/SelectedOrderContext.tsx";
 import NotificationsHandler from "src/components/notifications/NotificationsHandler.tsx";
 import {DeviceLogoutButton} from "src/components/admin/devices/DeviceLogoutButton.tsx";
+import {usePageTracking} from "src/hooks/usePageTracking.tsx";
 
 const mappedRoutes = routes.flatMap((route: any) => route.children || [route]).map((route) => {
     const Element = route.public
@@ -41,6 +42,7 @@ const mappedRoutes = routes.flatMap((route: any) => route.children || [route]).m
     );
 });
 export function AppShellComponent() {
+    usePageTracking();
     const DEFAULT_HEADER_HEIGHT = 60;
     const [opened, { toggle, close }] = useDisclosure(false);
     const [asideOpened, asideHandler] = useDisclosure(false);

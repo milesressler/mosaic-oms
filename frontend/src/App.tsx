@@ -75,6 +75,7 @@ function App() {
         <PostHogProvider
             apiKey={posthogKey}
             options={{
+                capture_pageview: false,
                 api_host: posthogHost,
             }}
         >
