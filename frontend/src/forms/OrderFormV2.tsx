@@ -122,6 +122,7 @@ export function OrderFormV2({ form }: Props) {
         form.reset();
         setSearchString('');
         setStep('customer');
+        captureOrderStarted();
     }
 
     useEffect(() => {

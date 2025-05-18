@@ -71,7 +71,7 @@ const CustomerDashboard = () => {
                                     </Table.Tr>
                                 </Table.Thead>
                                 <Table.Tbody>
-                                    { Array.from({ length: 25 }, () => getOrdersApi.data || []).flat().map((order) => (
+                                    { getOrdersApi.data?.map((order) => (
                                         <Table.Tr key={order.id}>
                                             <Table.Td>
                                                 <Text fz={45}>
