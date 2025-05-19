@@ -68,7 +68,7 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(final HttpSecurity http, final JwtAuthenticationConverter jwtAuthenticationConverter) throws Exception {
         final CsrfTokenRequestAttributeHandler csrfTokenRequestAttributeHandler = new CsrfTokenRequestAttributeHandler();
         final String mosaicRoles = Arrays.stream(MosaicRole.values())
-                .map(MosaicRole::name)
+                .map(MosaicRole::getRoleName)
                 .map(String::toUpperCase)
                 .collect(Collectors.joining("','", "'", "'"));
 
@@ -116,7 +116,7 @@ public class SecurityConfig {
                             .permitAll();
                     registry.requestMatchers("/api/**")
                             .hasAnyRole(Arrays.stream(MosaicRole.values())
-                                    .map(MosaicRole::name)
+                                    .map(MosaicRole::getRoleName)
                                     .map(String::toUpperCase)
                                     .toArray(String[]::new));
                     registry.anyRequest().permitAll();
