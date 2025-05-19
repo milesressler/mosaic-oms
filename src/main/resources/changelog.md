@@ -1,5 +1,11 @@
 # Changelog
 
+## [2025-05-22]
+### Fixed
+- Distributor could not select an order, now modal will popup
+- Non-admins could not access any APIs (manifest as no customer autofill)
+
+
 ## [2025-05-15]
 ### Added
 - Changelog added to navigation panel
