@@ -75,6 +75,7 @@ function App() {
         <PostHogProvider
             apiKey={posthogKey}
             options={{
+                enable_recording_console_log: true,
                 capture_pageview: false,
                 api_host: posthogHost,
             }}

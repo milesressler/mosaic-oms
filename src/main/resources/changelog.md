@@ -3,7 +3,9 @@
 ## [2025-05-22]
 ### Fixed
 - Distributor could not select an order, now modal will popup
-- Non-admins could not access any APIs (manifest as no customer autofill)
+- Non-admins could not access any APIs (manifested as no customer autofill)
+- Fixed redirect loop caused by authentication race condition
+- Fixed some misleading logging on backend
 
 
 ## [2025-05-15]
