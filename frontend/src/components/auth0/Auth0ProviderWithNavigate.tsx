@@ -14,7 +14,7 @@ export const Auth0ProviderWithNavigate = ({ children }: Auth0ProviderWithNavigat
   const audience = import.meta.env.VITE_AUTH0_AUDIENCE;
 
   const onRedirectCallback = (appState: any) => {
-    navigate(appState?.returnTo || window.location.pathname);
+    navigate(appState?.returnTo || "/dashboard/taker");
   };
 
   if (!(domain && clientId && redirectUri)) {

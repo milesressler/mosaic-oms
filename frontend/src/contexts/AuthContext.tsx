@@ -12,7 +12,7 @@ export const AuthContext = createContext<AuthContextProps>({
 });
 
 export const AuthContextProvider = (props: any) => {
-    const { getAccessTokenSilently } = useAuth0();
+    const { getAccessTokenSilently, isAuthenticated, isLoading} = useAuth0();
     // const stompClient = useStompClient();
     const [token, setToken] = useState("")
 
@@ -23,13 +23,18 @@ export const AuthContextProvider = (props: any) => {
             // If needed: stompClient?.connect(headersUsing(token));
         } catch {
             setToken("");
-        }
+            }
     }
 
     useEffect(() => {
         addAccessTokenInterceptor(getAccessTokenSilently);
-        authorizeSocket();
     }, [getAccessTokenSilently]);
+
+    useEffect(() => {
+        if (isAuthenticated && !isLoading) {
+            authorizeSocket();
+        }
+    }, [getAccessTokenSilently, isAuthenticated, isLoading]);
 
     return (
         <AuthContext.Provider value={{

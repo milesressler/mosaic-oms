@@ -46,11 +46,11 @@ const theme = createTheme({
 
 function Interior({}) {
     const {token} = useAuthContext();
-    const { isAuthenticated } = useAuth0();
+    const { isAuthenticated, isLoading } = useAuth0();
     const [cookies] = useCookies(['cookie-name']);
 
     return <StompSessionProvider
-        enabled={isAuthenticated}
+        enabled={isAuthenticated && !isLoading}
         // url={`${SERVER_URL}/ws`}
         url={WS_URL}
         connectHeaders={{
