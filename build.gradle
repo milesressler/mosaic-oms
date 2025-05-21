@@ -50,6 +50,8 @@ dependencies {
 	implementation 'org.apache.pdfbox:pdfbox:3.0.4'
 	implementation 'com.hazelcast:hazelcast:5.5.0' //cache
 	implementation 'com.hazelcast:hazelcast-spring:5.5.0' //cache
+	implementation 'com.logtail:logback-logtail:0.3.3' //logging better stack
+	implementation 'net.logstash.logback:logstash-logback-encoder:7.4'
 
 
 
