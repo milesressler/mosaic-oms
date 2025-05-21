@@ -13,6 +13,7 @@ import com.mosaicchurchaustin.oms.data.request.CreateUserRequest;
 import com.mosaicchurchaustin.oms.data.request.UpdateUserRequest;
 import com.mosaicchurchaustin.oms.data.response.AdminUserDetailResponse;
 import com.mosaicchurchaustin.oms.data.response.AdminUserResponse;
+import com.mosaicchurchaustin.oms.exception.InvalidRequestException;
 import com.mosaicchurchaustin.oms.repositories.OrderHistoryRepository;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -38,11 +39,44 @@ public class AdminUserService {
     private OrderHistoryRepository orderHistoryRepository;
 
     public AdminUserResponse addUser(final CreateUserRequest request) throws Auth0Exception {
+        // 1. Look up all users by email
+        final List<User> existingUsers = auth0Client.getsUsersByEmail(request.email());
+
+        final Optional<User> googleUser = existingUsers.stream()
+                .filter(u -> u.getIdentities().stream().anyMatch(id -> "google-oauth2".equals(id.getProvider())))
+                .findFirst();
+
+        final Optional<User> existingDbUser = existingUsers.stream()
+                .filter(u -> u.getIdentities().stream().anyMatch(id -> "auth0".equals(id.getProvider())))
+                .findFirst();
+
+        // 2. If DB user already exists, abort to prevent duplicates
+        if (existingDbUser.isPresent()) {
+            throw new InvalidRequestException("A username/password account already exists for this email.");
+        }
+
+        // 3. Create the new DB user
         final User user = new User("Username-Password-Authentication");
         user.setEmail(request.email());
         user.setName(request.name());
         user.setPassword(RandomStringUtils.randomAlphanumeric(32).toCharArray());
+
         final var createdUser = managementAPI.users().create(user).execute().getBody();
+
+        // 4. If there's an existing Google user, link the new DB user to it
+        if (googleUser.isPresent()) {
+            final String googleUserId = googleUser.get().getId(); // e.g. "google-oauth2|abc"
+            final String dbUserIdStripped = createdUser.getId().replace("auth0|", "");
+
+            final var result = managementAPI.users()
+                    .linkIdentity(googleUserId, dbUserIdStripped, "auth0", null)
+                    .execute();
+
+            return AdminUserResponse.from(auth0Client.getUserById(googleUserId));
+        }
+
+
+        // 5. Otherwise, return the newly created DB user
         return AdminUserResponse.from(auth0Client.getUserById(createdUser.getId()));
     }
 

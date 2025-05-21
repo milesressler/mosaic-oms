@@ -22,7 +22,7 @@ import UserRoleManagement from "src/components/admin/user/UserRoleManagement.tsx
 import UserHistory from "src/components/admin/user/UserHistory.tsx";
 
 export function UserManagementPage() {
-    const PAGE_SIZE = 25;
+    const PAGE_SIZE = 50;
     const getUsersApi = useApi(AdminUserApi.getUsers);
     const getUserDetailApi = useApi(AdminUserApi.getUser);
     const createUserApi = useApi(AdminUserApi.createUser);
@@ -72,10 +72,10 @@ export function UserManagementPage() {
         >
             <Table.Td><Avatar src={user.picture} alt="Avatar" /></Table.Td>
             <Table.Td>{user.name}</Table.Td>
-            <Table.Td>{user.userId?.toLowerCase()?.startsWith("google") ?
+            <Table.Td>{user.sources?.map(source => source.toLowerCase() === "google" ?
                 <Tooltip label="Google" withArrow><IconBrandGoogleFilled/></Tooltip> :
-                <Tooltip label="Username/password" withArrow>
-                    <IconAt/></Tooltip>}</Table.Td>
+                <Tooltip label="Username/password" withArrow><IconAt/></Tooltip>)
+            }</Table.Td>
             {/*<Table.Td>{DateTime.fromMillis(user.created).toLocaleString(DateTime.DATE_MED)}</Table.Td>*/}
             <Table.Td><Text c='dimmed' size={'xs'}>{user.lastLogin && DateTime.fromMillis(user.lastLogin).toRelative()}</Text></Table.Td>
             <Table.Td>
