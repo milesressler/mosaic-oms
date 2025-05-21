@@ -2,8 +2,8 @@
 <configuration>
     <appender name="Logtail" class="com.logtail.logback.LogtailAppender">
         <appName>Mosaic OMS</appName>
-        <sourceToken>GK4XZdMncZMT51zXADqzXrFC</sourceToken>
-        <ingestUrl>https://s1316913.eu-nbg-2.betterstackdata.com</ingestUrl >
+        <sourceToken>${LOGTAIL_TOKEN}</sourceToken>
+        <ingestUrl>https://s1316923.eu-nbg-2.betterstackdata.com</ingestUrl >
         <mdcFields>requestId,requestTime</mdcFields>
         <mdcTypes>string,int</mdcTypes>
     </appender>
