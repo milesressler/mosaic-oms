@@ -6,11 +6,14 @@
 - Non-admins could not access any APIs (manifested as no customer autofill)
 - Fixed redirect loop caused by authentication race condition
 - Fixed some misleading logging on backend
+- Sometimes notifications would not work, this should happen less often
+- Fixed Distributor and Runner dashboard not refreshing after changes
+- Fixed some status display bugs
 
 
 ### Changed
 - User accounts(Gmail and username/password) are linked by email - meaning, you only need to know the email address to update roles
-
+- Added better logging and debugging tools
 
 ## [2025-05-15]
 ### Added

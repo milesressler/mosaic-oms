@@ -23,11 +23,22 @@ export function OrderDetailSection({unselectOrder,onUpdate}: OrderDetailsProps) 
 
 
     useEffect(() => {
-        doForceRefresh();
-        if (onUpdate) {
-            onUpdate();
+        if (updateStateApi.data) {
+            if (onUpdate) {
+                onUpdate();
+            }
+            doForceRefresh();
         }
-    }, [updateStateApi.data, changeAssigneeApi.data]);
+    }, [updateStateApi.data]);
+
+    useEffect(() => {
+        if (changeAssigneeApi.data) {
+            if (onUpdate) {
+                onUpdate();
+            }
+            doForceRefresh();
+        }
+    }, [changeAssigneeApi.data]);
 
     const isLoading = changeAssigneeApi.loading ||
         loading ||
@@ -50,7 +61,9 @@ export function OrderDetailSection({unselectOrder,onUpdate}: OrderDetailsProps) 
             if (unselectOrder) {
                 unselectOrder();
             }
-            onUpdate();
+            if (onUpdate) {
+                onUpdate();
+            }
         }
     }
 

@@ -1,4 +1,4 @@
-import {DEFAULT_THEME, Grid, GridCol, Modal, rem, Tabs} from "@mantine/core";
+import {Grid, GridCol, Modal} from "@mantine/core";
 import {Order, OrderStatus} from "src/models/types.tsx";
 import OrdersTable from "src/components/orders/OrdersTable.tsx";
 import {useNavigate, useParams} from "react-router-dom";
@@ -7,11 +7,19 @@ import OrderDetailSection from "src/components/fillers/OrderDetailSection.tsx";
 import {OrdersView} from "src/components/orders/OrdersTableConfig.tsx";
 import {useState} from "react";
 
-export function RunnerDashboard() {
+export function DistributorDashboard() {
     const navigate = useNavigate();
     const { id } = useParams();
-    const { forceRefresh, selectedOrder } = useSelectedOrder();
+    const { selectedOrder } = useSelectedOrder();
 
+    const triggerTableRefresh = () => {
+        setForceRefreshTable(prev => !prev);
+    }
+
+    const handleUpdateCompleted = () => {
+        triggerTableRefresh();
+        navigate(`/dashboard/distributor/`);
+    }
 
     const onSelectOrder = (order: Order) => {
         if (id && order.id === +id) {
@@ -37,7 +45,7 @@ export function RunnerDashboard() {
 
             <Modal size={'md'} opened={!!selectedOrder} title={`Order Detail`} onClose={() => {
                 navigate(`/dashboard/distributor/`)}}>
-                <OrderDetailSection onUpdate={() => setForceRefreshTable(p => !p)}/>            </Modal>
+                <OrderDetailSection onUpdate={handleUpdateCompleted}/>            </Modal>
             <>
             <Grid gutter={25}>
                 <GridCol span={{base: 12}}>
@@ -48,4 +56,4 @@ export function RunnerDashboard() {
     </SelectedOrderProvider>
     )
 }
-export default RunnerDashboard;
+export default DistributorDashboard;

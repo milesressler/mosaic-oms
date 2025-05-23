@@ -5,6 +5,7 @@ import {useAuth0} from "@auth0/auth0-react";
 import {usePreferences} from "src/contexts/PreferencesContext.tsx";
 import routes from "src/routesConfig.tsx";
 import {matchPath, useLocation} from "react-router-dom";
+import {statusDisplay} from "src/util/StatusUtils.tsx";
 const USE_NOTIFICATIONS = import.meta.env.VITE_NOTIFICATIONS_ENABLED === 'true';
 const SHOW_SELF_ACTIONS = import.meta.env.VITE_NOTIFICATIONS_SHOW_SELF === 'true';
 
@@ -39,11 +40,8 @@ export function NotificationsHandler({}) {
         }
     }
 
-    if (!USE_NOTIFICATIONS) {
-        return;
-    }
-
     useSubscription("/topic/orders/created", (message) => {
+        if (!USE_NOTIFICATIONS) { return; }
         const body: OrderNotification = JSON.parse(message.body);
         if (!shouldShow(body)) {
             return;
@@ -56,18 +54,21 @@ export function NotificationsHandler({}) {
         })
     });
     useSubscription("/topic/orders/status", (message) => {
+        if (!USE_NOTIFICATIONS) { return; }
+
         const body: OrderNotification = JSON.parse(message.body);
         if (!shouldShow(body)) {
             return;
         }
-        const statusString = body.orderStatus;
         notifications.show({
-            title: `${body.userName} updated order ${body.orderId} status to ${body.orderStatus}`,
+            title: `${body.userName} updated order ${body.orderId} status to ${statusDisplay(body.orderStatus)}`,
             message: null,
             autoClose: 2000,
         })
     });
     useSubscription("/topic/orders/assignee", (message) => {
+        if (!USE_NOTIFICATIONS) { return; }
+
         const body: OrderNotification = JSON.parse(message.body);
         if (!shouldShow(body)) {
             return;

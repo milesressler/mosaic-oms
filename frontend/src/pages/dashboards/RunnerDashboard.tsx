@@ -5,7 +5,7 @@ import {useMediaQuery} from "@mantine/hooks";
 import { useParams} from "react-router-dom";
 import {SelectedOrderProvider, useSelectedOrder} from "src/contexts/SelectedOrderContext.tsx";
 import OrderDetailSection from "src/components/fillers/OrderDetailSection.tsx";
-import {useState} from "react";
+import {useEffect, useState} from "react";
 import useApi from "src/hooks/useApi.tsx";
 import ordersApi from "src/services/ordersApi.tsx";
 
@@ -21,6 +21,15 @@ export function RunnerDashboard() {
     const triggerTableRefresh = () => {
         setForceRefreshTable(prev => !prev);
     }
+
+    useEffect(() => {
+        if (updateOrderStatusBulkApi.data) {
+            triggerTableRefresh();
+            setSelectedOrders([]);
+            setSelectedOrderUuids([]);
+        }
+    }, [updateOrderStatusBulkApi.data]);
+
     const onSelectOrder = (order: Order) => {
         setSelectedOrders((prevSelectedOrders) => {
             if (prevSelectedOrders.includes(order.id)) {
