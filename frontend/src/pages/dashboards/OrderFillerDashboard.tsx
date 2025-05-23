@@ -13,7 +13,6 @@ export function OrderFillerDashboard() {
     const { id } = useParams();
     const [ forceRefreshTable, setForceRefreshTable ] = useState(false);
     const { selectedOrder } = useSelectedOrder();
-    const {user} = useAuth0();
 
 
     const triggerTableRefresh = () => {

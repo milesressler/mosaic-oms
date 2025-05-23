@@ -22,6 +22,7 @@ import {Category, categoryDisplayNames, OrderStatus} from "src/models/types.tsx"
 import UserAvatar from 'src/components/common/userAvatar/UserAvatar';
 import {IconChevronDown} from '@tabler/icons-react';
 import React from 'react';
+import {statusDisplay} from "src/util/StatusUtils.tsx";
 
 interface OrderDetailsProps {
     id: string;
@@ -111,7 +112,7 @@ export default function OrderDetailsPage() {
                     </Title>
                 </Stack>
                 <Badge color={STATUS_COLORS[order.orderStatus] || 'gray'} variant="light">
-                    {STATUS_LABELS[order.orderStatus] || order.orderStatus}
+                    {statusDisplay(order.orderStatus)}
                 </Badge>
             </Group>
 
@@ -208,7 +209,7 @@ export default function OrderDetailsPage() {
                         label = `Exported to ${event.exportType}`;
                         color = 'blue';
                     } else {
-                        label = STATUS_LABELS[event.status] || event.status;
+                        label = statusDisplay(event.status);
                         color = STATUS_COLORS[event.status] || 'gray';
                     }
 

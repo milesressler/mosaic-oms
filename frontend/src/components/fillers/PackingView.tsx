@@ -9,6 +9,7 @@ import ordersApi from 'src/services/ordersApi.tsx';
 import { useNavigate } from 'react-router-dom';
 import { useFeatures } from 'src/contexts/FeaturesContext.tsx';
 import {useAuth0} from "@auth0/auth0-react";
+import {useOrderFulfillmentTracking} from "src/hooks/useOrderFulfillmentTracking.tsx";
 
 function PackingView() {
     const { selectedOrder, doForceRefresh } = useSelectedOrder();
@@ -18,10 +19,12 @@ function PackingView() {
     const navigate = useNavigate();
     const { printOnTransitionToStatus } = useFeatures();
     const { user } = useAuth0();
+    const { startFilling, completeFilling } = useOrderFulfillmentTracking();
 
     useEffect(() => {
         if (updateStatus.data?.orderStatus === OrderStatus.PACKED) {
             navigate('dashboard/filler');
+            completeFilling("packed");
         }
     }, [updateStatus.data]);
 
@@ -33,6 +36,7 @@ function PackingView() {
 
     useEffect(() => {
         if (!selectedOrder) return;
+        startFilling(`${selectedOrder!.id!}`)
         setDraftItems(
             selectedOrder.items.map((item) => ({
                 ...item,
@@ -42,7 +46,6 @@ function PackingView() {
     }, [selectedOrder]);
 
     const updateDraftItemQuantityFulfilled = (id: number, newQuantityFulfilled: number) => {
-        console.log(draftItems);
         setDraftItems((prev) =>
             prev.map((item) =>
                 item.id === id ? { ...item, quantityFulfilled: newQuantityFulfilled } : item

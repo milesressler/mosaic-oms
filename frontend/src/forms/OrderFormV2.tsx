@@ -24,8 +24,15 @@ import CustomerResultCard from "src/forms/CustomerResultCard.tsx";
 import {FormOrderItem, OrderFormValues} from "src/models/forms.tsx";
 import {useFeatures} from "src/contexts/FeaturesContext.tsx";
 import ordersApi from "src/services/ordersApi.tsx";
-import {IconNote, IconNotes, IconSend, IconShoppingBag, IconUserCheck} from "@tabler/icons-react";
-import {usePostHog} from "posthog-js/react";
+import {
+    IconExclamationCircle,
+    IconNote,
+    IconNotes,
+    IconSend,
+    IconShoppingBag,
+    IconUserCheck
+} from "@tabler/icons-react";
+import {useOrderTracking} from "src/hooks/useOrderTracking.tsx";
 
 interface Props {
     form: UseFormReturnType<OrderFormValues>,
@@ -34,6 +41,8 @@ interface Props {
 export function OrderFormV2({ form }: Props) {
     const isMobile = useMediaQuery(`(max-width: ${DEFAULT_THEME.breakpoints.lg})`);
     const { groupMeEnabled } = useFeatures();
+    const { startOrder, trackStep, completeOrder, itemAdded } = useOrderTracking();
+
 
     const [step, setStep] = useState<"customer" | "items" | "additional" | "confirm">("customer");
     const [useCustomerSearch, setUseCustomerSearch] = useState(true);
@@ -43,16 +52,9 @@ export function OrderFormV2({ form }: Props) {
     const createOrderAPI = useApi(ordersApi.createOrder);
 
     const steps = ["customer", "items", "additional", "confirm"];
-    const posthog = usePostHog();
-
-    const captureOrderStarted = () => {
-        posthog.capture('order_funnel_started', {
-            source: 'order_create_page',
-        });
-    }
 
     useEffect(() => {
-        captureOrderStarted();
+        startOrder();
     }, []);
 
     useEffect(() => {
@@ -74,14 +76,14 @@ export function OrderFormV2({ form }: Props) {
 
     const handleItemSelection = (index: number|null, newItem: FormOrderItem|null) => {
         if (index === null) {
-            posthog.capture('order_funnel_item_selected', {});
+            itemAdded(newItem!.item!.description!)
             form.insertListItem('items', newItem)
         } else if (newItem !== null) {
-            posthog.capture('order_funnel_item_changed', {});
+            // posthog.capture('order_funnel_item_changed', {});
             form.removeListItem('items', index);
             form.insertListItem('items', newItem)
         } else {
-            posthog.capture('order_funnel_item_removed', {});
+            // posthog.capture('order_funnel_item_removed', {});
             form.removeListItem('items', index);
         }
     };
@@ -96,7 +98,7 @@ export function OrderFormV2({ form }: Props) {
             });
             setStep("items");
         }
-        posthog.capture('order_funnel_customer_selected', {});
+        trackStep("customer_selected");
 
     };
 
@@ -122,16 +124,18 @@ export function OrderFormV2({ form }: Props) {
         form.reset();
         setSearchString('');
         setStep('customer');
-        captureOrderStarted();
+        startOrder();
+    }
+
+    const newCustomerFormCompleted = () => {
+        trackStep('order_funnel_customer_added');
+        setStep("items")
     }
 
     useEffect(() => {
         if (createOrderAPI.data) {
+            completeOrder({id: createOrderAPI.data.orderId});
             startOver();
-            posthog.capture('order_funnel_completed', {
-                orderId: createOrderAPI.data.orderId,
-            });
-            captureOrderStarted();
         }
     }, [createOrderAPI.data]);
 
@@ -183,7 +187,7 @@ export function OrderFormV2({ form }: Props) {
                                 <TextInput
                                     label=""
                                     placeholder="Search for Customer"
-                                    rightSection={searchCustomersApi.loading && <Loader size="sm" /> }
+                                    rightSection={searchCustomersApi.loading ? <Loader size="sm" /> : searchCustomersApi.error ? <IconExclamationCircle color={'orange'}/> : null}
                                     value={searchString}
                                     size={'lg'}
                                     onChange={(event) => setSearchString(event.currentTarget.value)}
@@ -215,7 +219,8 @@ export function OrderFormV2({ form }: Props) {
                                             Back to Search
                                         </Button>
                                     )}
-                                    <Button onClick={() => posthog.capture('order_funnel_customer_added', {}) && setStep("items")} disabled={!form.isValid('firstName') || !form.isValid('lastName')}>
+                                    <Button onClick={newCustomerFormCompleted}
+                                            disabled={!form.isValid('firstName') || !form.isValid('lastName')}>
                                         Next
                                     </Button>
                                 </Group>

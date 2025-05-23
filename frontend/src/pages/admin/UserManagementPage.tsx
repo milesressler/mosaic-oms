@@ -1,8 +1,6 @@
 import {
     Avatar, Box,
     Button,
-    Grid,
-    GridCol,
     Group,
     LoadingOverlay,
     Modal,
@@ -76,7 +74,7 @@ export function UserManagementPage() {
                 <Tooltip label="Google" withArrow><IconBrandGoogleFilled/></Tooltip> :
                 <Tooltip label="Username/password" withArrow><IconAt/></Tooltip>)
             }</Table.Td>
-            {/*<Table.Td>{DateTime.fromMillis(user.created).toLocaleString(DateTime.DATE_MED)}</Table.Td>*/}
+            <Table.Td>{DateTime.fromMillis(user.created).toLocaleString(DateTime.DATE_MED)}</Table.Td>
             <Table.Td><Text c='dimmed' size={'xs'}>{user.lastLogin && DateTime.fromMillis(user.lastLogin).toRelative()}</Text></Table.Td>
             <Table.Td>
                 <Group>
@@ -101,7 +99,7 @@ export function UserManagementPage() {
                             <Table.Th></Table.Th>
                             <Table.Th>Name</Table.Th>
                             <Table.Th>Source</Table.Th>
-                            {/*<Table.Th>Created</Table.Th>*/}
+                            <Table.Th>Created</Table.Th>
                             <Table.Th>Last Logged In</Table.Th>
                             <Table.Th>Email</Table.Th>
                         </Table.Tr>

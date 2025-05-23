@@ -8,6 +8,10 @@
 - Fixed some misleading logging on backend
 
 
+### Changed
+- User accounts(Gmail and username/password) are linked by email - meaning, you only need to know the email address to update roles
+
+
 ## [2025-05-15]
 ### Added
 - Changelog added to navigation panel

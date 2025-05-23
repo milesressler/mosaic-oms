@@ -86,6 +86,7 @@ export interface User extends BasicUser{
     emailVerified: boolean,
     created: number,
     lastLogin: number,
+    sources: string[],
 }
 
 export interface OrderAction {
