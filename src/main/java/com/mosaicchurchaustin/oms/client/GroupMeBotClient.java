@@ -9,6 +9,8 @@ import okhttp3.Response;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import java.io.IOException;
+
 @Slf4j
 @Component
 public class GroupMeBotClient {
@@ -21,8 +23,7 @@ public class GroupMeBotClient {
     private final OkHttpClient client = new OkHttpClient();
 
 
-    public void postMessage(final String message) throws Exception {
-
+    public void postMessage(final String message) {
         final String escapedMessage = message.replace("\n", "\\n");
         final String jsonInputString = String.format("{\"bot_id\": \"%s\", \"text\": \"%s\"}", botId, escapedMessage);
 
@@ -34,10 +35,24 @@ public class GroupMeBotClient {
 
         try (Response response = client.newCall(request).execute()) {
             if (response.isSuccessful()) {
-                log.debug("Message posted successfully.");
+                log.debug("Message posted successfully to GroupMe bot.");
             } else {
-                log.error("Failed to post message. Response code: " + response.code());
+                String responseBody = response.body() != null ? response.body().string() : "<empty body>";
+                log.error("Failed to post message to GroupMe bot. Details:\n" +
+                                "  URL: {}\n" +
+                                "  Request Body: {}\n" +
+                                "  Response Code: {}\n" +
+                                "  Response Body: {}",
+                        GROUPME_BOT_POST_URL,
+                        jsonInputString,
+                        response.code(),
+                        responseBody);
             }
+        } catch (IOException e) {
+            log.error("IOException occurred while posting to GroupMe bot. URL: {}, Request Body: {}", GROUPME_BOT_POST_URL, jsonInputString, e);
+        } catch (Exception e) {
+            log.error("Unexpected exception occurred while posting to GroupMe bot.", e);
         }
     }
+
 }
