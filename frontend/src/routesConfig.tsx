@@ -5,7 +5,15 @@ import OrderDetailsPage from "src/pages/orders/OrderDetailsPage.tsx";
 import OrderFormPage from "src/pages/orders/OrderFormPage.tsx";
 import {Navigate} from "react-router-dom";
 import AuthCallbackPage from "src/pages/AuthCallback.tsx";
-import {IconDashboard, IconHome, IconUser, IconReport, IconMovie, IconExclamationCircle} from "@tabler/icons-react";
+import {
+    IconDashboard,
+    IconHome,
+    IconUser,
+    IconReport,
+    IconMovie,
+    IconExclamationCircle,
+    IconMenuOrder, IconPencilDiscount, IconShoppingCart, IconBasketSearch
+} from "@tabler/icons-react";
 import ItemsManagementPage from "src/pages/admin/ItemsManagementPage.tsx";
 import OrderTakerDashboard from "src/pages/dashboards/OrderTakerDashboard.tsx";
 import OrderFillerDashboard from "src/pages/dashboards/OrderFillerDashboard.tsx";
@@ -127,13 +135,12 @@ const routes = [
         ],
     },
     {
-        key: 'admin',
-        icon: IconUser,
-        group: 'Admin',
-        requiredRole: 'admin',
+        key: 'search',
+        icon: IconBasketSearch,
+        group: 'Search',
         children: [
             {
-                key: 'orders',
+                key: 'order-search',
                 path: '/orders',
                 element: AdminOrdersPage,
                 title: 'Orders',
@@ -146,6 +153,14 @@ const routes = [
                 title: 'Customers',
                 showInNavBar: true,
             },
+        ],
+    },
+    {
+        key: 'admin',
+        icon: IconUser,
+        group: 'Admin',
+        requiredRole: 'admin',
+        children: [
             {
                 key: 'items',
                 path: '/admin/items',

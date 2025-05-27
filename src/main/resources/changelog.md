@@ -1,5 +1,13 @@
 # Changelog
 
+## [2025-05-29]
+
+### Changed
+- Grouped bulk update notifications into one so as not to flood the UI
+- Added right padding to filler modal so to help prevent erroneous touches to completion of items
+- Added last status change user to runner view
+- Customer and Order search moved to non-admin group
+
 ## [2025-05-22]
 ### Fixed
 - Distributor could not select an order, now modal will popup
