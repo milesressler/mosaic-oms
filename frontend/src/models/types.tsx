@@ -16,6 +16,7 @@ export interface OrderNotification {
     orderUuid: string;
     orderId: number;
     orderStatus: OrderStatus;
+    assignee: BasicUser;
     assigneeExtId: string;
     assigneeName: string;
     userName: string;

@@ -125,15 +125,26 @@ public class OrderService {
         );
         return orderEntity;
     }
+    @Transactional
     public OrderEntity assignOrder(final String orderUuid) {
         final OrderEntity orderEntity = getOrder(orderUuid);
+        if (orderEntity.getAssignee() != null) {
+            throw new InvalidRequestException("Order is already assigned");
+        }
         orderEntity.setAssignee(userService.currentUser());
         return orderRepository.save(orderEntity);
     }
+
+    @Transactional
     public OrderEntity unassignOrder(final String orderUuid) {
         final OrderEntity orderEntity = getOrder(orderUuid);
-        orderEntity.setAssignee(null);
-        return orderRepository.save(orderEntity);
+        final UserEntity currentUser = userService.currentUser();
+        if (orderEntity.getAssignee().equals(currentUser)) {
+            orderEntity.setAssignee(null);
+            return orderRepository.save(orderEntity);
+        } else {
+            throw new InvalidRequestException("You just be the assignee to unassign yourself");
+        }
     }
 
     @Transactional

@@ -1,4 +1,4 @@
-import {Order, OrderDetails, OrderStatus} from "src/models/types.tsx";
+import {Order, OrderDetails, OrderNotification, OrderStatus} from "src/models/types.tsx";
 import useApi from "src/hooks/useApi.tsx";
 import ordersApi from "src/services/ordersApi.tsx";
 import {useEffect, useState} from "react";
@@ -11,6 +11,7 @@ import classes from './TableSort.module.css';
 import {ColumnConfig, columns, OrdersView} from "src/components/orders/OrdersTableConfig.tsx";
 import groupmeImage from "src/assets/groupme_icon.png";
 import UserAvatar from "src/components/common/userAvatar/UserAvatar.tsx";
+import {useSubscription} from "react-stomp-hooks";
 
 interface ThProps {
     children: React.ReactNode;
@@ -65,7 +66,6 @@ export function OrdersTable({
         maxNumberOfRecords,
         showProgressIndicator = false,
         autoRefresh = true,
-        showFilters = false,
         statusFilter = [],
         forceRefresh,
         disableSorting = false,
@@ -75,6 +75,7 @@ export function OrdersTable({
     const getOrdersApi = useApi(ordersApi.getOrdersWithDetails);
     const [counter, setCounter] = useState(0);
     const [progress, setProgress] = useState(0);
+    const [orders, setOrders] = useState<OrderDetails[]>([]);
 
     const [sortBy, setSortBy] = useState<string | null>('created');
     const [activePage, setActivePage] = useState(0);
@@ -129,6 +130,30 @@ export function OrdersTable({
         }
     }, [activePage]);
 
+    useEffect(() => {
+        if ( view === OrdersView.PUBLIC) {
+            setOrders(getOrdersApi.data ?? []);
+        } else {
+            setOrders(getOrdersApi.data?.content ?? [])
+        }
+    }, [getOrdersApi.data]);
+
+
+    useSubscription("/topic/orders/assignee", (message) => {
+        const body: OrderNotification = JSON.parse(message.body);
+        setOrders((prevOrders) =>
+            prevOrders.map((order) => {
+                    return `${order.id}` === `${body.order.id}`
+                        ? {
+                            ...order,
+                            assignee: body.assignee, // update the assignee
+                        }
+                        : order
+                }
+            )
+        );
+    });
+
     const setSorting = (field: string) => {
         const reversed = field === sortBy ? !reverseSortDirection : false;
         setReverseSortDirection(reversed);
@@ -136,9 +161,7 @@ export function OrdersTable({
         refreshOrders();
     };
 
-
-    const data = view === OrdersView.PUBLIC ? getOrdersApi.data : getOrdersApi.data?.content;
-    const rows = data?.map((order: Order) => (
+    const rows = orders?.map((order: Order) => (
         <Table.Tr  style={{cursor: onSelectRow ? 'pointer' : ''}}
                    key={order.uuid}
                    bg={selectedOrderIds && selectedOrderIds.indexOf(order.id) != -1 ? '#F3f3f3' : ""}

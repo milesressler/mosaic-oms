@@ -1,8 +1,9 @@
 import React, {createContext, ReactNode, useContext, useEffect, useState} from "react";
-import {OrderDetails} from "src/models/types.tsx";
+import {OrderDetails, OrderNotification} from "src/models/types.tsx";
 import {useParams} from "react-router-dom";
 import useApi from "src/hooks/useApi.tsx";
 import ordersApi from "src/services/ordersApi.tsx";
+import {useSubscription} from "react-stomp-hooks";
 
 export interface SelectedOrderContextType {
     selectedOrder: OrderDetails | null
@@ -28,8 +29,21 @@ export const SelectedOrderProvider: React.FC<{ children: ReactNode }> = ({ child
         // setForceRefresh(prevForceRefresh => !prevForceRefresh); // Toggle force refresh
     }
 
+
+    useSubscription("/topic/orders/assignee", (message) => {
+        const body: OrderNotification = JSON.parse(message.body);
+        if (`${body.order.id}` === id) {
+            setSelectedOrder((prev) => {
+                if (!prev) return prev; // nothing to update if null
+                return {
+                    ...prev,
+                    assignee: body.assignee, // or however you get the updated assignee from `body`
+                };
+            });
+        }
+    });
+
     useEffect(() => {
-        console.log("context provider doing a fetch");
         if (!!id) {
             orderDetailApi.request(+id);
         } else {

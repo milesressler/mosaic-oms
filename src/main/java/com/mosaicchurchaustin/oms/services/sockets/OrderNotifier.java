@@ -7,6 +7,7 @@ import com.mosaicchurchaustin.oms.data.entity.order.OrderHistoryEntity;
 import com.mosaicchurchaustin.oms.data.entity.order.OrderStatus;
 import com.mosaicchurchaustin.oms.data.entity.user.UserEntity;
 import com.mosaicchurchaustin.oms.data.response.OrderResponse;
+import com.mosaicchurchaustin.oms.data.response.UserResponse;
 import com.mosaicchurchaustin.oms.data.sockets.BulkOrderNotification;
 import com.mosaicchurchaustin.oms.data.sockets.OrderNotification;
 import com.mosaicchurchaustin.oms.repositories.OrderHistoryRepository;
@@ -130,6 +131,7 @@ public class OrderNotifier {
                 .build();
 
         if (orderEntity.getAssignee() != null) {
+            orderNotification.setAssignee(UserResponse.from(orderEntity.getAssignee()));
             orderNotification.setAssigneeExtId(orderEntity.getAssignee().getExternalId());
             orderNotification.setAssigneeName(orderEntity.getAssignee().getName());
         }

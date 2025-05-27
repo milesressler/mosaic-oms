@@ -2,6 +2,7 @@ package com.mosaicchurchaustin.oms.data.sockets;
 
 import com.mosaicchurchaustin.oms.data.entity.order.OrderStatus;
 import com.mosaicchurchaustin.oms.data.response.OrderResponse;
+import com.mosaicchurchaustin.oms.data.response.UserResponse;
 import lombok.Builder;
 import lombok.Data;
 
@@ -14,6 +15,7 @@ public class OrderNotification {
     Long orderId;
     String orderUuid;
     OrderStatus orderStatus;
+    UserResponse assignee;
     String assigneeExtId;
     String assigneeName;
     OrderResponse order;
