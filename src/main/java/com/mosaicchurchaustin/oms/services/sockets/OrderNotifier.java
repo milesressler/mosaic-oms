@@ -7,6 +7,7 @@ import com.mosaicchurchaustin.oms.data.entity.order.OrderHistoryEntity;
 import com.mosaicchurchaustin.oms.data.entity.order.OrderStatus;
 import com.mosaicchurchaustin.oms.data.entity.user.UserEntity;
 import com.mosaicchurchaustin.oms.data.response.OrderResponse;
+import com.mosaicchurchaustin.oms.data.sockets.BulkOrderNotification;
 import com.mosaicchurchaustin.oms.data.sockets.OrderNotification;
 import com.mosaicchurchaustin.oms.repositories.OrderHistoryRepository;
 import com.mosaicchurchaustin.oms.services.FeaturesService;
@@ -18,6 +19,7 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -80,6 +82,20 @@ public class OrderNotifier {
         }
     }
 
+    public void notifyOrderStatusChanged(final List<OrderEntity> orderEntity, final UserEntity userEntity) {
+        final BulkOrderNotification bulkOrderNotification = BulkOrderNotification
+                .builder().build();
+
+
+        bulkOrderNotification.setUserExtId(userEntity.getExternalId());
+        bulkOrderNotification.setUserName(userEntity.getName());
+
+        bulkOrderNotification.setOrders(
+                orderEntity.stream().map(OrderResponse::from).toList()
+        );
+        messagingTemplate.convertAndSend("/topic/orders/status/bulk", bulkOrderNotification);
+
+    }
     public void notifyOrderStatusChanged(final OrderEntity orderEntity, final UserEntity userEntity) {
 
         final OrderNotification orderNotification = OrderNotification.builder()

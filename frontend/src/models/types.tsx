@@ -23,6 +23,12 @@ export interface OrderNotification {
     order: Order;
 }
 
+export interface BulkOrderNotification {
+    userName: string;
+    userExtId: string;
+    orders: Order[];
+}
+
 export interface FeaturesNotification {
     featuresValues: {};
 }

@@ -89,7 +89,7 @@ function PackingView() {
         <Paper p="md" shadow="xs">
             <Box>
                 {draftItems.map((item) => (
-                    <Box key={item.id} mb="sm">
+                    <Box key={item.id} mb="sm" pr={'xl'}>
                         <Group justify="space-between">
                             <Text>
                                 <strong>{item.quantityRequested}</strong> {item.description}
@@ -111,6 +111,7 @@ function PackingView() {
                             }
                         </Group>
                         { assignedToMe &&
+
                         <ItemQuantitySelector
                             quantitySelected={item.quantityFulfilled}
                             onValueChange={(value) => updateDraftItemQuantityFulfilled(item.id, value)}

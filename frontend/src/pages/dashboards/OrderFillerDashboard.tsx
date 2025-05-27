@@ -27,9 +27,14 @@ export function OrderFillerDashboard() {
         }
     }
 
+    const customerName = `${selectedOrder?.customer?.firstName || ''} ${selectedOrder?.customer?.lastName || ''}`.trim()
+
     return (
         <SelectedOrderProvider>
-            <Modal size={'md'} opened={!!selectedOrder} title={`Order Detail`} onClose={() => {
+            <Modal size={'md'}
+                   opened={!!selectedOrder}
+                   title={customerName}
+                   onClose={() => {
                 navigate(`/dashboard/filler/`)}}>
                 <OrderDetailSection  onUpdate={triggerTableRefresh}/>
             </Modal>

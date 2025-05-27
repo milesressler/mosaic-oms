@@ -10,6 +10,7 @@ import {IconChevronDown, IconChevronUp, IconSelector} from "@tabler/icons-react"
 import classes from './TableSort.module.css';
 import {ColumnConfig, columns, OrdersView} from "src/components/orders/OrdersTableConfig.tsx";
 import groupmeImage from "src/assets/groupme_icon.png";
+import UserAvatar from "src/components/common/userAvatar/UserAvatar.tsx";
 
 interface ThProps {
     children: React.ReactNode;
@@ -163,6 +164,9 @@ export function OrdersTable({
                         <StatusBadge orderStatus={order.orderStatus} />
                         <Text c={'dimmed'} size={'xs'}>{DateTime.fromISO(order.lastStatusChange?.timestamp).toRelative()}</Text>
                     </div>}
+                    {key === 'filler' &&
+                        <UserAvatar user={order.lastStatusChange?.user}/>
+                  }
                     {key === 'Customer' && `${order.customer?.firstName || ''} ${order.customer?.lastName || ''}`.trim()}
                 </Table.Td>
             )})}

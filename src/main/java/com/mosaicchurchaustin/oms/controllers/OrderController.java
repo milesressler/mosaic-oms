@@ -109,9 +109,9 @@ public class OrderController {
             @Valid @RequestBody UpdateOrderStatusBulkRequest request
             ){
         final List<OrderEntity> updatedOrders = orderService.updateOrderStatusBulk(request.orderUuids(), orderState);
-        updatedOrders.forEach(order ->
-                orderNotifier.notifyOrderStatusChanged(order, order.getLastStatusChange().getUserEntity()));
-
+        if (!updatedOrders.isEmpty()) {
+            orderNotifier.notifyOrderStatusChanged(updatedOrders, updatedOrders.get(0).getLastStatusChange().getUserEntity());
+        }
         return updatedOrders.stream().map(OrderDetailResponse::from).toList();
     }
 

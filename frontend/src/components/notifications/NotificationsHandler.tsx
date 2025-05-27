@@ -1,6 +1,6 @@
 import { notifications } from '@mantine/notifications';
 import {useSubscription} from "react-stomp-hooks";
-import {OrderNotification} from "src/models/types.tsx";
+import {BulkOrderNotification, OrderNotification} from "src/models/types.tsx";
 import {useAuth0} from "@auth0/auth0-react";
 import {usePreferences} from "src/contexts/PreferencesContext.tsx";
 import routes from "src/routesConfig.tsx";
@@ -24,11 +24,11 @@ export function NotificationsHandler({}) {
         .flatMap((route: any) => route.children || [route])
         .find((route: any) => matchPath(route.path, location.pathname)) || {};
 
-    function isSelfAction(notification: OrderNotification) {
+    function isSelfAction(notification: {userExtId: string }) {
         return (user && notification.userExtId === user.sub);
     }
 
-    function shouldShow(notification: OrderNotification) {
+    function shouldShow(notification: { userExtId: string }) {
         if (isSelfAction(notification) && !SHOW_SELF_ACTIONS) {
             return false;
         } else if (!notificationsEnabled) {
@@ -62,6 +62,19 @@ export function NotificationsHandler({}) {
         }
         notifications.show({
             title: `${body.userName} updated order ${body.orderId} status to ${statusDisplay(body.orderStatus)}`,
+            message: null,
+            autoClose: 2000,
+        })
+    });
+    useSubscription("/topic/orders/status/bulk", (message) => {
+        if (!USE_NOTIFICATIONS) { return; }
+
+        const body: BulkOrderNotification = JSON.parse(message.body);
+        if (!shouldShow(body)) {
+            return;
+        }
+        notifications.show({
+            title: `${body.userName} updated ${body.orders.length} order statuses to ${statusDisplay(body.orders[0].orderStatus)}`,
             message: null,
             autoClose: 2000,
         })
