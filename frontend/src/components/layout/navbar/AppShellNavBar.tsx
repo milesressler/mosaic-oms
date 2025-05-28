@@ -9,12 +9,13 @@ import LoginButton from "src/components/auth0/LoginButton.tsx";
 import {getRolesFromAuth0User} from "src/components/auth0/Auth0Utils.tsx";
 import {usePreferences} from "src/contexts/PreferencesContext.tsx";
 import {DeviceLogoutButton} from "src/components/admin/devices/DeviceLogoutButton.tsx";
-import {IconBrandSlack, IconLink, IconLinkOff, IconSpeakerphone} from "@tabler/icons-react";
+import {IconBrandSlack, IconHelpCircle, IconLink, IconLinkOff, IconReport, IconSpeakerphone} from "@tabler/icons-react";
 import {useStompConnectionStatus} from "src/hooks/useStompConnectionStatus.tsx";
 import {useDisclosure} from "@mantine/hooks";
 import ChangelogModalContent from "src/components/announcements/ChangelogModalContent.tsx";
 import {usePostHog} from "posthog-js/react";
 import {useEffect} from "react";
+import {BugReportModal} from "src/components/feedback/BugReport.tsx";
 
 
 export function NavbarNested() {
@@ -30,6 +31,7 @@ export function NavbarNested() {
     };
 
     const [opened, { open, close }] = useDisclosure(false);
+    const [bugReportOpened, { open: openBugReport, close: closeBugReport }] = useDisclosure(false);
     const posthog = usePostHog();
 
     useEffect(() => {
@@ -70,21 +72,31 @@ export function NavbarNested() {
             });
         links.push(
             {
-                label: 'Slack Support',
-                icon: IconBrandSlack,
-                link: "https://join.slack.com/t/mosaicstreetministry/shared_invite/zt-34n12jsn7-m7FS_hCaHnm9DZ5snp_8Ig",
-                key: 'slack_support',
-            }
-        );
-        links.push(
-            {
-                label: 'Changelog',
-                icon: IconSpeakerphone,
-                link: "",
-                onClick: open,
-                key: 'changelog',
-                rightSection: <Badge size="sm" color="red">NEW</Badge>,
-
+                label: "Support",
+                icon: IconHelpCircle,
+                initiallyOpened: true,
+                links: [
+                    {
+                        label: 'Slack Support',
+                        icon: IconBrandSlack,
+                        link: "https://join.slack.com/t/mosaicstreetministry/shared_invite/zt-34n12jsn7-m7FS_hCaHnm9DZ5snp_8Ig",
+                        key: 'slack_support',
+                    },
+                    {
+                        label: 'Report a bug',
+                        icon: IconReport,
+                        onClick: openBugReport,
+                        key: 'report',
+                    },
+                    {
+                        label: 'Changelog',
+                        icon: IconSpeakerphone,
+                        link: "",
+                        onClick: open,
+                        key: 'changelog',
+                        rightSection: <Badge size="sm" color="red">NEW</Badge>,
+                    }
+                ]
             }
         );
         return links;
@@ -99,6 +111,8 @@ export function NavbarNested() {
             <Modal opened={opened} onClose={close} title="Changelog" size="xl" scrollAreaComponent={ScrollArea.Autosize}>
                 <ChangelogModalContent/>
             </Modal>
+            <BugReportModal opened={bugReportOpened} onClose={closeBugReport}/>
+
             {/*This is a header - probably not needed, but keeping in case*/}
             {/*<div className={classes.header}>*/}
                 {/*<Group justify="space-between">*/}

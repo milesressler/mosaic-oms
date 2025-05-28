@@ -17,14 +17,19 @@ function LandingPage() {
 
     return (
         <>
-            <div style={{height: '3000px',
-                width: '100%',
-                backgroundSize: 'contain',
-                backgroundRepeat: 'no-repeat',
-                backgroundImage: `url(${msmBg})`,
-                paddingTop: '200px',
-                }}>
-            </div>
+            <div
+                style={{
+                    height: 'auto',             // Allows it to grow if needed
+                    width: '100%',
+                    backgroundImage: `url(${msmBg})`,
+                    backgroundRepeat: 'no-repeat',
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'top center',
+                    paddingTop: 'calc(100vh - 60px)',
+                }}
+            ></div>
+
+
         </>)}
 
 export default LandingPage;

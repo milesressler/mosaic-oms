@@ -7,6 +7,7 @@
 - Added right padding to filler modal so to help prevent erroneous touches to completion of items
 - Added last status change user to runner view
 - Customer and Order search moved to non-admin group
+- Filler dashboard and modal gets update in real-time when assignee changes
 
 ## [2025-05-22]
 ### Fixed

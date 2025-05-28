@@ -39,12 +39,19 @@ export const AuthContextProvider = (props: any) => {
     }, [getAccessTokenSilently, isAuthenticated, isLoading]);
 
     useEffect(() => {
-        if (posthog && isAuthenticated && user) {
-            posthog.identify(user.sub, {
-                email: user.email,
-                name: user.name,
-                // any other properties you want to set
-            });
+        if (posthog && isAuthenticated) {
+            if (user) {
+                if (import.meta.env.VITE_POSTHOG_RECORD_SESSION) {
+                    posthog.startSessionRecording();
+                }
+                posthog.identify(user.sub, {
+                    email: user.email,
+                    name: user.name,
+                    // any other properties you want to set
+                });
+            }
+        } else if (posthog) {
+            posthog.stopSessionRecording();
         }
     }, [posthog, isAuthenticated, user]);
 

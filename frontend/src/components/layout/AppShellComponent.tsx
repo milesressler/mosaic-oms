@@ -117,6 +117,9 @@ export function AppShellComponent() {
 
     return (
         <AppShell
+            styles={{
+                root: { height: '100vh' },
+            }}
             header={{ height: headerIsVisible ? headerHeight : 0 }}
             navbar={{ width: isAuthenticated ? 250 : 0, breakpoint: 'md', collapsed: { mobile: !opened, desktop: !opened || activeRoute.isMonitor} }}
             aside={{ width: isAuthenticated ? { base: 200, md: 250, lg: 300, xl: 350 } : 0, breakpoint: 'md', collapsed: { mobile: !asideOpened, desktop: !asideOpened || activeRoute.isMonitor },  }}
@@ -174,7 +177,14 @@ export function AppShellComponent() {
                     </div>
             </AppShell.Header>
             }
-            <AppShell.Main style={{paddingTop: headerHeight }}>
+            <AppShell.Main style={{
+                paddingTop: headerHeight,
+                display: 'flex',
+                flexDirection: 'column',
+                flex: 1,
+                height: '100%',
+                minHeight: 0,              // <— allow it to shrink
+            }}>
                 <SelectedOrderProvider>
                     <Routes>
                         {mappedRoutes}

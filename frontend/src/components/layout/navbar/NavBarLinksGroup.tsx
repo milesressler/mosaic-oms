@@ -12,7 +12,8 @@ interface LinksGroupProps {
     onClick?: () => void;
     key: string;
     initiallyOpened?: boolean;
-    links?: { label: string; link: string, key: string }[];
+    links?: {    rightSection?: React.ReactNode,
+        label: string; link: string, key: string, onClick?: () => void, }[];
     link?: string; // New prop for the group's link
 }
 
@@ -25,10 +26,17 @@ export function LinksGroup({ onClick, icon: Icon, rightSection, label, initially
         .flatMap((route: any) => route.children || [route])
         .find((route: any) => matchPath(route.path, location.pathname)) || {};
 
+    console.log(links)
     const hasLinks = Array.isArray(links);
     const [opened, setOpened] = useState(true);
     const items = (hasLinks ? links : []).map((link) => (
-        <Link onClick={onClick} className={classes.link} key={link.key} to={link.link}
+         link.onClick ? <UnstyledButton  w={'100%'} onClick={link.onClick} className={classes.link}>
+                 <Group justify='space-between' pr={'lg'}>
+                     <span>{link.label}</span>
+                     {link.rightSection}
+                 </Group>            </UnstyledButton>
+             :
+        <Link onClick={link.onClick} className={classes.link} key={link.key} to={link.link}
               data-active={link.key === activeRoute.key || undefined}
 
         >{link.label}</Link>
