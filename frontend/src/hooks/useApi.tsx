@@ -15,7 +15,7 @@ export default function useApi<T, Args extends any[]>(apiFunc: ApiFunc<T, Args>)
             setData(result.data);
             return data;
         } catch (err: any) {
-            setError(err.message || "Unexpected Error!");
+            setError(err?.response?.data?.message || "Unexpected Error!");
             setData(null);
             return null;
         } finally {
@@ -29,4 +29,4 @@ export default function useApi<T, Args extends any[]>(apiFunc: ApiFunc<T, Args>)
         loading,
         request
     };
-};
+}

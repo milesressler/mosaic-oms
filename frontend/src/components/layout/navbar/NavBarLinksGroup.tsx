@@ -26,7 +26,6 @@ export function LinksGroup({ onClick, icon: Icon, rightSection, label, initially
         .flatMap((route: any) => route.children || [route])
         .find((route: any) => matchPath(route.path, location.pathname)) || {};
 
-    console.log(links)
     const hasLinks = Array.isArray(links);
     const [opened, setOpened] = useState(true);
     const items = (hasLinks ? links : []).map((link) => (

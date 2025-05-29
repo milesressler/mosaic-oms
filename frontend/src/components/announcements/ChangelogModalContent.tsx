@@ -1,6 +1,6 @@
 import {useEffect} from "react";
 import useApi from "src/hooks/useApi.tsx";
-import {Box, Loader, ScrollArea, Stack, Text, Title} from "@mantine/core";
+import {Box, Divider, Loader, ScrollArea, Stack, Text, Title} from "@mantine/core";
 import announcementsApi from "src/services/announcementsApi.tsx";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -22,9 +22,9 @@ export function ChangelogModalContent() {
 
     return (
         <ScrollArea h={500}>
-            <Stack p="md" gap="xl">
+            <Stack p="md" gap="lg">
                 {structuredChangeLogFetch.data?.map((entry: any) => (
-                    <Box key={entry.date}>
+                    <><Box key={entry.date}>
                         <Title order={3}>{entry.date}</Title>
                         <Box mt="sm"
                              style={{ color: '#5a5a5a'}}>
@@ -42,6 +42,8 @@ export function ChangelogModalContent() {
                             />
                         </Box>
                     </Box>
+                        <Divider/>
+                    </>
                 ))}
             <Box p="md">
 

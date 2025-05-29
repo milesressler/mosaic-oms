@@ -172,7 +172,7 @@ export function OrdersTable({
                 const assigned = ((order as OrderDetails)?.assignee);
              return (
                 <Table.Td key={key} colSpan={index === visibleColumns.length - 1 ? 2 : 1}>
-                    {key === 'assigned' && <><Group justify={'flex-start'} gap={5}>
+                    {key === 'assigned' && <><Group justify={'flex-start'} gap={5} wrap={'nowrap'}>
                         <Avatar src={assigned?.avatar}  color={assigned && !assigned.avatar ? 'indigo' : ''}  size={'sm'} />
                         <Text size={'sm'} c={assigned ? '' : 'dimmed'}>
                             {assigned?.name ?? 'Unassigned'}

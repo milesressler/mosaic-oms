@@ -31,7 +31,7 @@ export interface BulkOrderNotification {
 }
 
 export interface FeaturesNotification {
-    featuresValues: {};
+    featuresValues: object;
 }
 
 export enum HistoryEventType {

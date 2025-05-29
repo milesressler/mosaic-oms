@@ -29,13 +29,6 @@ interface OrderDetailsProps {
 }
 
 // Basic status label and color mappings
-const STATUS_LABELS: Record<string, string> = {
-    PENDING_ACCEPTANCE: 'Pending Acceptance',
-    ACCEPTED: 'Accepted',
-    IN_PROGRESS: 'In Progress',
-    COMPLETED: 'Completed',
-    CANCELLED: 'Cancelled',
-};
 
 const STATUS_COLORS: Record<string, string> = {
     PENDING_ACCEPTANCE: 'gray',

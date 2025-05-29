@@ -1,7 +1,5 @@
 import {Item} from "src/models/types.tsx";
 
-
-
 export interface SizeAttribute {
     type: "size";
     waist: number;

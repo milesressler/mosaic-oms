@@ -2,7 +2,7 @@ import {OrderStatus} from "src/models/types.tsx";
 import { useEffect } from "react";
 import useApi from "src/hooks/useApi.tsx";
 import ordersApi from "src/services/ordersApi.tsx";
-import {Box, LoadingOverlay, } from "@mantine/core";
+import {Box, Center, LoadingOverlay, Text} from "@mantine/core";
 import {useAuth0} from "@auth0/auth0-react";
 import {Outlet} from "react-router-dom";
 import { useSelectedOrder} from "src/contexts/SelectedOrderContext";
@@ -81,6 +81,13 @@ export function OrderDetailSection({unselectOrder,onUpdate}: OrderDetailsProps) 
             <LoadingOverlay visible={isLoading}
                             zIndex={1000}
                             overlayProps={{ radius: "sm", blur: 2 }} />
+            <Center>
+                <Text c={'red'}>
+            { updateStateApi.error && <Text>{updateStateApi.error}</Text> }
+            { changeAssigneeApi.error && <Text>{changeAssigneeApi.error}</Text> }
+
+                </Text>
+            </Center>
             <OrderInfoBlock
                 loading={isLoading}
                 orderDetails={selectedOrder}

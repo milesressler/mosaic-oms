@@ -2,7 +2,6 @@ import LandingPage from "src/pages/LandingPage.tsx";
 import ErrorPage from "src/pages/ErrorPage.tsx";
 import CustomerDashboard from "src/pages/dashboards/CustomerDashboard.tsx";
 import OrderDetailsPage from "src/pages/orders/OrderDetailsPage.tsx";
-import OrderFormPage from "src/pages/orders/OrderFormPage.tsx";
 import {Navigate} from "react-router-dom";
 import AuthCallbackPage from "src/pages/AuthCallback.tsx";
 import {
@@ -12,7 +11,7 @@ import {
     IconReport,
     IconMovie,
     IconExclamationCircle,
-    IconMenuOrder, IconPencilDiscount, IconShoppingCart, IconBasketSearch
+    IconBasketSearch
 } from "@tabler/icons-react";
 import ItemsManagementPage from "src/pages/admin/ItemsManagementPage.tsx";
 import OrderTakerDashboard from "src/pages/dashboards/OrderTakerDashboard.tsx";
@@ -174,13 +173,6 @@ const routes = [
                 element: UserManagementPage,
                 title: 'Users',
                 showInNavBar: true,
-            },
-            {
-                key: 'audit',
-                path: '/audit',
-                element: OrderFormPage,
-                title: 'Audit Log',
-                showInNavBar: false,
             },
             {
                 key: 'order-details',
