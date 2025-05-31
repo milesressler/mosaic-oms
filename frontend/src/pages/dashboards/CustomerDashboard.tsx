@@ -1,4 +1,4 @@
-import { Box, Grid, GridCol, Table, Text } from "@mantine/core";
+import {Box, Grid, GridCol, Paper, Table, Text} from "@mantine/core";
 import Transit from "src/components/transit/Transit.tsx";
 import useApi from "src/hooks/useApi.tsx";
 import ordersApi from "src/services/ordersApi.tsx";
@@ -6,6 +6,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useInterval } from "@mantine/hooks";
 import StatusBadge from "src/components/StatusBadge.tsx";
 import { OrderStatus } from "src/models/types.tsx";
+import TimeWidget from "src/components/TimeWidget.tsx";
 
 const CustomerDashboard = () => {
     const getOrdersApi = useApi(ordersApi.getOrdersDashboardViewKiosk);
@@ -89,8 +90,16 @@ const CustomerDashboard = () => {
                             </Table>
                         </Box>
                     </GridCol>
-                    <GridCol span={6}>
-                        <Box>{/* Anything else you want on right */}</Box>
+                    <GridCol span={6} pr={'md'} pt={'md'}>
+                        <Paper
+                            shadow="sm"        // subtle drop shadow
+                            radius="md"        // medium rounded corners
+                            withBorder         // 1‑px theme‑colored border
+                            p="md"             // Mantine padding token
+                            ta="center"
+                        >
+                        <TimeWidget/>
+                        </Paper>
                     </GridCol>
                 </Grid>
             </Box>
