@@ -17,18 +17,18 @@ export enum OrdersView {
 
 export const columns: ColumnConfig[] = [
     // { label: 'Select', id:'select', views: [OrdersView.RUNNER] },
-    { label: 'Assigned', id:'assigned', sortField: 'assignee.name', views: [
+    { label: '', id:'assigned', sortField: 'assignee.name', views: [
         OrdersView.FILLER, OrdersView.RUNNER] },
-    { label: 'Filler', id: 'filler', views: [
-            OrdersView.RUNNER] },
     { label: 'Order #', sortField: 'id', views: [
         OrdersView.DEFAULT] },
+    { label: 'Customer', sortField: 'customer.lastName', views:
+            [OrdersView.DEFAULT, OrdersView.FILLER, OrdersView.DISTRIBUTOR ]},
     { label: 'Created', sortField: 'created', views: [
         OrdersView.DEFAULT, OrdersView.FILLER, OrdersView.RUNNER, OrdersView.DISTRIBUTOR] },
     { label: 'Updated', sortField: 'updated', views: [] },
     { label: 'Status', sortField: 'orderStatus', views: [
         OrdersView.ADMIN, OrdersView.FILLER, OrdersView.DISTRIBUTOR] },
-    { label: 'Customer', sortField: 'customer.lastName', views:
-        [OrdersView.DEFAULT, OrdersView.FILLER, OrdersView.DISTRIBUTOR ]},
+    { label: 'Filler', id: 'filler', views: [
+            OrdersView.RUNNER] },
 ];
 

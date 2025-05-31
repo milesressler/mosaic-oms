@@ -2,8 +2,18 @@ import {Order, OrderDetails, OrderNotification, OrderStatus} from "src/models/ty
 import useApi from "src/hooks/useApi.tsx";
 import ordersApi from "src/services/ordersApi.tsx";
 import {useEffect, useState} from "react";
-import {useInterval} from "@mantine/hooks";
-import {Avatar, Center, Group, Image, Pagination, rem, RingProgress, Table, Text, UnstyledButton} from "@mantine/core";
+import {useDisclosure, useInterval} from "@mantine/hooks";
+import {
+    Center,
+    Group,
+    Image,
+    Pagination,
+    rem,
+    RingProgress,
+    Table,
+    Text,
+    UnstyledButton
+} from "@mantine/core";
 import {DateTime} from "luxon";
 import StatusBadge from "src/components/StatusBadge.tsx";
 import {IconChevronDown, IconChevronUp, IconSelector} from "@tabler/icons-react";
@@ -12,6 +22,7 @@ import {ColumnConfig, columns, OrdersView} from "src/components/orders/OrdersTab
 import groupmeImage from "src/assets/groupme_icon.png";
 import UserAvatar from "src/components/common/userAvatar/UserAvatar.tsx";
 import {useSubscription} from "react-stomp-hooks";
+import {AssigneeAvatar} from "src/components/orders/AssigneeAvatar.tsx";
 
 interface ThProps {
     children: React.ReactNode;
@@ -82,7 +93,6 @@ export function OrdersTable({
     const [reverseSortDirection, setReverseSortDirection] = useState(false);
 
     const visibleColumns = columns.filter(column => column.views?.includes(view) || column.views?.includes(OrdersView.DEFAULT));
-
 
     const refreshOrders: () => void = () => {
         let params: any = {
@@ -172,14 +182,12 @@ export function OrdersTable({
                 const assigned = ((order as OrderDetails)?.assignee);
              return (
                 <Table.Td key={key} colSpan={index === visibleColumns.length - 1 ? 2 : 1}>
-                    {key === 'assigned' && <><Group justify={'flex-start'} gap={5} wrap={'nowrap'}>
-                        <Avatar src={assigned?.avatar}  color={assigned && !assigned.avatar ? 'indigo' : ''}  size={'sm'} />
-                        <Text size={'sm'} c={assigned ? '' : 'dimmed'}>
-                            {assigned?.name ?? 'Unassigned'}
-                        </Text></Group></>}
+                    {key === 'assigned' &&
+                        <Assign eeAvatar assigned={assigned}/>
+                    }
                     {key === 'Order #' && <>{order.id}{order.postedToGroupMe && <Image w={16} h={16} src={groupmeImage}></Image>}</>}
                     {key === 'Created' && <>
-                        <Text>{DateTime.fromISO(order.created).toLocaleString(DateTime.TIME_SIMPLE)}</Text>
+                        <Text size={'sm'}>{DateTime.fromISO(order.created).toLocaleString(DateTime.TIME_SIMPLE)}</Text>
                         <Text c={"dimmed"} size={'xs'}>{DateTime.fromISO(order.created).toLocaleString(DateTime.DATE_MED)}</Text>
                     </>}
                     {key === 'Updated' && <Text c={'dimmed'}>{DateTime.fromISO(order.lastStatusChange?.timestamp).toRelative()}</Text>}
