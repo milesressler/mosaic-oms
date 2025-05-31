@@ -6,6 +6,7 @@
 - Report a bug from left navigation panel
 
 ### Changed
+- Made order taker buttons sticky to bottom with extra padding on some devices
 - Grouped bulk update notifications into one so as not to flood the UI
 - Added right padding to filler modal so to help prevent erroneous touches to completion of items
 - Added last status change user to runner view

@@ -13,7 +13,7 @@ import {
     Text,
     Textarea,
     TextInput,
-    Title
+    Title, useMantineTheme
 } from "@mantine/core";
 import {useDebouncedValue, useMediaQuery} from "@mantine/hooks";
 import {CustomerSearch, OrderRequest} from "src/models/types";
@@ -39,6 +39,8 @@ interface Props {
 }
 
 export function OrderFormV2({ form }: Props) {
+    const theme = useMantineTheme();
+
     const isMobile = useMediaQuery(`(max-width: ${DEFAULT_THEME.breakpoints.lg})`);
     const { groupMeEnabled } = useFeatures();
     const { startOrder, trackStep, completeOrder, itemAdded } = useOrderTracking();
@@ -99,7 +101,6 @@ export function OrderFormV2({ form }: Props) {
             setStep("items");
         }
         trackStep("customer_selected");
-
     };
 
     const submitOrder = (values: OrderFormValues) => {
@@ -125,6 +126,7 @@ export function OrderFormV2({ form }: Props) {
         setSearchString('');
         setStep('customer');
         startOrder();
+        setUseCustomerSearch(true);
     }
 
     const newCustomerFormCompleted = () => {
@@ -141,49 +143,64 @@ export function OrderFormV2({ form }: Props) {
 
 
     return (
-        <Box p="md">
+
+        <Box p="md"
+             style={{
+                 height: '100%',            // for debugging—replace with "100%" when in AppShell.Main
+                 display: 'flex',
+                 flexDirection: 'column',
+                 minHeight: 0,               // let children shrink
+             }}>
             <LoadingOverlay visible={createOrderAPI.loading} />
-            <Stack gap="lg">
-                <Stepper
-                    active={steps.indexOf(step)}
-                    onStepClick={(index) => {
-                        if (index === 0) setStep("customer");
-                        if (index === 1 && form.values.firstName) setStep("items");
-                        if (index === 2 && form.values.items.length > 0) setStep("additional");
-                        if (index === 3 && form.values.items.length > 0) setStep("confirm");
-                    }}
-                    allowNextStepsSelect
-                    size="xs"
-                    styles={isMobile ? {
-                        stepBody: {
-                            display: 'none',
-                        },
-                    } : {}}
-                >
-                    <Stepper.Step
-                        icon={<IconUserCheck />}
-                        label="Customer"
-                        description={form.values.firstName && step != 'customer' ? `${form.values.firstName} ${form.values.lastName || ''}` : ""}
-                    />
-                    <Stepper.Step label="Items"
-                                  icon={<IconShoppingBag />}
-                                  description={form.values.items?.length > 0  ? `${form.values.items?.length} item${form.values.items.length === 1 ? '' : 's'}` : ""}
-                    />
-                    <Stepper.Step label="Extra"
-                                  icon={<IconNote />}
-                    />
-                    <Stepper.Step label="Review"
-                                  loading={createOrderAPI.loading}
-                                  icon={<IconSend />}
-                    />
-                </Stepper>
-                {/*<form onSubmit={form.onSubmit((values) => submitOrder(values))}>*/}
+            <Stepper
+                active={steps.indexOf(step)}
+                onStepClick={(index) => {
+                    if (index === 0) setStep("customer");
+                    if (index === 1 && form.values.firstName) setStep("items");
+                    if (index === 2 && form.values.items.length > 0) setStep("additional");
+                    if (index === 3 && form.values.items.length > 0) setStep("confirm");
+                }}
+                allowNextStepsSelect
+                size="xs"
+                styles={isMobile ? {
+                    stepBody: {
+                        display: 'none',
+                    },
+                } : {}}
+            >
+                <Stepper.Step
+                    icon={<IconUserCheck />}
+                    label="Customer"
+                    description={form.values.firstName && step != 'customer' ? `${form.values.firstName} ${form.values.lastName || ''}` : ""}
+                />
+                <Stepper.Step label="Items"
+                              icon={<IconShoppingBag />}
+                              description={form.values.items?.length > 0  ? `${form.values.items?.length} item${form.values.items.length === 1 ? '' : 's'}` : ""}
+                />
+                <Stepper.Step label="Extra"
+                              icon={<IconNote />}
+                />
+                <Stepper.Step label="Review"
+                              loading={createOrderAPI.loading}
+                              icon={<IconSend />}
+                />
+            </Stepper>
+
+            {/* scrollable content */}
+            <Box
+                style={{
+                    flex: 1,
+                    minHeight: 0,             // critical in flex layouts!
+                    overflowY: 'auto',
+                    padding: theme.spacing.md,
+                }}
+            >
 
                 {/* Step 1: Customer Search or Manual Name Input */}
                 {step === "customer" &&  (
                     <>
                         {useCustomerSearch ? (
-                            <>
+                            <Stack>
                                 <TextInput
                                     label=""
                                     placeholder="Search for Customer"
@@ -204,68 +221,35 @@ export function OrderFormV2({ form }: Props) {
                                        }/>)
                                        )}
                                     </Stack>
-                            </>
+                            </Stack>
                         ) : (
-                            <form
-                                // onSubmit={}
-                                style={{ display: "flex", flexDirection: "column", gap: "1rem" }}
+                            <form style={{
+                                display: "flex",
+                                flexDirection: "column",
+                                gap: "1rem" }}
                             >
                                 <TextInput label="First Name" size={'lg'} {...form.getInputProps("firstName")} />
                                 <TextInput label="Last Name" size={'lg'} {...form.getInputProps("lastName")} />
-
-                                <Group justify={"space-between"} grow mt="md">
-                                    {!useCustomerSearch && (
-                                        <Button variant="outline" onClick={() => setUseCustomerSearch((prev) => !prev)}>
-                                            Back to Search
-                                        </Button>
-                                    )}
-                                    <Button onClick={newCustomerFormCompleted}
-                                            disabled={!form.isValid('firstName') || !form.isValid('lastName')}>
-                                        Next
-                                    </Button>
-                                </Group>
                             </form>
                         )}
                     </>
                 )}
 
                 {/* Step 2: Item Selection */}
-                {step === "items" && (
-                    <>
-                        <ItemSelection
+                {step === "items" && <ItemSelection
                             currentSelection={form.values.items}
                             onItemSelectionChange={handleItemSelection}
-                        />
-                        <Button
-                            fullWidth
-                            onClick={() => form.validateField('items') && setStep("additional")}
-                            disabled={form.values.items.length === 0}
-                        >
-                            Next
-                        </Button>
-                    </>
-                )}
+                        />}
 
                 {/* Step 3: notes and additional */}
-                {step === "additional" && (
-                    <>
-
-
-                        <Textarea
-                            label="Special Instructions"
-                            placeholder="General notes about the order"
-                            {...form.getInputProps('specialInstructions')}
-                            size={"lg"}
-                        />
-                        <Button
-                            fullWidth
-                            onClick={() => setStep("confirm")}
-                            disabled={form.values.items.length === 0}
-                        >
-                            Next
-                        </Button>
-                    </>
-                )}
+                {step === "additional" &&
+                    <Textarea
+                        label="Special Instructions"
+                        placeholder="General notes about the order"
+                        {...form.getInputProps('specialInstructions')}
+                        size={"lg"}
+                    />
+                }
 
                 {/* Step 3: Confirmation */}
                 {step === "confirm" && (
@@ -299,18 +283,72 @@ export function OrderFormV2({ form }: Props) {
                                 {form.values?.specialInstructions}
                             </Blockquote>
                         </Text> }
-                        <Group justify={'space-between'}>
-                            <Button variant="outline" color="gray"  onClick={startOver}>
-                                Clear Form
-                            </Button>
-                            <Button onClick={() => submitOrder(form.values)}>
-                                { groupMeEnabled ? "Send to GroupMe" : "Create Order"}
-                            </Button>
-                        </Group>
                     </Stack>
                 )}
-                {/*</form>*/}
-            </Stack>
+
+            </Box>
+            {/* sticky footer */}
+            {  !(step === 'customer' && useCustomerSearch) && <Box
+                style={{
+                    flex: '0 0 60px',         // fixed height
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    paddingBottom: 'env(safe-area-inset-bottom)',
+                    borderTop: `1px solid ${theme.colors.gray[2]}`,
+                    backgroundColor: theme.white,
+                }}
+            >
+               <Group grow w={'100%'} justify={'space-between'}>
+                    {!useCustomerSearch && step === 'customer' && (
+                        <Button variant="outline" onClick={() => setUseCustomerSearch((prev) => !prev)}>
+                            Back to Search
+                        </Button>
+                    )}
+
+                    {step !== steps[0] &&
+                    <Button
+                        variant="outline"
+                        color="gray"
+                        onClick={() => {
+                            setStep((prev) => {
+                                const idx = steps.indexOf(prev);
+                                return idx > 0 ? steps[idx - 1] : prev;
+                            });
+                        }}
+                    >
+                        Back
+                    </Button>
+                    }
+
+                    { step === 'customer' && !useCustomerSearch &&
+                    <Button onClick={newCustomerFormCompleted}
+                            disabled={!form.isValid('firstName') || !form.isValid('lastName')}>
+                        Next
+                    </Button> }
+
+
+                    {step === 'items' && <Button
+                        onClick={() => form.validateField('items') && setStep("additional")}
+                        disabled={form.values.items.length === 0}
+                    >
+                        Next
+                    </Button> }
+
+                    {step === 'additional' && <Button
+                        onClick={() => setStep("confirm")}
+                        disabled={form.values.items.length === 0}
+                    >
+                        Next
+                    </Button> }
+
+                    {step === "confirm" &&
+                    <Button onClick={() => submitOrder(form.values)}>
+                        { groupMeEnabled ? "Send to GroupMe" : "Submit Order"}
+                    </Button>}
+                </Group>
+            </Box>
+            }
         </Box>
     );
 }

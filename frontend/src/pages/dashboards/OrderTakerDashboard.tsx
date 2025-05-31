@@ -25,29 +25,7 @@ export function OrderTakerDashboard() {
     });
 
     return (
-
-        <Grid>
-            <GridCol span={{base: 12, md: 12}}>
-                {/*<OrderForm></OrderForm>*/}
-                <OrderFormV2 form={form}/>
-            </GridCol>
-            {/*<GridCol span={6} className="mantine-visible-from-sm" >*/}
-            {/*    {*/}
-            {/*        form.values.items.map((item: FormOrderItem) =>*/}
-            {/*            <Text>{item.item.description}</Text>*/}
-            {/*        )*/}
-            {/*    }*/}
-            {/*</GridCol>*/}
-            {/*    <OrdersTable*/}
-            {/*        view={OrdersView.ORDERTAKER}*/}
-            {/*        disableSorting={true}*/}
-            {/*        statusFilter={[OrderStatus.NEEDS_INFO]}*/}
-            {/*        autoRefresh={true}*/}
-            {/*        showProgressIndicator={true}*/}
-
-            {/*    ></OrdersTable>*/}
-            {/*</GridCol>*/}
-    </Grid>
-)
+         <OrderFormV2 form={form}/>
+   );
 }
 export default OrderTakerDashboard;
