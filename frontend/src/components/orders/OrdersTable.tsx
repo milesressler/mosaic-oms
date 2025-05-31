@@ -183,7 +183,7 @@ export function OrdersTable({
              return (
                 <Table.Td key={key} colSpan={index === visibleColumns.length - 1 ? 2 : 1}>
                     {key === 'assigned' &&
-                        <Assign eeAvatar assigned={assigned}/>
+                        <AssigneeAvatar assigned={assigned}/>
                     }
                     {key === 'Order #' && <>{order.id}{order.postedToGroupMe && <Image w={16} h={16} src={groupmeImage}></Image>}</>}
                     {key === 'Created' && <>
