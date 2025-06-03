@@ -119,8 +119,6 @@ export function OrderFormV2({ form }: Props) {
         createOrderAPI.request(request);
     }
 
-
-
     const startOver = () => {
         form.reset();
         setSearchString('');
@@ -188,11 +186,11 @@ export function OrderFormV2({ form }: Props) {
 
             {/* scrollable content */}
             <Box
+                pt={'md'}
+                mih={0}
                 style={{
                     flex: 1,
-                    minHeight: 0,             // critical in flex layouts!
                     overflowY: 'auto',
-                    padding: theme.spacing.md,
                 }}
             >
 

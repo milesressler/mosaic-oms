@@ -183,6 +183,7 @@ export function AppShellComponent() {
                 flexDirection: 'column',
                 flex: 1,
                 height: '100%',
+                paddingBottom: 'calc(16px + env(safe-area-inset-bottom))', // better spacing + safe area
                 minHeight: 0,              // <— allow it to shrink
             }}>
                 <SelectedOrderProvider>

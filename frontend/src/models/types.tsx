@@ -221,10 +221,7 @@ export interface OrderFeedItem {
     timestamp: number;
     orderId: number;
     orderStatus: OrderStatus;
-    user: {
-        name: string;
-        uuid: string;
-    };
+    user: BasicUser
 }
 
 export interface AuditLog {

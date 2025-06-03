@@ -100,13 +100,14 @@ export function ItemSelection ({currentSelection, onItemSelectionChange}: props)
     }, [suggestedItemsApi.request, closeNewItem]);
 
     return (
-        <Stack gap="md" >
-            <Modal title={"Create New Item"} opened={newItemOpen} onClose={() => {closeNewItem()}} >
-                    <ItemForm onItemSave={handleItemCreated}/>
+        <Stack gap="0" style={{ height: '100%', overflow: 'hidden' }}>
+            <Modal title={"Create New Item"} opened={newItemOpen} onClose={closeNewItem}>
+                <ItemForm onItemSave={handleItemCreated} />
             </Modal>
 
-            {<Modal opened={!!draftItem} title={draftItem?.item?.description}
-                    onClose={() => setDraftItem(null)}>
+            <Modal opened={!!draftItem}
+                   title={draftItem?.item?.description}
+                   onClose={() => setDraftItem(null)}>
                 <Box mt={'xs'}>
                 { draftItem && <OrderItemFormV2
                     formItem={draftItem}
@@ -114,69 +115,89 @@ export function ItemSelection ({currentSelection, onItemSelectionChange}: props)
                     onSave={handleItemSave}
                 />}
                 </Box>
-            </Modal> }
+            </Modal>
 
-            {/* Category Selection */}
-            <ScrollArea>
-                <SegmentedControl
-                    fullWidth
-                    value={selectedCategory || undefined}
-                    onChange={(val) => setSelectedCategory(val)}
-                    data={Object.values(Category).map(category => {
-                        return { label: categoryDisplayNames[category], value: category.toString() }
-                    })}
-                />
+            {/* Fixed Segmented Control with horizontal scroll */}
+            <Box style={{
+                position: 'sticky',
+                top: 0,
+                zIndex: 10,
+                background: 'white', // to cover what's underneath
+                paddingBottom: 8
+            }}>
+                <ScrollArea scrollbarSize={6} type="scroll" offsetScrollbars >
+                    <SegmentedControl
+                        fullWidth
+                        value={selectedCategory || undefined}
+                        onChange={(val) => setSelectedCategory(val)}
+                        data={Object.values(Category).map((category) => ({
+                            label: categoryDisplayNames[category],
+                            value: category
+                        }))}
+                    />
+                </ScrollArea>
+            </Box>
+            {/* Scrollable content */}
+            <ScrollArea style={{ flex: 1 }} w="100%">
+                <Box px="sm" pb="md">
+                    <Grid gutter="xs">
+                        {selectedCategory &&
+                            suggestedItemsApi.data &&
+                            suggestedItemsApi.data[selectedCategory]
+                                ?.sort((a: Item, b: Item) => a.description.localeCompare(b.description))
+                                .map((item: Item) => (
+                                    <Grid.Col span={{ base: 6, md: 3 }} key={item.description}>
+                                        <Card
+                                            shadow="sm"
+                                            padding="xs"
+                                            radius="md"
+                                            withBorder
+                                            w="100%"
+                                            onClick={() => handleItemSelect(item)}
+                                            style={{
+                                                cursor: "pointer",
+                                                backgroundColor: currentSelection?.map((i) => i.item?.id).includes(item.id)
+                                                    ? "#e0f7fa"
+                                                    : "white",
+                                            }}
+                                        >
+                                            <Text>{item.description}</Text>
+                                        </Card>
+                                    </Grid.Col>
+                                ))}
+                    </Grid>
+
+                    {currentSelection.length > 0 && (
+                        <Group mt="sm" wrap="wrap">
+                            {currentSelection
+                                .sort((a, b) =>
+                                    (a.item.category || "OTHER").localeCompare(b.item.category || "OTHER")
+                                )
+                                .map((item: FormOrderItem, index: number) => (
+                                    <Pill
+                                        size="xl"
+                                        key={index}
+                                        onClick={() => handleItemEdit(index)}
+                                        onRemove={() => handleItemDelete(index)}
+                                        withRemoveButton
+                                        style={{
+                                            backgroundColor:
+                                                categoryColors[categories.indexOf(item.item.category || "OTHER")],
+                                            cursor: "pointer",
+                                        }}
+                                    >
+                                        {item.item.description}
+                                    </Pill>
+                                ))}
+                        </Group>
+                    )}
+                </Box>
             </ScrollArea>
-            {/* Item Selection */}
-            <Grid>
-                {selectedCategory && suggestedItemsApi.data && suggestedItemsApi.data[selectedCategory]?.sort((a:Item, b:Item) => a.description.localeCompare(b.description)).map((item: Item) => (
-                    <Grid.Col span={{base: 6, md: 3}} key={item.description}>
-                        <Card
-                            shadow="sm"
-                            padding="xs"
-                            radius="md"
-                            withBorder
-                            onClick={() => handleItemSelect(item)}
-                            style={{
-                                cursor: "pointer",
-                                backgroundColor: currentSelection?.map((i) => i.item?.id).includes(item.id) ? "#e0f7fa" : "white",
-                            }}
-                        >
-                            <Text>{item.description}</Text>
-                        </Card>
-                    </Grid.Col>
-                ))}
-            </Grid>
 
-            {/* Selected Items */}
-            {currentSelection.length > 0 && (
-                <Stack gap="xs">
-                    {/*<Text fw={500}>Selected Items:</Text>*/}
-                    <Group>
-                        {currentSelection.sort((a, b) => (a.item.category || 'OTHER').localeCompare(b.item.category || 'OTHER')).map((item: FormOrderItem, index: number) => (
-                            <Pill size="xl"
-                                  // style={{}}
-                                   onClick={() => handleItemEdit(index)}
-                                   style={{cursor: '', backgroundColor: categoryColors[categories.indexOf(item.item.category || 'OTHER')]}}
-                                   key={index}
-                                  onRemove={()=> handleItemDelete(index)}
-                                   // variant="filled"
-                                   // rightSection={
-                                   //      <Group> {item.notes && <IconNote/>}
-                                   //     <IconCircleX color={'white'} onClick={(e) => {
-                                   //         e.stopPropagation(); // Prevents event from reaching Badge
-                                   //         handleItemDelete(index);
-                                   //     }}/> </Group>}
-                                  withRemoveButton={true}>
-                                {item.item.description}
-                            </Pill>
-                        ))}
-                    </Group>
-                </Stack>
-            )}
-            {/*<Modal opened={false} onClose={}></Modal>*/}
+
             <Button variant={'outline'} onClick={handleNewItem} display={'none'}>New Item</Button>
         </Stack>
+
     );
 }
 
