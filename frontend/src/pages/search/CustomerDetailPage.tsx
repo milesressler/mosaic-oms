@@ -129,17 +129,18 @@ const CustomerDetailPage = () => {
                                 </Text>
                             </Grid.Col>
                             <Grid.Col span={6}>
-                                <Text size="sm">
+                                <Text size="sm" ta={'right'}>
                                     {created.toLocaleString(DateTime.DATE_MED)}
                                 </Text>
                             </Grid.Col>
 
                             <Grid.Col span={6}>
-                                <Text size="sm" fw={500}>
+                                <Text size="sm" fw={500} >
                                     Flagged
                                 </Text>
                             </Grid.Col>
                             <Grid.Col span={6}>
+                                <Group justify="flex-end">
                                 <Tooltip
                                     label="Toggle this if the friend should not currently receive services due to a prior issue"
                                     withArrow
@@ -152,6 +153,7 @@ const CustomerDetailPage = () => {
                                         }
                                     />
                                 </Tooltip>
+                                </Group>
                             </Grid.Col>
                         </Grid>
                     </Card>

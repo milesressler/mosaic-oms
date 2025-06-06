@@ -5,6 +5,7 @@
 ### Added
 - Customer details page
 - Flagging a customer (shows on customer search)
+- Log shower waiver signed date
 
 ## [2025-05-29]
 
