@@ -1,5 +1,11 @@
 # Changelog
 
+## [2025-06-05]
+
+### Added
+- Customer details page
+- Flagging a customer (shows on customer search)
+
 ## [2025-05-29]
 
 ### Added
