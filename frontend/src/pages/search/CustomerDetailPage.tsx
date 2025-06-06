@@ -1,19 +1,19 @@
 import {
+    ActionIcon,
     Box,
     Button,
     Card,
     Center,
     Divider,
     Grid,
-    Group,
+    Group, LoadingOverlay,
     Skeleton,
     Stack, Switch,
     Text,
-    Title,
     Tooltip,
     useMantineTheme,
 } from '@mantine/core';
-import {IconBath, IconShoppingCart, IconUser} from '@tabler/icons-react';
+import {IconBath, IconEdit, IconShoppingCart, IconUser} from '@tabler/icons-react';
 import { useParams } from 'react-router-dom';
 import {useEffect, useState} from 'react';
 import { DateTime } from 'luxon';
@@ -23,6 +23,7 @@ import CustomersApi from 'src/services/customersApi';
 import OrdersApi from 'src/services/ordersApi';
 import {Customer, Order} from 'src/models/types.tsx';
 import StatusBadge from 'src/components/StatusBadge.tsx';
+import {DateInput} from "@mantine/dates";
 
 const CustomerDetailPage = () => {
     const { uuid } = useParams<{ uuid: string }>();
@@ -32,6 +33,23 @@ const CustomerDetailPage = () => {
     const theme = useMantineTheme();
 
     const [customer, setCustomer] = useState<Customer|null>(null);
+
+    const [isEditingWaiver, setIsEditingWaiver] = useState(false);
+    const [waiverDate, setWaiverDate] = useState<Date>(new Date());
+
+    const handleStartEdit = () => {
+        setIsEditingWaiver(true);
+        setWaiverDate(new Date()); // default to today
+    };
+
+    const handleCancelEdit = () => {
+        setIsEditingWaiver(false);
+    };
+
+    const handleSaveWaiver = () => {
+        updateCustomerRequest.request(uuid!, {showerWaiverSigned: waiverDate});
+        setIsEditingWaiver(false);
+    };
 
     useEffect(() => {
         if (uuid) {
@@ -83,7 +101,9 @@ const CustomerDetailPage = () => {
 
     return (
         <Stack gap="md" px="xs" m={'xs'}>
-            <Grid gutter="md">
+            <Grid gutter="md" pos={'relative'}>
+                <LoadingOverlay visible={updateCustomerRequest.loading} />
+
                 <Grid.Col span={{ base: 12, md: 6 }}>
                     <Card
                         withBorder
@@ -145,21 +165,45 @@ const CustomerDetailPage = () => {
                         radius="md"
                         style={{ backgroundColor: '#f9f9fb' }}
                     >
+
                         <Group>
                             <IconBath size={18} />
-                            <Text fw={600} size="sm">
-                                Showers
-                            </Text>
+                            <Text fw={600} size="sm">Showers</Text>
                         </Group>
-                        <Divider my={'xs'}/>
+                        <Divider my="xs" />
 
-                        <Text size="sm" mt="sm">
-                            <strong>Shower Waiver Completed:</strong>{' '}
-                            {waiver
-                                ? waiver.toLocaleString(DateTime.DATE_MED)
-                                : 'Not completed'}
-                        </Text>
+                        {!isEditingWaiver ? (
+                            <Group justify="space-between" align="center">
+                                <Text size="sm">
+                                    <strong>Shower Waiver Completed:</strong>{' '}
+                                    {waiver
+                                        ? waiver.toLocaleString(DateTime.DATE_MED)
+                                        : 'Not yet completed'}
+                                </Text>
+
+                                <Tooltip label={waiver ? 'Edit waiver date' : 'Mark waiver as completed'} withArrow>
+                                    <ActionIcon variant="light" size="sm" onClick={handleStartEdit}>
+                                        <IconEdit size={16} />
+                                    </ActionIcon>
+                                </Tooltip>
+                            </Group>
+                        ) : (
+                            <Stack gap="xs" mt="sm">
+                                <DateInput
+                                    label="Waiver Date"
+                                    value={waiverDate}
+                                    onChange={setWaiverDate}
+                                    maxDate={new Date()}
+                                    required
+                                />
+                                <Group gap="sm">
+                                    <Button size="xs" onClick={handleSaveWaiver}>Save</Button>
+                                    <Button variant="subtle" size="xs" onClick={handleCancelEdit}>Cancel</Button>
+                                </Group>
+                            </Stack>
+                        )}
                     </Card>
+
                 </Grid.Col>
             </Grid>
 
