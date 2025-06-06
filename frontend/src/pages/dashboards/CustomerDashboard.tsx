@@ -76,7 +76,7 @@ const CustomerDashboard = () => {
                                         <Table.Tr key={order.id}>
                                             <Table.Td>
                                                 <Text fz={45}>
-                                                    {order.customer?.firstName} {order.customer?.lastName}
+                                                    {order.customer?.firstName} {(order.customer?.lastName || '')?.[0]}
                                                 </Text>
                                             </Table.Td>
                                             <Table.Td>
