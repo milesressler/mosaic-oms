@@ -3,7 +3,8 @@ import { TransitInfoComponent } from "src/components/transit/TransitInfoComponen
 import { Box, Flex } from "@mantine/core";
 import kioskApi from "src/services/kioskApi.tsx";
 import { useInterval } from "@mantine/hooks";
-import { useEffect } from "react";
+import {useEffect, useState} from "react";
+import {TransitInfo} from "src/models/types.tsx";
 
 export function Transit() {
     const transit = useApi(kioskApi.getTransitInfo);
@@ -14,15 +15,26 @@ export function Transit() {
         { autoInvoke: true }
     );
 
+    const [transitData, setTransitData] = useState<TransitInfo[]>([]);
+
     useEffect(() => {
         transitInterval.start();
         transit.request();
         return transitInterval.stop;
     }, []);
 
+    useEffect(() => {
+        if (transit.data) {
+            setTransitData(transit.data);
+        }
+
+    }, [transit.data]);
+
+
+
     return (
         <Flex p={'xs'} gap="md" justify="stretch" wrap="nowrap" w="100%">
-            {transit.data?.map(transit => (
+            {transitData?.map(transit => (
                 <Box key={transit.stopId} style={{ flex: 1 }}>
                     <TransitInfoComponent transitInfo={transit} />
                 </Box>
