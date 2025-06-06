@@ -1,7 +1,8 @@
 package com.mosaicchurchaustin.oms.services;
 
-import com.mosaicchurchaustin.oms.data.entity.CustomerEntity;
+import com.mosaicchurchaustin.oms.data.entity.customer.CustomerEntity;
 import com.mosaicchurchaustin.oms.data.projections.CustomerSearchProjection;
+import com.mosaicchurchaustin.oms.data.request.UpdateCustomerRequest;
 import com.mosaicchurchaustin.oms.exception.EntityNotFoundException;
 import com.mosaicchurchaustin.oms.repositories.CustomerRepository;
 import jakarta.transaction.Transactional;
@@ -10,7 +11,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class CustomerService {
@@ -30,6 +33,15 @@ public class CustomerService {
     @Transactional
     public CustomerEntity getCustomer(final String uuid) {
         return customerRepository.findByUuid(uuid).orElseThrow(() -> new EntityNotFoundException(CustomerEntity.ENTITY_TYPE, uuid));
+    }
+
+    @Transactional
+    public CustomerEntity updateCustomer(final String uuid, final UpdateCustomerRequest request) {
+        final var customer = customerRepository.findByUuid(uuid).orElseThrow(() -> new EntityNotFoundException(CustomerEntity.ENTITY_TYPE, uuid));
+
+        Optional.ofNullable(request.flagged()).ifPresent(customer::setFlagged);
+        Optional.ofNullable(request.showerWaiverSigned()).map(OffsetDateTime::toInstant).ifPresent(customer::setShowerWaiverCompleted);
+        return customerRepository.save(customer);
     }
 
     @Transactional

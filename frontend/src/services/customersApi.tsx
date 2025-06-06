@@ -8,11 +8,18 @@ const getCustomers = (page: number, size: number) =>
     client.get<Page<Customer>>(`/customer`, {params: {page, size}});
 
 const getCustomer = (uuid: string) =>
-    client.get<Customer>(`/admin/customer/${uuid}`);
+    client.get<Customer>(`/customer/${uuid}`);
+
+const updateCustomer = (uuid: string,  body: {
+    showerWaiverSigned?: Date,
+    flagged?: boolean,
+}) =>
+    client.put<Customer>(`/customer/${uuid}`, body);
 
 
 export default {
     search,
     getCustomers,
     getCustomer,
+    updateCustomer,
 };

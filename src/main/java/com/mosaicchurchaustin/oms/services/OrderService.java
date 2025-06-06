@@ -1,7 +1,7 @@
 package com.mosaicchurchaustin.oms.services;
 
 import com.mosaicchurchaustin.oms.data.entity.BaseEntity;
-import com.mosaicchurchaustin.oms.data.entity.CustomerEntity;
+import com.mosaicchurchaustin.oms.data.entity.customer.CustomerEntity;
 import com.mosaicchurchaustin.oms.data.entity.item.ItemEntity;
 import com.mosaicchurchaustin.oms.data.entity.order.OrderEntity;
 import com.mosaicchurchaustin.oms.data.entity.order.OrderEventType;
@@ -20,6 +20,7 @@ import com.mosaicchurchaustin.oms.repositories.ItemRepository;
 import com.mosaicchurchaustin.oms.repositories.OrderHistoryRepository;
 import com.mosaicchurchaustin.oms.repositories.OrderItemRepository;
 import com.mosaicchurchaustin.oms.repositories.OrderRepository;
+import com.mosaicchurchaustin.oms.specifications.OrdersSpecification;
 import jakarta.transaction.Transactional;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,9 +28,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -71,15 +72,14 @@ public class OrderService {
         return orderHistoryRepository.findAllByOrderEntityId(pageable, orderId).getContent();
     }
 
-    public Page<OrderEntity> getOrders(final Pageable pageable, final List<String> statusFilters) {
-        final List<OrderStatus> orderStatusList = statusFilters != null && statusFilters.size() > 0 ?
-                statusFilters.stream().map(OrderStatus::from).toList() :
-                Arrays.stream(OrderStatus.values()).toList();
+    public Page<OrderEntity> getOrders(final Pageable pageable, final List<String> statusFilters, final String customer) {
+        final List<OrderStatus> statusList = (statusFilters != null && !statusFilters.isEmpty())
+                ? statusFilters.stream().map(OrderStatus::from).toList()
+                : null;
 
-        final Page<OrderEntity> results =  orderRepository.findAllByOrderStatusIn(
-                pageable,
-                orderStatusList);
-        return results;
+        final Specification<OrderEntity> spec = OrdersSpecification.withFilters(statusList, customer);
+
+        return orderRepository.findAll(spec, pageable);
     }
 
     public List<OrderEntity> getDashboardOrders(final Pageable pageable) {
@@ -256,6 +256,7 @@ public class OrderService {
                                 new CustomerEntity(
                                         request.customerFirstName().trim(),
                                         request.customerLastName().trim(),
+                                        false,
                                         null));
                     }
                 });

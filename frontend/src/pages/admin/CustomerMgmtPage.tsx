@@ -2,7 +2,7 @@ import {Center, LoadingOverlay, Pagination, Table} from "@mantine/core";
 import useApi from "src/hooks/useApi.tsx";
 import customersApi from "src/services/customersApi.tsx";
 import {useEffect} from "react";
-import { useSearchParams} from "react-router-dom";
+import {useNavigate, useSearchParams} from "react-router-dom";
 import {Customer} from "src/models/types.tsx";
 import {DateTime} from "luxon";
 
@@ -10,6 +10,7 @@ export function CustomerManagementPage() {
 
     const getCustomersApi = useApi(customersApi.getCustomers);
     const [searchParams, setSearchParams] = useSearchParams();
+    const navigate = useNavigate();
 
     // Get page from URL or default to 1
     const activePage = Number(searchParams.get("page")) || 1;
@@ -26,11 +27,13 @@ export function CustomerManagementPage() {
     const rows = getCustomersApi.data?.content?.map((customer: Customer) => (
         <>
             <LoadingOverlay visible={getCustomersApi.loading}/>
-            <Table.Tr key={customer.uuid} pos={'relative'} >
+            <Table.Tr key={customer.uuid}
+                      style={{cursor: 'pointer'}}
+                      pos={'relative'}
+                      onClick={() => navigate(`/customer/${customer.uuid}`)}>
                 <Table.Td>{customer.firstName}</Table.Td>
                 <Table.Td>{customer.lastName}</Table.Td>
                 <Table.Td>{customer.created && DateTime.fromMillis(customer.created).toLocaleString(DateTime.DATETIME_SHORT)}</Table.Td>
-                <Table.Td>{customer.showerWaiverCompleted && DateTime.fromMillis(customer.showerWaiverCompleted).toLocaleString(DateTime.DATETIME_SHORT)}</Table.Td>
             </Table.Tr>
         </>
     ));
@@ -44,7 +47,7 @@ export function CustomerManagementPage() {
                         <Table.Th>First Name</Table.Th>
                         <Table.Th>Last Name</Table.Th>
                         <Table.Th>Created</Table.Th>
-                        <Table.Th>Shower Waiver Signed</Table.Th>
+                        {/*<Table.Th>Shower Waiver Signed</Table.Th>*/}
                     </Table.Tr>
                 </Table.Thead>
                 <Table.Tbody>

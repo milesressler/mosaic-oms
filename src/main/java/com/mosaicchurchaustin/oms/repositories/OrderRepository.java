@@ -5,6 +5,7 @@ import com.mosaicchurchaustin.oms.data.entity.order.OrderStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
@@ -14,7 +15,7 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 @Repository
-public interface OrderRepository extends JpaRepository<OrderEntity, Long> {
+public interface OrderRepository extends JpaRepository<OrderEntity, Long>, JpaSpecificationExecutor<OrderEntity> {
     Stream<OrderEntity> findByCreatedBeforeAndOrderStatusNotIn(Instant cutoffTime, List<OrderStatus> orderStatuses);
 
     List<OrderEntity> findAllByUuidIn(List<String> uuids);

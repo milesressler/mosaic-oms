@@ -4,6 +4,7 @@ public interface CustomerSearchProjection {
     String getFirstName();
     String getLastName();
     String getUuid();
+    boolean isFlagged();
     int getMatchScore();
 }
 

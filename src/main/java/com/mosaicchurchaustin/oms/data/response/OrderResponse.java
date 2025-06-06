@@ -42,6 +42,7 @@ public class OrderResponse {
                         Customer.builder()
                                 .firstName(orderEntity.getCustomer().getFirstName())
                                 .lastName(orderEntity.getCustomer().getLastName())
+                                .uuid(orderEntity.getCustomer().getUuid())
                                 .build()
                 )
                 .build();
@@ -52,5 +53,6 @@ public class OrderResponse {
     public static class Customer {
         private String firstName;
         private String lastName;
+        private String uuid;
     }
 }

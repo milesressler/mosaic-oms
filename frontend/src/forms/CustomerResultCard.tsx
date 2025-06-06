@@ -1,13 +1,15 @@
-import { Text, Paper } from "@mantine/core";
+import {Text, Paper, Group} from "@mantine/core";
+import {IconFlag} from "@tabler/icons-react";
 
 interface props {
     key: string,
     useAlternateStyle?: boolean,
     text: string,
+    flagged: boolean,
     onClick: (customerUuid: string) => void
 }
 
-export const CustomerResultCard = ({onClick, key, text, useAlternateStyle }: props) => {
+export const CustomerResultCard = ({onClick, key, text, useAlternateStyle, flagged }: props) => {
     return (
         <Paper
             key={key}
@@ -27,7 +29,10 @@ export const CustomerResultCard = ({onClick, key, text, useAlternateStyle }: pro
             onClick={() => onClick(key)}
             shadow="xs"
         >
-            <Text size="sm" fw={useAlternateStyle ? 500 : 400}>{text}</Text>
+            <Group justify={'space-between'}>
+                <Text size="sm" fw={useAlternateStyle ? 500 : 400}>{text}</Text>
+                {flagged && <IconFlag color={'red'}/>}
+            </Group>
         </Paper>
     )
 }

@@ -28,6 +28,7 @@ import AdminSettingsPage from "src/pages/admin/AdminSettingsPage.tsx";
 import CustomerMgmtPage from "src/pages/admin/CustomerMgmtPage.tsx";
 import DevicesPage from "src/pages/admin/DevicesPage.tsx";
 import NoAccessPage from "src/pages/NoAccess.tsx";
+import CustomerDetailPage from "src/pages/search/CustomerDetailPage.tsx";
 
 
 const routes = [
@@ -151,6 +152,13 @@ const routes = [
                 element: CustomerMgmtPage,
                 title: 'Customers',
                 showInNavBar: true,
+            },
+            {
+                key: 'customer-details',
+                path: '/customer/:uuid',
+                element: CustomerDetailPage,
+                title: 'Customer Details',
+                showInNavBar: false,
             },
         ],
     },

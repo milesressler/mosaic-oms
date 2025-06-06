@@ -214,6 +214,7 @@ export function OrderFormV2({ form }: Props) {
                                 {(
                                    searchString && searchCustomersApi.data && searchCustomersApi.data?.map((c: CustomerSearch) =>
                                        <CustomerResultCard key={c.uuid}
+                                                           flagged={c.flagged}
                                                            text={`${c.firstName || ''} ${c.lastName || ''}`.trim()}
                                                            onClick={() => handleCustomerSelect(c.uuid)
                                        }/>)

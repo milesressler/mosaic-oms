@@ -71,8 +71,10 @@ public class OrderController {
                                          @RequestParam(value = "status", required = false)
                                          final List<String> statuses,
                                          @RequestParam(value = "detailed", required = false)
-                                         final boolean detailed) {
-        final Page<OrderEntity> results = orderService.getOrders(pageable, statuses);
+                                         final boolean detailed,
+                                         @RequestParam(value = "customer", required = false)
+                                         final String customer) {
+        final Page<OrderEntity> results = orderService.getOrders(pageable, statuses, customer);
         if (detailed) {
             return results.map(OrderDetailResponse::from);
         } else {

@@ -1,5 +1,6 @@
-package com.mosaicchurchaustin.oms.data.entity;
+package com.mosaicchurchaustin.oms.data.entity.customer;
 
+import com.mosaicchurchaustin.oms.data.entity.BaseUuidEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
@@ -31,6 +32,9 @@ public class CustomerEntity extends BaseUuidEntity {
 
     @Column(name = "last_name")
     String lastName;
+
+    @Column(name = "flagged")
+    boolean flagged;
 
     @Column(name = "shower_waiver_completed")
     Instant showerWaiverCompleted;

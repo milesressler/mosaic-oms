@@ -1,7 +1,7 @@
 package com.mosaicchurchaustin.oms.data.entity.order;
 
 import com.mosaicchurchaustin.oms.data.entity.BaseUuidEntity;
-import com.mosaicchurchaustin.oms.data.entity.CustomerEntity;
+import com.mosaicchurchaustin.oms.data.entity.customer.CustomerEntity;
 import com.mosaicchurchaustin.oms.data.entity.user.UserEntity;
 import com.mosaicchurchaustin.oms.services.audit.AuditLogListener;
 import com.mosaicchurchaustin.oms.services.audit.Auditable;

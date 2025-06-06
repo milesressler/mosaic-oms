@@ -1,5 +1,5 @@
 import {useEffect} from 'react';
-import {useParams} from 'react-router-dom';
+import {Link, useParams} from 'react-router-dom';
 import useApi from 'src/hooks/useApi';
 import ordersApi from 'src/services/ordersApi';
 import {DateTime} from 'luxon';
@@ -100,9 +100,12 @@ export default function OrderDetailsPage() {
             </Group>
             <Group justify="apart" mb="md" align="flex-end">
                 <Stack gap={0}>
-                    <Title order={2} mt={4}>
-                        {order.customer.firstName} {order.customer.lastName}
-                    </Title>
+                    <Link style={{ textDecoration: 'none' }}
+                           to={`/customer/${order.customer.uuid}`}>
+                        <Title style={{cursor: 'pointer'}} order={2} mt={4}>
+                            {order.customer.firstName} {order.customer.lastName}
+                        </Title>
+                    </Link>
                 </Stack>
                 <Badge color={STATUS_COLORS[order.orderStatus] || 'gray'} variant="light">
                     {statusDisplay(order.orderStatus)}

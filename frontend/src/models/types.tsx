@@ -66,9 +66,11 @@ export interface OrderDetails extends Order {
 export interface Customer {
     firstName: string
     lastName: string
+    displayName: string
     uuid: string
     created: number
     showerWaiverCompleted: number
+    flagged: boolean
 }
 
 export interface CustomerSearch {
@@ -76,6 +78,7 @@ export interface CustomerSearch {
     lastName: string
     id: number
     uuid: string
+    flagged: boolean
 }
 
 export interface BasicUser {

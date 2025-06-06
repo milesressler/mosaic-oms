@@ -1,6 +1,6 @@
 package com.mosaicchurchaustin.oms.repositories;
 
-import com.mosaicchurchaustin.oms.data.entity.CustomerEntity;
+import com.mosaicchurchaustin.oms.data.entity.customer.CustomerEntity;
 import com.mosaicchurchaustin.oms.data.projections.CustomerSearchProjection;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -20,11 +20,13 @@ public interface CustomerRepository extends JpaRepository<CustomerEntity, Long> 
 SELECT scored.firstName as firstName,
        scored.lastName as lastName,
        scored.uuid as uuid,
+       scored.flagged as flagged,
        (scored.firstScore + scored.lastScore) AS matchScore
 FROM (
     SELECT c.firstName AS firstName,
            c.lastName AS lastName,
            c.uuid AS uuid,
+           c.flagged AS flagged,
            CASE
                       WHEN c.firstName = :firstName THEN 5
                       WHEN c.firstName LIKE CONCAT(:firstName, '%') AND LENGTH(:firstName) >= 3 THEN 4

@@ -1,7 +1,7 @@
 package com.mosaicchurchaustin.oms.services.labels;
 
 import ch.qos.logback.core.testUtil.RandomUtil;
-import com.mosaicchurchaustin.oms.data.entity.CustomerEntity;
+import com.mosaicchurchaustin.oms.data.entity.customer.CustomerEntity;
 import com.mosaicchurchaustin.oms.data.entity.order.OrderItemEntity;
 import com.mosaicchurchaustin.oms.data.entity.order.OrderEntity;
 import org.apache.pdfbox.pdmodel.PDDocument;
@@ -196,7 +196,7 @@ public class PdfGenerator {
         byte[] qrCodeBytes = Files.readAllBytes(Path.of("/Users/milesressler/workspace/mosaic/mosaic-oms/qr_code_sample.png")); // Load an example QR code image
         byte[] pdfBytes = generator.generateAcceptedOrderPDF(qrCodeBytes,
                 OrderEntity.builder()
-                        .customer(new CustomerEntity("Fred", "Flintstone", null))
+                        .customer(new CustomerEntity("Fred", "Flintstone", false, null))
                         .build()
         );
 
