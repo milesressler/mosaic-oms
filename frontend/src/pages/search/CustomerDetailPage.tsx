@@ -177,9 +177,9 @@ const CustomerDetailPage = () => {
                         {!isEditingWaiver ? (
                             <Group justify="space-between" align="center">
                                 <Text size="sm">
-                                    <strong>Shower Waiver Completed:</strong>{' '}
+                                    <strong>Waiver Signed:</strong>{' '}
                                     {waiver
-                                        ? waiver.toLocaleString(DateTime.DATE_MED)
+                                        ? `${waiver.toLocaleString(DateTime.DATE_MED)}`
                                         : 'Not yet completed'}
                                 </Text>
 

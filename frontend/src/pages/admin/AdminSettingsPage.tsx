@@ -2,6 +2,7 @@ import {Box, Select, Switch} from "@mantine/core";
 import {useFeatures} from "src/contexts/FeaturesContext.tsx";
 import {useEffect} from "react";
 import {OrderStatus} from "src/models/types.tsx";
+import {statusDisplay} from "src/util/StatusUtils.tsx";
 
 
 const AdminSettingsPage = () => {
@@ -38,7 +39,13 @@ const AdminSettingsPage = () => {
                     value={printOnTransitionToStatus}
                     label="Print Label on Order Transition to status:"
                     placeholder="Disabled"
-                    data={[OrderStatus.ACCEPTED, OrderStatus.PACKED]}
+                    data={[
+                        OrderStatus.ACCEPTED,
+                        OrderStatus.PACKED
+                    ].map((orderStatus) => ({
+                        label: statusDisplay(orderStatus),
+                        value: orderStatus
+                    }))}
                     allowDeselect
                     onChange={(_value, option) => {
                         setPrintOnTransitionToStatus(_value as OrderStatus)

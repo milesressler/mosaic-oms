@@ -114,7 +114,7 @@ public class PrintingService {
                 .build();
 
         // Execute request
-        if (false) {
+        if (true) {
             try (final Response response = client.newCall(request).execute()) {
                 if (!response.isSuccessful()) {
                     throw new RuntimeException("Print job failed: " + response.body().string());

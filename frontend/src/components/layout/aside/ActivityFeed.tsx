@@ -34,7 +34,7 @@ export function ActivityFeed() {
             default:
                 return (
                     <>
-                        Order #{feedItem.orderId} {feedItem.orderStatus}
+                        Order {linkToOrder(feedItem)} <Text span fw={600}>{feedItem.orderStatus}</Text>
                     </>
                 )
         }

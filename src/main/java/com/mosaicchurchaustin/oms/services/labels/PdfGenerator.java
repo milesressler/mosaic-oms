@@ -31,51 +31,64 @@ public class PdfGenerator {
     private static final int ITEMS_PER_PAGE = 10;// Margin for text
 
     public byte[] generatePackedOrderPDF(final byte[] qrCodeBytes, final OrderEntity orderEntity) {
-        final var items = orderEntity.getOrderItemList().stream().filter(item -> item.getQuantity() > item.getQuantityFulfilled()).toList();
-        final int totalPageCount = (int) Math.ceil((double) items.size() / ITEMS_PER_PAGE);
+        final var items = orderEntity.getOrderItemList().stream()
+                .filter(item -> item.getQuantity() > item.getQuantityFulfilled())
+                .toList();
+
+        final boolean allFulfilled = items.isEmpty();
+        final int totalPageCount = Math.max(1, (int) Math.ceil((double) items.size() / ITEMS_PER_PAGE));
+
         try (final PDDocument document = new PDDocument();
              final ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
 
-            // Load the image into the PDF
             final PDImageXObject qrCodeImage = PDImageXObject
                     .createFromByteArray(document, qrCodeBytes, "qrcode.png");
 
             for (int pageNum = 0; pageNum < totalPageCount; pageNum++) {
                 final PDPage page = appendPage(document);
-                // Draw the image on the PDF
                 try (PDPageContentStream contentStream = new PDPageContentStream(document, page)) {
-                    final float qrSize = LABEL_WIDTH * 0.5f; // 60% of label width
-                    final float xPosition = LABEL_WIDTH - (qrSize + PADDING);  // Center horizontally
+                    final float qrSize = LABEL_WIDTH * 0.5f;
+                    final float xPosition = LABEL_WIDTH - (qrSize + PADDING);
                     final float yPosition = LABEL_HEIGHT - qrSize;
 
                     contentStream.drawImage(qrCodeImage, xPosition, yPosition, qrSize, qrSize);
                     buildHeading(orderEntity, pageNum, totalPageCount, contentStream);
 
-                    // Start position for items
-                    float itemYPosition = LABEL_HEIGHT - qrSize - PADDING; // Adjust based on layout
-                    int lineHeight = 16; // Adjust as needed
+                    float itemYPosition = LABEL_HEIGHT - qrSize - PADDING;
+                    int lineHeight = 16;
 
-                    // Get items for this page
-                    final List<OrderItemEntity> pageItems = items.subList(pageNum * ITEMS_PER_PAGE, Math.min((pageNum + 1) * ITEMS_PER_PAGE, items.size()));
+                    if (allFulfilled) {
+                        contentStream.beginText();
+                        contentStream.setFont(new PDType1Font(Standard14Fonts.FontName.HELVETICA_BOLD), 10);
+                        contentStream.newLineAtOffset(PADDING, itemYPosition);
+                        contentStream.showText("All items filled.");
+                        contentStream.endText();
+                        break; // Only need one page
+                    }
+
+                    final List<OrderItemEntity> pageItems = items.subList(
+                            pageNum * ITEMS_PER_PAGE,
+                            Math.min((pageNum + 1) * ITEMS_PER_PAGE, items.size())
+                    );
 
                     for (final OrderItemEntity item : pageItems) {
-//                        writeLineItem(item, contentStream);
-                        drawUnfulfilledItem(contentStream, item.getItemEntity().getDescription(), item.getQuantity(), item.getQuantityFulfilled(), PADDING, itemYPosition);
+                        drawUnfulfilledItem(contentStream, item.getItemEntity().getDescription(),
+                                item.getQuantity(), item.getQuantityFulfilled(), PADDING, itemYPosition);
                         itemYPosition -= lineHeight;
                     }
                 }
             }
 
-            // Save PDF to ByteArrayOutputStream
             document.save(outputStream);
             final var result = outputStream.toByteArray();
-            Files.write(Path.of("test_label" + RandomUtil.getPositiveInt() + ".pdf"), result); // Save PDF
+            Files.write(Path.of("test_label" + RandomUtil.getPositiveInt() + ".pdf"), result);
 
             return result;
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
+
 
 
     public byte[] generateAcceptedOrderPDF(final byte[] qrCodeBytes, final OrderEntity orderEntity) {
@@ -141,11 +154,14 @@ public class PdfGenerator {
         contentStream.showText("# ");
         contentStream.setFont(new PDType1Font(Standard14Fonts.FontName.HELVETICA_BOLD), 12);
         contentStream.showText(Optional.ofNullable(orderEntity.getId()).orElse(0L).toString());
-        contentStream.newLine();
-        contentStream.showText(String.format("%s of %s", page + 1, totalPages));
+
         contentStream.newLine();
         contentStream.setFont(new PDType1Font(Standard14Fonts.FontName.HELVETICA_BOLD), 8);
         contentStream.showText(orderEntity.getCustomer().fullName());
+        contentStream.newLine();
+        if (totalPages > 1) {
+            contentStream.showText(String.format("%s of %s", page + 1, totalPages));
+        }
         contentStream.newLine();
         contentStream.newLine(); // Extra space before items
 
