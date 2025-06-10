@@ -3,16 +3,14 @@ import {OrderDetails, OrderStatus} from "src/models/types.tsx";
 import {
     Avatar,
     Box,
-    Button, Center,
+    Center,
     Group, Image,
-    Modal,
     Pagination, rem, Select,
     Table, Text,
     TextInput, UnstyledButton
 } from "@mantine/core";
-import {useDebouncedValue, useDisclosure, useMediaQuery} from "@mantine/hooks";
-import QrScanner from "src/components/scanner/QrScanner.tsx";
-import {IconCamera, IconChevronDown, IconChevronUp, IconSearch, IconSelector} from "@tabler/icons-react";
+import {useDebouncedValue} from "@mantine/hooks";
+import {IconChevronDown, IconChevronUp, IconSearch, IconSelector} from "@tabler/icons-react";
 import useApi from "src/hooks/useApi.tsx";
 import ordersApi from "src/services/ordersApi.tsx";
 import {useEffect, useState} from "react";
@@ -21,6 +19,7 @@ import groupmeImage from "src/assets/groupme_icon.png";
 import StatusBadge from "src/components/StatusBadge.tsx";
 import classes from "src/components/orders/TableSort.module.css";
 import {statusDisplay} from "src/util/StatusUtils.tsx";
+import QrScannerButton from "src/components/scanner/QrScannerButton.tsx";
 
 
 interface ThProps {
@@ -31,8 +30,6 @@ interface ThProps {
 const AdminOrdersPage = () => {
 
     const navigate = useNavigate();
-    const [opened, { toggle, close }] = useDisclosure(false);
-    const isMobile = useMediaQuery('(max-width: 50em)');
     const getOrders = useApi(ordersApi.getOrdersWithDetails);
     const [searchParams, setSearchParams] = useSearchParams();
 
@@ -148,17 +145,6 @@ const AdminOrdersPage = () => {
 
     return (
         <>
-            <Modal
-                opened={opened}
-                onClose={close}
-                title="Scan the QR code at the top of an order label"
-                fullScreen={isMobile}
-                transitionProps={{ transition: 'fade', duration: 200 }}
-            >
-                <QrScanner onOrderScanned={(orderId) => {
-                    navigate(`/order/${orderId}`);
-                }} />
-            </Modal>
             <Group m="xs" align="end" justify="space-between" wrap="wrap">
                 <Group gap="sm">
                     <TextInput
@@ -179,9 +165,9 @@ const AdminOrdersPage = () => {
                     />
                 </Group>
 
-                <Button onClick={toggle} variant={'outline'} rightSection={<IconCamera/>} >
-                    { opened ? 'Close Scanner' : 'Scan Label' }
-                </Button>
+                <QrScannerButton onOrderScanned={(order: {id: number, uuid: string}) => {
+                    navigate(`/order/${order.id}`);
+                }}/>
             </Group>
             <Table pos={'relative'}>
                 <Table.Thead>

@@ -62,3 +62,30 @@ resource "aws_iam_role_policy_attachment" "lambda_ecs_attach" {
   role       = aws_iam_role.lambda_role.name
   policy_arn = aws_iam_policy.lambda_ecs_policy.arn
 }
+
+# Allow the Lambda to describe and modify your ALB listener
+resource "aws_iam_policy" "lambda_alb_policy" {
+  name        = "lambda_alb_control_policy"
+  description = "Allow Lambda to describe and modify ALB listeners for failover switching"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "elasticloadbalancing:DescribeListeners",
+          "elasticloadbalancing:ModifyListener"
+        ]
+        # scope it down to your listener ARN(s).
+        # Replace the * at the end with your actual listener ID if you want to be more restrictive.
+        Resource = "arn:aws:elasticloadbalancing:us-west-2:638820400855:listener/app/mosaic-oms-alb/*"
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "lambda_alb_attach" {
+  role       = aws_iam_role.lambda_role.name
+  policy_arn = aws_iam_policy.lambda_alb_policy.arn
+}

@@ -26,9 +26,9 @@ public class PdfGenerator {
 
     private static final float LABEL_WIDTH = 175; // 2 3/7 inches in points
     private static final float LABEL_HEIGHT = 255;
-    private static final float PADDING = 5;
+    private static final float PADDING = 3;
     private static final float LINE_HEIGHT = 14f;// Margin for text
-    private static final int ITEMS_PER_PAGE = 10;// Margin for text
+    private static final int ITEMS_PER_PAGE =10;// Margin for text
 
     public byte[] generatePackedOrderPDF(final byte[] qrCodeBytes, final OrderEntity orderEntity) {
         final var items = orderEntity.getOrderItemList().stream()
@@ -47,14 +47,14 @@ public class PdfGenerator {
             for (int pageNum = 0; pageNum < totalPageCount; pageNum++) {
                 final PDPage page = appendPage(document);
                 try (PDPageContentStream contentStream = new PDPageContentStream(document, page)) {
-                    final float qrSize = LABEL_WIDTH * 0.5f;
+                    final float qrSize = LABEL_WIDTH * 0.47f;
                     final float xPosition = LABEL_WIDTH - (qrSize + PADDING);
                     final float yPosition = LABEL_HEIGHT - qrSize;
 
                     contentStream.drawImage(qrCodeImage, xPosition, yPosition, qrSize, qrSize);
                     buildHeading(orderEntity, pageNum, totalPageCount, contentStream);
 
-                    float itemYPosition = LABEL_HEIGHT - qrSize - PADDING;
+                    float itemYPosition = LABEL_HEIGHT - qrSize - PADDING - 10;
                     int lineHeight = 16;
 
                     if (allFulfilled) {

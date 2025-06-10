@@ -128,7 +128,7 @@ public class PrintingService {
     private String getOrderQrCodeData(OrderEntity orderEntity)  {
         try {
             return objectMapper.writeValueAsString(
-                    new QRCodeData(orderEntity.getId().toString(), "order")
+                    new QRCodeData(orderEntity.getId().toString(), "order", orderEntity.getUuid())
             );
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);

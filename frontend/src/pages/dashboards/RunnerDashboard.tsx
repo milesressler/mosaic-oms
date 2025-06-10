@@ -1,19 +1,13 @@
-import {Box, Button, DEFAULT_THEME, Grid, GridCol, rem, Tabs} from "@mantine/core";
+import {Box, Button} from "@mantine/core";
 import {Order, OrderStatus} from "src/models/types.tsx";
 import OrdersTable from "src/components/orders/OrdersTable.tsx";
-import {useMediaQuery} from "@mantine/hooks";
-import { useParams} from "react-router-dom";
-import {SelectedOrderProvider, useSelectedOrder} from "src/contexts/SelectedOrderContext.tsx";
-import OrderDetailSection from "src/components/fillers/OrderDetailSection.tsx";
 import {useEffect, useState} from "react";
 import useApi from "src/hooks/useApi.tsx";
 import ordersApi from "src/services/ordersApi.tsx";
+import QrScannerButton from "src/components/scanner/QrScannerButton.tsx";
 
 export function RunnerDashboard() {
-    const isMobile = useMediaQuery(`(max-width: ${DEFAULT_THEME.breakpoints.lg})`);
-    const { id } = useParams();
     const [ forceRefreshTable, setForceRefreshTable ] = useState(false);
-    const { forceRefresh, selectedOrder } = useSelectedOrder();
     const [ selectedOrders, setSelectedOrders ] = useState<number[]>([]);
     const [ selectedOrderUuids, setSelectedOrderUuids ] = useState<string[]>([]);
     const updateOrderStatusBulkApi = useApi(ordersApi.updateOrderStatusBulk);
@@ -56,53 +50,49 @@ export function RunnerDashboard() {
         updateOrderStatusBulkApi.request(selectedOrderUuids, OrderStatus.READY_FOR_CUSTOMER_PICKUP);
     }
 
-    const orderTable = <><OrdersTable
-        statusFilter={[OrderStatus.PACKED, OrderStatus.IN_TRANSIT]}
-        view={"runner"}
-        onSelectRow={onSelectOrder}
-        showProgressIndicator={true}
-        forceRefresh={forceRefreshTable}
-        selectedOrderIds={selectedOrders}
-        maxNumberOfRecords={10}
-    ></OrdersTable>
-    { (selectedOrders?.length || 0 > 0) &&
-        <Button pos={"absolute"} radius={100} right={10} bottom={30} onClick={deliverSelected}>Mark Selected as Delivered</Button>}
-    </>;
-
-
-    const orderDetailSection = <OrderDetailSection onUpdate={triggerTableRefresh}/>;
 
     return (
-        <SelectedOrderProvider>
-            <Box pos={"relative"}>
-                { isMobile && <Tabs defaultValue="gallery">
+        <Box h={'100%'} w={'100%'} pos={'relative'}>
 
-                <Tabs.Panel value="gallery">
-                    {orderTable}
-                </Tabs.Panel>
+            <OrdersTable
+                statusFilter={[OrderStatus.PACKED, OrderStatus.IN_TRANSIT]}
+                view={"runner"}
+                onSelectRow={onSelectOrder}
+                showProgressIndicator={true}
+                forceRefresh={forceRefreshTable}
+                selectedOrderIds={selectedOrders}
+                maxNumberOfRecords={10}
+            />
+            <Box pos={'absolute'} bottom={20} right={20}>
+                <QrScannerButton
+                    label={''}
+                    onOrderScanned={({ id, uuid }) => {
+                        setSelectedOrders(prev => {
+                            return prev.includes(+id) ? prev : [...prev, +id];
+                        });
 
-                <Tabs.Panel value="messages">
-                    {/*{  outlet}*/}
-                    {selectedOrder && orderDetailSection}
-                </Tabs.Panel>
+                        setSelectedOrderUuids(prev => {
+                                console.log(prev);
+                                const n =
+                                    prev.includes(uuid) ? prev : [...prev, uuid];
+                                console.log(n);
+                                return n;
+                            }
+                        );
+                    }}
+                />
+            </Box>
 
-                <Tabs.Panel value="settings">
-                    Settings tab content
-                </Tabs.Panel>
-            </Tabs> }
-                {!isMobile &&
-            <Grid gutter={25}>
-                <GridCol span={{base: 12, lg:  !!id ? 6 : 12}}>
-                    {orderTable}
-                </GridCol>
-                <GridCol span={6} visibleFrom={'lg'}>
-                    {/*{  outlet}*/}
-                    {selectedOrder && orderDetailSection}
-                </GridCol>
-            </Grid>
-                }
+            <Button
+                disabled={ (selectedOrders ?? []).length === 0}
+                pos={"absolute"}
+                radius={100}
+                left={20}
+                bottom={20}
+                onClick={deliverSelected}>
+                Mark Selected as Delivered
+            </Button>
         </Box>
-    </SelectedOrderProvider>
     )
 }
 export default RunnerDashboard;

@@ -74,7 +74,7 @@ export function NotificationsHandler({}) {
             return;
         }
         notifications.show({
-            title: `${body.userName} updated ${body.orders.length} order statuses to ${statusDisplay(body.orders[0].orderStatus)}`,
+            title: `${body.userName} updated ${body.orders.length} orders to ${statusDisplay(body.orders[0].orderStatus)}`,
             message: null,
             autoClose: 2000,
         })
