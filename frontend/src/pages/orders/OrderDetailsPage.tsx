@@ -23,6 +23,7 @@ import UserAvatar from 'src/components/common/userAvatar/UserAvatar';
 import {IconChevronDown} from '@tabler/icons-react';
 import React from 'react';
 import {statusDisplay} from "src/util/StatusUtils.tsx";
+import AttributeBadges from 'src/components/common/items/AttributeBadges';
 
 interface OrderDetailsProps {
     id: string;
@@ -160,6 +161,7 @@ export default function OrderDetailsPage() {
                             {/*<Table.Th>Category</Table.Th>*/}
                             <Table.Th>#</Table.Th>
                             <Table.Th>Filled</Table.Th>
+                            <Table.Th>Attributes</Table.Th>
                             <Table.Th>Notes</Table.Th>
                         </Table.Tr>
                     </Table.Thead>
@@ -168,7 +170,7 @@ export default function OrderDetailsPage() {
                             <React.Fragment key={cat}>
                                 {/* Category header row with distinct background */}
                                 <Table.Tr>
-                                    <Table.Th  pl={'md'} colSpan={4} style={{ fontWeight: 600, backgroundColor: '#eee' }} >
+                                    <Table.Th  pl={'md'} colSpan={5} style={{ fontWeight: 600, backgroundColor: '#eee' }} >
                                         {categoryDisplayNames[cat as Category]}
                                     </Table.Th>
                                 </Table.Tr>
@@ -180,6 +182,9 @@ export default function OrderDetailsPage() {
                                         </Table.Td>
                                         <Table.Td>{item.quantityRequested}</Table.Td>
                                         <Table.Td>{item.quantityFulfilled}</Table.Td>
+                                        <Table.Td>
+                                            <AttributeBadges attrs={item.attributes}/>
+                                        </Table.Td>
                                         <Table.Td>{item.notes || '-'}</Table.Td>
                                     </Table.Tr>
                                 ))}
