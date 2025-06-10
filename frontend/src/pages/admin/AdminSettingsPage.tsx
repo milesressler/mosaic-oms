@@ -1,59 +1,64 @@
-import {Box, Select, Switch} from "@mantine/core";
-import {useFeatures} from "src/contexts/FeaturesContext.tsx";
-import {useEffect} from "react";
-import {OrderStatus} from "src/models/types.tsx";
-import {statusDisplay} from "src/util/StatusUtils.tsx";
+import { Box, Select, Switch, Stack } from "@mantine/core";
+import { useFeatures } from "src/contexts/FeaturesContext.tsx";
+import { useEffect } from "react";
+import { OrderStatus } from "src/models/types.tsx";
+import { statusDisplay } from "src/util/StatusUtils.tsx";
 
+const orderStatusOptions = [OrderStatus.ACCEPTED, OrderStatus.PACKED].map(
+    (status) => ({
+        label: statusDisplay(status),
+        value: status,
+    })
+);
 
 const AdminSettingsPage = () => {
-
     const {
-        groupMeEnabled, setGroupMeEnabled,
-        printOnTransitionToStatus, setPrintOnTransitionToStatus,
-        featuresLoading, refreshFeatures
+        groupMeEnabled,
+        setGroupMeEnabled,
+        ordersOpen,
+        setOrdersOpen,
+        printOnTransitionToStatus,
+        setPrintOnTransitionToStatus,
+        featuresLoading,
+        refreshFeatures,
     } = useFeatures();
-
-    const handleGroupMeToggler = (isChecked: boolean) => {
-        setGroupMeEnabled(isChecked);
-    }
 
     useEffect(() => {
         refreshFeatures();
-    }, []);
-
-
-
+    }, [refreshFeatures]);
 
     return (
-        <>
-            <Box p={5}>
+        <Box p="md">
+            <Stack spacing="md">
                 <Switch
                     checked={groupMeEnabled}
                     disabled={featuresLoading}
                     label="GroupMe Order Creation Post"
-                    description="Crossposts orders to GroupMe upon creation"
-                    onChange={(event) => handleGroupMeToggler(event.currentTarget.checked)}
+                    description="Cross‑posts orders to GroupMe when created"
+                    onChange={(event) => setGroupMeEnabled(event.currentTarget.checked)}
                 />
+
+                <Switch
+                    checked={ordersOpen}
+                    disabled={featuresLoading}
+                    label="Orders Open"
+                    description="Enable or disable creating orders"
+                    onChange={(event) => setOrdersOpen(event.currentTarget.checked)}
+                />
+
                 <Select
                     disabled={featuresLoading}
-                    value={printOnTransitionToStatus}
-                    label="Print Label on Order Transition to status:"
+                    value={printOnTransitionToStatus ?? null}
+                    label="Print label when order transitions to:"
                     placeholder="Disabled"
-                    data={[
-                        OrderStatus.ACCEPTED,
-                        OrderStatus.PACKED
-                    ].map((orderStatus) => ({
-                        label: statusDisplay(orderStatus),
-                        value: orderStatus
-                    }))}
+                    data={orderStatusOptions}
                     allowDeselect
-                    onChange={(_value, option) => {
-                        setPrintOnTransitionToStatus(_value as OrderStatus)
-                    }}
+                    onChange={(value) =>
+                        setPrintOnTransitionToStatus(value as OrderStatus)
+                    }
                 />
-            </Box>
-
-        </>
+            </Stack>
+        </Box>
     );
 };
 

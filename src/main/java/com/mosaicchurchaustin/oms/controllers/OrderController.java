@@ -8,6 +8,7 @@ import com.mosaicchurchaustin.oms.data.request.UpdateOrderStatusBulkRequest;
 import com.mosaicchurchaustin.oms.data.response.OrderDetailResponse;
 import com.mosaicchurchaustin.oms.data.response.OrderFeedResponse;
 import com.mosaicchurchaustin.oms.data.response.OrderResponse;
+import com.mosaicchurchaustin.oms.services.FeaturesService;
 import com.mosaicchurchaustin.oms.services.OrderService;
 import com.mosaicchurchaustin.oms.services.sockets.OrderNotifier;
 import jakarta.validation.Valid;
@@ -39,6 +40,7 @@ public class OrderController {
     @ResponseBody
     @PostMapping(path = "/order", produces = MediaType.APPLICATION_JSON_VALUE)
     public OrderDetailResponse submitOrder(@Valid @RequestBody CreateOrderRequest createOrderRequest) {
+
         // Better validation/error handler
         final OrderEntity orderEntity = orderService.createOrder(createOrderRequest);
         orderNotifier.notifyOrderCreated(orderEntity);

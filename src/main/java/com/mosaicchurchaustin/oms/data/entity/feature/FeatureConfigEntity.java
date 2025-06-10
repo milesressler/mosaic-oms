@@ -48,6 +48,9 @@ public class FeatureConfigEntity extends BaseEntity implements Auditable, Serial
     @Column(name = "print_on_transition_to_status", nullable = false)
     OrderStatus printOnTransitionToStatus;
 
+    @Setter
+    @Column(name = "orders_open", nullable = false)
+    boolean ordersOpen;
 
     @Transient
     @Getter
@@ -62,7 +65,9 @@ public class FeatureConfigEntity extends BaseEntity implements Auditable, Serial
     @Override
     public Map<String, String> getCurrentState() {
         return Map.of(
-                "groupMeEnabled", String.valueOf(groupMeEnabled)
+                "groupMeEnabled", String.valueOf(groupMeEnabled),
+                "printOnTransitionToStatus", String.valueOf(printOnTransitionToStatus),
+                "ordersOpen", String.valueOf(ordersOpen)
         );
     }
 }

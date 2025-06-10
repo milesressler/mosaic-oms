@@ -9,7 +9,9 @@ export interface FeaturesContextType {
     refreshFeatures: () => void;
     featuresLoading: boolean;
     groupMeEnabled: boolean;
+    ordersOpen: boolean;
     setGroupMeEnabled: (enabled: boolean) => void
+    setOrdersOpen: (enabled: boolean) => void
     printOnTransitionToStatus: OrderStatus|null;
     setPrintOnTransitionToStatus: (orderStatus: OrderStatus|null) => void
 }
@@ -31,11 +33,14 @@ export const FeaturesProvider: React.FC<{ children: ReactNode }> = ({ children }
     const updateFeaturesApi = useApi(FeaturesApi.updateFeatureConfig);
 
     const setGroupMeEnabled = (enabled: boolean) => {
-        updateFeaturesApi.request(enabled, null);
+        updateFeaturesApi.request(enabled, null, null);
+    };
+    const setOrdersOpen = (enabled: boolean) => {
+        updateFeaturesApi.request(null, enabled, null);
     };
 
     const setPrintOnTransitionToStatus = (orderStatus: OrderStatus|null) => {
-        updateFeaturesApi.request(null, orderStatus ?? "");
+        updateFeaturesApi.request(null, null, orderStatus ?? "");
     };
 
     useSubscription("/topic/features/updated", () => {
@@ -65,9 +70,11 @@ export const FeaturesProvider: React.FC<{ children: ReactNode }> = ({ children }
 
     return (
         <FeaturesContext.Provider value={{
+            ordersOpen: !!features?.ordersOpen,
             groupMeEnabled: !!features?.groupMeEnabled,
             printOnTransitionToStatus: features?.printOnTransitionToStatus ?? null,
             setGroupMeEnabled,
+            setOrdersOpen,
             setPrintOnTransitionToStatus,
             featuresLoading: featuresApi.loading || updateFeaturesApi.loading,
             refreshFeatures: featuresApi.request

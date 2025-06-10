@@ -37,6 +37,9 @@ public class FeaturesService {
         if (request.groupMeEnabled() != null) {
             existing.setGroupMeEnabled(request.groupMeEnabled());
         }
+        if (request.ordersOpen() != null) {
+            existing.setOrdersOpen(request.ordersOpen());
+        }
 
         if (request.printOnTransitionToStatus() != null) {
             if (request.printOnTransitionToStatus().isBlank()) {

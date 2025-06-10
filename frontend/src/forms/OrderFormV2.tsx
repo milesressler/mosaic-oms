@@ -1,6 +1,7 @@
 import { useEffect, useState} from "react";
 import {UseFormReturnType} from "@mantine/form";
 import {
+    Alert,
     Badge, Blockquote,
     Box,
     Button,
@@ -42,7 +43,7 @@ export function OrderFormV2({ form }: Props) {
     const theme = useMantineTheme();
 
     const isMobile = useMediaQuery(`(max-width: ${DEFAULT_THEME.breakpoints.lg})`);
-    const { groupMeEnabled } = useFeatures();
+    const { groupMeEnabled, ordersOpen, featuresLoading } = useFeatures();
     const { startOrder, trackStep, completeOrder, itemAdded } = useOrderTracking();
 
 
@@ -149,6 +150,12 @@ export function OrderFormV2({ form }: Props) {
                  flexDirection: 'column',
                  minHeight: 0,               // let children shrink
              }}>
+            {/* ❌ Orders closed banner */}
+            {!featuresLoading && !ordersOpen && (
+                <Alert color="red" title="Orders are currently closed" mb="md">
+                    We’re not accepting new orders right now—please check back later.
+                </Alert>
+            )}
             <LoadingOverlay visible={createOrderAPI.loading} />
             <Stepper
                 active={steps.indexOf(step)}
@@ -342,7 +349,9 @@ export function OrderFormV2({ form }: Props) {
                     </Button> }
 
                     {step === "confirm" &&
-                    <Button onClick={() => submitOrder(form.values)}>
+                    <Button
+                        disabled={!ordersOpen || featuresLoading}
+                        onClick={() => submitOrder(form.values)}>
                         { groupMeEnabled ? "Send to GroupMe" : "Submit Order"}
                     </Button>}
                 </Group>

@@ -61,6 +61,9 @@ public class OrderService {
     @Autowired
     UserService userService;
 
+    @Autowired
+    FeaturesService featuresService;
+
     public List<OrderHistoryEntity> getOrderHistory() {
         final Pageable pageable = PageRequest.of(0, 20, Sort.by(Sort.Order.desc("timestamp")));
 
@@ -241,6 +244,10 @@ public class OrderService {
 
     @Transactional
     public OrderEntity createOrder(final CreateOrderRequest request) {
+        if (!featuresService.getFeaturesConfig().isOrdersOpen()) {
+            throw new InvalidRequestException("Orders are not open.");
+        }
+
         final UserEntity userEntity = userService.currentUser();
         final CustomerEntity customer = Optional.ofNullable(request.customerUuid())
                 .map(UUID::toString)
