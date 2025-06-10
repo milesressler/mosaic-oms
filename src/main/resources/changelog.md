@@ -6,6 +6,7 @@
 - Finished label printing with QR code scanning in dashboards
 - Fallback page when service has not yet started up
 - Toggle to enable/disable order acceptance
+- Item attributes on order details page
 
 ### Fixed
 - Navigation bar issues
