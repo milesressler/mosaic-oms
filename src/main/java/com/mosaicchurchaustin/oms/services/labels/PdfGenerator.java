@@ -81,7 +81,7 @@ public class PdfGenerator {
 
             document.save(outputStream);
             final var result = outputStream.toByteArray();
-            Files.write(Path.of("test_label" + RandomUtil.getPositiveInt() + ".pdf"), result);
+//            Files.write(Path.of("test_label" + RandomUtil.getPositiveInt() + ".pdf"), result);
 
             return result;
         } catch (IOException e) {

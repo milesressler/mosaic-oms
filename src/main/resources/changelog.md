@@ -3,6 +3,16 @@
 ## [2025-06-05]
 
 ### Added
+- Finished label printing with QR code scanning in dashboards
+- Fallback page when service has not yet started up
+
+### Fixed
+- Navigation bar issues
+
+
+## [2025-06-05]
+
+### Added
 - Customer details page
 - Flagging a customer (shows on customer search)
 - Log shower waiver signed date

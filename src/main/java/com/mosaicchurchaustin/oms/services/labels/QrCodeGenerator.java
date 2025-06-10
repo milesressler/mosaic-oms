@@ -3,10 +3,10 @@ package com.mosaicchurchaustin.oms.services.labels;
 
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.EncodeHintType;
+import com.google.zxing.WriterException;
 import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.QRCodeWriter;
 import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel;
-import lombok.SneakyThrows;
 import org.springframework.stereotype.Component;
 
 import javax.imageio.ImageIO;
@@ -19,7 +19,6 @@ import java.util.Hashtable;
 public class QrCodeGenerator {
     final QRCodeWriter qrCodeWriter = new QRCodeWriter();
 
-    @SneakyThrows
     public byte[] generateQRCode(final String data) {
 
         Hashtable<EncodeHintType, Object> hints = new Hashtable<>() {{
@@ -30,7 +29,12 @@ public class QrCodeGenerator {
 
         // Ask ZXing for plenty of room (pixels, not modules)
         int qrPixels = 300;
-        BitMatrix matrix = qrCodeWriter.encode(data, BarcodeFormat.QR_CODE, qrPixels, qrPixels, hints);
+        BitMatrix matrix = null;
+        try {
+            matrix = qrCodeWriter.encode(data, BarcodeFormat.QR_CODE, qrPixels, qrPixels, hints);
+        } catch (WriterException e) {
+            throw new RuntimeException(e);
+        }
 
         int w = matrix.getWidth();                 // real size chosen by ZXing
         BufferedImage img = new BufferedImage(w, w, BufferedImage.TYPE_INT_RGB);

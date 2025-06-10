@@ -24,6 +24,9 @@ public class PrintingService {
     @Value("${printnode.api.key}")
     private String apiKey;
 
+    @Value("${mosaic.oms.frontend.url}")
+    private String frontendUrl;
+
     @Value("${printnode.printer.id}")
     private Integer printerId;
 
@@ -126,9 +129,10 @@ public class PrintingService {
     }
 
     private String getOrderQrCodeData(OrderEntity orderEntity)  {
+        final String url = String.format("%s/order/%x?source=qr", frontendUrl, orderEntity.getId());
         try {
             return objectMapper.writeValueAsString(
-                    new QRCodeData(orderEntity.getId().toString(), "order", orderEntity.getUuid())
+                    new QRCodeData(orderEntity.getId().toString(), "order", orderEntity.getUuid(), url)
             );
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
