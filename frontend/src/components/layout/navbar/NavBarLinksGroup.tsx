@@ -29,16 +29,19 @@ export function LinksGroup({ onClick, icon: Icon, rightSection, label, initially
     const hasLinks = Array.isArray(links);
     const [opened, setOpened] = useState(true);
     const items = (hasLinks ? links : []).map((link) => (
-         link.onClick ? <UnstyledButton  w={'100%'} onClick={link.onClick} className={classes.link}>
-                 <Group justify='space-between' pr={'lg'}>
+         link.onClick ?
+             <UnstyledButton  w="calc(100% - var(--mantine-spacing-xl))" onClick={link.onClick} className={classes.link}>
+                 <Group justify='space-between'>
                      <span>{link.label}</span>
                      {link.rightSection}
-                 </Group>            </UnstyledButton>
+                 </Group>
+             </UnstyledButton>
              :
         <Link onClick={link.onClick} className={classes.link} key={link.key} to={link.link}
               data-active={link.key === activeRoute.key || undefined}
-
-        >{link.label}</Link>
+        >
+            {link.label}
+        </Link>
     ));
 
     const controlContent = (
