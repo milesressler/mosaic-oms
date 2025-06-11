@@ -19,7 +19,7 @@ export const CustomerResultCard = ({onClick, key, text, useAlternateStyle, flagg
             style={(theme) => ({
                 cursor: 'pointer',
                 transition: 'background-color 0.2s ease',
-                backgroundColor: useAlternateStyle ? theme.colors.gray[0] : 'transparent',
+                backgroundColor: flagged ? theme.colors.red[0] : useAlternateStyle ? theme.colors.gray[0] : 'transparent',
                 border: useAlternateStyle ? `1px solid ${theme.colors.blue[5]}` : '1px solid transparent',
                 '&:hover': {
                     backgroundColor: useAlternateStyle ? theme.colors.blue[1] : theme.colors.gray[1]

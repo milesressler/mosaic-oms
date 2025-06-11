@@ -8,7 +8,6 @@ import com.mosaicchurchaustin.oms.data.request.UpdateOrderStatusBulkRequest;
 import com.mosaicchurchaustin.oms.data.response.OrderDetailResponse;
 import com.mosaicchurchaustin.oms.data.response.OrderFeedResponse;
 import com.mosaicchurchaustin.oms.data.response.OrderResponse;
-import com.mosaicchurchaustin.oms.services.FeaturesService;
 import com.mosaicchurchaustin.oms.services.OrderService;
 import com.mosaicchurchaustin.oms.services.sockets.OrderNotifier;
 import jakarta.validation.Valid;
@@ -28,6 +27,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api")
@@ -75,8 +75,10 @@ public class OrderController {
                                          @RequestParam(value = "detailed", required = false)
                                          final boolean detailed,
                                          @RequestParam(value = "customer", required = false)
-                                         final String customer) {
-        final Page<OrderEntity> results = orderService.getOrders(pageable, statuses, customer);
+                                         final String customer,
+                                         @RequestParam(value = "customerUuid", required = false)
+                                         final UUID customerUuid) {
+        final Page<OrderEntity> results = orderService.getOrders(pageable, statuses, customer, customerUuid != null ? customerUuid.toString() : null);
         if (detailed) {
             return results.map(OrderDetailResponse::from);
         } else {

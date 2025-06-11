@@ -2,6 +2,7 @@ import {useNavigate, useSearchParams} from "react-router-dom";
 import {OrderDetails, OrderStatus} from "src/models/types.tsx";
 import {
     Avatar,
+    Badge,
     Box,
     Center,
     Group, Image,
@@ -10,7 +11,7 @@ import {
     TextInput, UnstyledButton
 } from "@mantine/core";
 import {useDebouncedValue} from "@mantine/hooks";
-import {IconChevronDown, IconChevronUp, IconSearch, IconSelector} from "@tabler/icons-react";
+import {IconChevronDown, IconChevronUp, IconSearch, IconSelector, IconX} from "@tabler/icons-react";
 import useApi from "src/hooks/useApi.tsx";
 import ordersApi from "src/services/ordersApi.tsx";
 import {useEffect, useState} from "react";
@@ -34,6 +35,7 @@ const AdminOrdersPage = () => {
     const [searchParams, setSearchParams] = useSearchParams();
 
     // Get page from URL or default to 1
+    const customerUuidFilter = searchParams.get('customerUuid') || null;
     const page = Number(searchParams.get("page")) || 1;
     const sortField = searchParams.get("sort") || 'created';
     const reversed = (searchParams.get("direction") || 'desc') === 'desc';
@@ -50,9 +52,10 @@ const AdminOrdersPage = () => {
             page: page - 1,
             size: 10,
             sort: `${sortField},${reversed ? 'desc' : 'asc'}`,
-            customer: customerFilter
+            customer: customerFilter,
+            customerUuid: customerUuidFilter,
         });
-    }, [page, sortField, reversed, statusFilter, customerFilter]);
+    }, [page, sortField, reversed, statusFilter, customerFilter, customerUuidFilter]);
 
     useEffect(() => {
 
@@ -86,6 +89,16 @@ const AdminOrdersPage = () => {
         }
         // Optionally reset page when status filter changes:
         params.set("page", "1");
+        setSearchParams(params, { replace: true });
+    };
+    const setCustomerUuid = (uuid: string | null) => {
+        const params = new URLSearchParams(searchParams);
+        if (!uuid) {
+            params.delete('customerUuid');
+        } else {
+            params.set('customerUuid', uuid);
+        }
+        params.set('page', '1'); // reset pagination
         setSearchParams(params, { replace: true });
     };
 
@@ -149,7 +162,7 @@ const AdminOrdersPage = () => {
                 <Group gap="sm">
                     <TextInput
                         // label={"Customer"}
-                        placeholder="Search by customer"
+                        placeholder="Search customer name"
                         leftSection={<IconSearch size={16} stroke={1.5} />}
                         value={customerSearchString || ''}
                         onChange={(e) => setCustomerSearchString(e.currentTarget.value)}
@@ -163,6 +176,25 @@ const AdminOrdersPage = () => {
                         value={statusFilter}
                         onChange={(val: string|null) => (setStatusSearch(val))}
                     />
+                    {customerUuidFilter && (
+                        <Badge
+                            size={'md'}
+                            rightSection={
+                                <IconX
+                                    size={16}
+                                    style={{ cursor: 'pointer' }}
+                                    onClick={() => setCustomerUuid(null)}
+                                />
+                            }
+                            variant="outline"
+                            // color="teal"
+                        >
+                            Customer:
+                            <Text span ml={4}>
+                                {customerUuidFilter.slice(0, 8)}…
+                            </Text>
+                        </Badge>
+                    )}
                 </Group>
 
                 <QrScannerButton onOrderScanned={(order: {id: number, uuid: string}) => {

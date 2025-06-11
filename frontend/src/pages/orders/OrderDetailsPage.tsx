@@ -20,10 +20,11 @@ import {
 } from '@mantine/core';
 import {Category, categoryDisplayNames, OrderStatus} from "src/models/types.tsx";
 import UserAvatar from 'src/components/common/userAvatar/UserAvatar';
-import {IconChevronDown} from '@tabler/icons-react';
+import {IconArrowRight, IconChevronDown} from '@tabler/icons-react';
 import React from 'react';
 import {statusDisplay} from "src/util/StatusUtils.tsx";
 import AttributeBadges from 'src/components/common/items/AttributeBadges';
+import classes from "src/styles/LinkStyles.module.css";
 
 interface OrderDetailsProps {
     id: string;
@@ -99,13 +100,17 @@ export default function OrderDetailsPage() {
                     </Menu.Dropdown>
                 </Menu>
             </Group>
-            <Group justify="apart" mb="md" align="flex-end">
+            <Group justify="apart" mb="md">
                 <Stack gap={0}>
-                    <Link style={{ textDecoration: 'none' }}
-                           to={`/customer/${order.customer.uuid}`}>
-                        <Title style={{cursor: 'pointer'}} order={2} mt={4}>
+
+                    <Link
+                        to={`/customer/${order.customer.uuid}`}
+                        className={classes.noLinkStyle}
+                    >
+                        <Title order={2}>
                             {order.customer.firstName} {order.customer.lastName}
                         </Title>
+                        <IconArrowRight size={18} stroke={1.5} />
                     </Link>
                 </Stack>
                 <Badge color={STATUS_COLORS[order.orderStatus] || 'gray'} variant="light">

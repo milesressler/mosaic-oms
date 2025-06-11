@@ -5,6 +5,7 @@ import {useEffect} from "react";
 import {useNavigate, useSearchParams} from "react-router-dom";
 import {Customer} from "src/models/types.tsx";
 import {DateTime} from "luxon";
+import {IconFlag} from "@tabler/icons-react";
 
 export function CustomerManagementPage() {
 
@@ -33,6 +34,7 @@ export function CustomerManagementPage() {
                       onClick={() => navigate(`/customer/${customer.uuid}`)}>
                 <Table.Td>{customer.firstName}</Table.Td>
                 <Table.Td>{customer.lastName}</Table.Td>
+                <Table.Td>{customer.flagged && <IconFlag color={'red'}/>}</Table.Td>
                 <Table.Td>{customer.created && DateTime.fromMillis(customer.created).toLocaleString(DateTime.DATETIME_SHORT)}</Table.Td>
             </Table.Tr>
         </>
@@ -46,6 +48,7 @@ export function CustomerManagementPage() {
                     <Table.Tr>
                         <Table.Th>First Name</Table.Th>
                         <Table.Th>Last Name</Table.Th>
+                        <Table.Th></Table.Th>
                         <Table.Th>Created</Table.Th>
                         {/*<Table.Th>Shower Waiver Signed</Table.Th>*/}
                     </Table.Tr>

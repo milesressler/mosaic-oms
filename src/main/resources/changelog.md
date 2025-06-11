@@ -10,6 +10,7 @@
 
 ### Fixed
 - Navigation bar issues
+- Customer search filters
 
 
 ## [2025-06-05]

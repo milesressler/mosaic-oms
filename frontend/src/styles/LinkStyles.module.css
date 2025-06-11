@@ -1,0 +1,12 @@
+.noLinkStyle {
+    text-decoration: none;  /* kills the underline          */
+    color: inherit;         /* kills the browser “link blue” */
+    cursor: pointer;        /* handy for accessibility       */
+    display: inline-flex;   /* so the icon lines up nicely   */
+    align-items: center;
+    gap: 4px;               /* small space before the icon   */
+}
+
+.noLinkStyle:hover {
+    text-decoration: underline; /* optional hover feedback */
+}

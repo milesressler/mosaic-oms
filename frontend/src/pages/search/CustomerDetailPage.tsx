@@ -14,7 +14,7 @@ import {
     useMantineTheme,
 } from '@mantine/core';
 import {IconBath, IconEdit, IconShoppingCart, IconUser} from '@tabler/icons-react';
-import { useParams } from 'react-router-dom';
+import {useNavigate, useParams} from 'react-router-dom';
 import {useEffect, useState} from 'react';
 import { DateTime } from 'luxon';
 
@@ -36,6 +36,7 @@ const CustomerDetailPage = () => {
 
     const [isEditingWaiver, setIsEditingWaiver] = useState(false);
     const [waiverDate, setWaiverDate] = useState<Date>(new Date());
+    const navigate = useNavigate();
 
     const handleStartEdit = () => {
         setIsEditingWaiver(true);
@@ -54,7 +55,7 @@ const CustomerDetailPage = () => {
     useEffect(() => {
         if (uuid) {
             customerRequest.request(uuid);
-            ordersRequest.request({ customer: uuid, size: 3 });
+            ordersRequest.request({ customerUuid: uuid, size: 3 });
         }
     }, [uuid]);
 
@@ -270,8 +271,9 @@ const CustomerDetailPage = () => {
                         })}
                     </Stack>
                     { (ordersRequest.data?.totalElements ?? 0) > 3 && <Group justify="end" mt="sm">
-                        <Button variant="default" size="xs">
-                            View All
+                        <Button variant="default" size="xs"
+                        onClick={() => navigate(`/orders?customerUuid=${customer.uuid}`)}>
+                            View All {ordersRequest.data?.totalElements}
                         </Button>
                     </Group>
                     }</>
