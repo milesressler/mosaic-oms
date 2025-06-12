@@ -153,7 +153,7 @@ export function OrderFormV2({ form }: Props) {
             {/* ❌ Orders closed banner */}
             {!featuresLoading && !ordersOpen && (
                 <Alert color="red" title="Orders are currently closed" mb="md">
-                    We’re not accepting new orders right now—please check back later.
+                    We’re not accepting new orders right now.
                 </Alert>
             )}
             <LoadingOverlay visible={createOrderAPI.loading} />

@@ -7,6 +7,7 @@
 - Fallback page when service has not yet started up
 - Toggle to enable/disable order acceptance
 - Item attributes on order details page
+- Customer search and sorting
 
 ### Fixed
 - Navigation bar issues

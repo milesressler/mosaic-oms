@@ -4,8 +4,8 @@ import {Customer, CustomerSearch, Page} from "src/models/types.tsx";
 const search = (searchString: string) =>
     client.get<CustomerSearch[]>(`/customer/find?q=${searchString}`);
 
-const getCustomers = (page: number, size: number) =>
-    client.get<Page<Customer>>(`/customer`, {params: {page, size}});
+const getCustomers = (page: number, size: number, params?: {name? :string|null, flagged?: boolean|null}) =>
+    client.get<Page<Customer>>(`/customer`, {params: {page, size, ...params}});
 
 const getCustomer = (uuid: string) =>
     client.get<Customer>(`/customer/${uuid}`);

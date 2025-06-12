@@ -5,6 +5,7 @@ import com.mosaicchurchaustin.oms.data.projections.CustomerSearchProjection;
 import com.mosaicchurchaustin.oms.data.request.UpdateCustomerRequest;
 import com.mosaicchurchaustin.oms.exception.EntityNotFoundException;
 import com.mosaicchurchaustin.oms.repositories.CustomerRepository;
+import com.mosaicchurchaustin.oms.specifications.CustomerSpecification;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -45,7 +46,10 @@ public class CustomerService {
     }
 
     @Transactional
-    public Page<CustomerEntity> getCustomers(final Pageable pageable) {
-        return customerRepository.findAll(pageable);
+    public Page<CustomerEntity> getCustomers(
+            final Pageable pageable,
+            final String name,
+            final Boolean flagged) {
+        return customerRepository.findAll(CustomerSpecification.withFilters(name, flagged), pageable);
     }
 }
