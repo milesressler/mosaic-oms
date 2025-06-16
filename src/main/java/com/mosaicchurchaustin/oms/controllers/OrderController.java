@@ -77,8 +77,10 @@ public class OrderController {
                                          @RequestParam(value = "customer", required = false)
                                          final String customer,
                                          @RequestParam(value = "customerUuid", required = false)
-                                         final UUID customerUuid) {
-        final Page<OrderEntity> results = orderService.getOrders(pageable, statuses, customer, customerUuid != null ? customerUuid.toString() : null);
+                                         final UUID customerUuid,
+                                         @RequestParam(value = "orderId", required = false)
+                                         final Long orderId) {
+        final Page<OrderEntity> results = orderService.getOrders(pageable, statuses, customer, customerUuid != null ? customerUuid.toString() : null, orderId);
         if (detailed) {
             return results.map(OrderDetailResponse::from);
         } else {

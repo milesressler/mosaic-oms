@@ -14,7 +14,7 @@ import java.util.List;
 
 public class OrdersSpecification {
 
-    public static Specification<OrderEntity> withFilters(List<OrderStatus> statuses, String customerName, String customerUuid) {
+    public static Specification<OrderEntity> withFilters(List<OrderStatus> statuses, String customerName, String customerUuid, Long orderId) {
         return (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
 
@@ -56,6 +56,9 @@ public class OrdersSpecification {
 
             if (customerUuid != null && !customerUuid.isBlank()) {
                 predicates.add(cb.equal(root.get("customer").get("uuid"), customerUuid));
+            }
+            if (orderId != null) {
+                predicates.add(cb.equal( root.get("id"), orderId));
             }
 
             return cb.and(predicates.toArray(new Predicate[0]));

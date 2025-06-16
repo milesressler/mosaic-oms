@@ -37,6 +37,7 @@ const AdminOrdersPage = () => {
     // Get page from URL or default to 1
     const customerUuidFilter = searchParams.get('customerUuid') || null;
     const page = Number(searchParams.get("page")) || 1;
+    const orderId = Number(searchParams.get("orderId")) || '';
     const sortField = searchParams.get("sort") || 'created';
     const reversed = (searchParams.get("direction") || 'desc') === 'desc';
     const statusFilter = searchParams.get("status") || null;
@@ -50,22 +51,35 @@ const AdminOrdersPage = () => {
         getOrders.request({
             status: statusFilter,
             page: page - 1,
+            orderId: orderId,
             size: 10,
             sort: `${sortField},${reversed ? 'desc' : 'asc'}`,
             customer: customerFilter,
             customerUuid: customerUuidFilter,
         });
-    }, [page, sortField, reversed, statusFilter, customerFilter, customerUuidFilter]);
+    }, [page, sortField, reversed, statusFilter, customerFilter, customerUuidFilter, orderId]);
 
     useEffect(() => {
-
         const params = new URLSearchParams(searchParams);
-        params.set("customer", debouncedCustomer || '');
+        if (debouncedCustomer) {
+            params.set("customer", debouncedCustomer);
+        } else {
+            params.delete('customer');
+        }
         // Optionally reset page when status filter changes:
         params.set("page", "1");
         setSearchParams(params, { replace: true });
     }, [debouncedCustomer]);
 
+    const setOrderId = (orderId: string) => {
+        const params = new URLSearchParams(searchParams);
+        if (orderId) {
+            params.set("orderId", orderId);
+        } else {
+            params.delete('orderId');
+        }
+        setSearchParams(params, { replace: true });
+    };
     const setPage = (page: number) => {
         const params = new URLSearchParams(searchParams);
         params.set("page", page.toString());
@@ -175,6 +189,14 @@ const AdminOrdersPage = () => {
                         placeholder="Filter by status"
                         value={statusFilter}
                         onChange={(val: string|null) => (setStatusSearch(val))}
+                    />
+                    <TextInput
+                        // label={"Customer"}
+                        placeholder="Order ID (Exact match)"
+                        leftSection={<IconSearch size={16} stroke={1.5} />}
+                        value={orderId || ''}
+                        type={'number'}
+                        onChange={(e) => setOrderId(e.currentTarget.value)}
                     />
                     {customerUuidFilter && (
                         <Badge

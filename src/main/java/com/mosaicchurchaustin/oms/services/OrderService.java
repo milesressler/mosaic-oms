@@ -77,12 +77,12 @@ public class OrderService {
         return orderHistoryRepository.findAllByOrderEntityId(pageable, orderId).getContent();
     }
 
-    public Page<OrderEntity> getOrders(final Pageable pageable, final List<String> statusFilters, final String customer, final String customerUuid) {
+    public Page<OrderEntity> getOrders(final Pageable pageable, final List<String> statusFilters, final String customer, final String customerUuid, final Long orderId) {
         final List<OrderStatus> statusList = (statusFilters != null && !statusFilters.isEmpty())
                 ? statusFilters.stream().map(OrderStatus::from).toList()
                 : null;
 
-        final Specification<OrderEntity> spec = OrdersSpecification.withFilters(statusList, customer, customerUuid);
+        final Specification<OrderEntity> spec = OrdersSpecification.withFilters(statusList, customer, customerUuid, orderId);
 
         return orderRepository.findAll(spec, pageable);
     }
