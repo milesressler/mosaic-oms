@@ -4,10 +4,15 @@ import com.mosaicchurchaustin.oms.data.entity.BaseUuidEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 import org.apache.commons.lang3.StringUtils;
 
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -38,6 +43,11 @@ public class CustomerEntity extends BaseUuidEntity {
 
     @Column(name = "shower_waiver_completed")
     Instant showerWaiverCompleted;
+
+    public boolean isWaiverValid() {
+        return this.showerWaiverCompleted != null &&
+                this.showerWaiverCompleted.isAfter(Instant.now().minus(365, ChronoUnit.DAYS));
+    }
 
     public String fullName() {
         return Stream.of(firstName, lastName)

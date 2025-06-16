@@ -18,6 +18,7 @@ public class CustomerResponse {
     private String displayName;
     private Long created;
     private Long showerWaiverCompleted;
+    private boolean waiverIsValid;
     private String uuid;
     private boolean flagged;
 
@@ -32,6 +33,7 @@ public class CustomerResponse {
                 .uuid(customerEntity.getUuid())
                 .created(customerEntity.getCreated().toEpochMilli())
                 .showerWaiverCompleted(Optional.ofNullable(customerEntity.getShowerWaiverCompleted()).map(Instant::toEpochMilli).orElse(null))
+                .waiverIsValid(customerEntity.isWaiverValid())
                 .build();
     }
 }

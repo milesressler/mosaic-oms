@@ -16,11 +16,10 @@ import {
     TextInput,
     Title, useMantineTheme
 } from "@mantine/core";
-import {useDebouncedValue, useMediaQuery} from "@mantine/hooks";
-import {CustomerSearch, OrderRequest} from "src/models/types";
+import {useMediaQuery} from "@mantine/hooks";
+import {CustomerSearchResult, OrderRequest} from "src/models/types";
 import ItemSelection from "src/components/orders/ItemSelection.tsx";
 import useApi from "src/hooks/useApi.tsx";
-import customersApi from "src/services/customersApi.tsx";
 import CustomerResultCard from "src/forms/CustomerResultCard.tsx";
 import {FormOrderItem, OrderFormValues} from "src/models/forms.tsx";
 import {useFeatures} from "src/contexts/FeaturesContext.tsx";
@@ -34,6 +33,7 @@ import {
     IconUserCheck
 } from "@tabler/icons-react";
 import {useOrderTracking} from "src/hooks/useOrderTracking.tsx";
+import CustomerSearch from "src/components/customer/CustomerSearch.tsx";
 
 interface Props {
     form: UseFormReturnType<OrderFormValues>,
@@ -46,12 +46,9 @@ export function OrderFormV2({ form }: Props) {
     const { groupMeEnabled, ordersOpen, featuresLoading } = useFeatures();
     const { startOrder, trackStep, completeOrder, itemAdded } = useOrderTracking();
 
-
     const [step, setStep] = useState<"customer" | "items" | "additional" | "confirm">("customer");
     const [useCustomerSearch, setUseCustomerSearch] = useState(true);
-    const [searchString, setSearchString] = useState("");
-    const [debouncedSearch] = useDebouncedValue(searchString, 300);
-    const searchCustomersApi = useApi(customersApi.search);
+
     const createOrderAPI = useApi(ordersApi.createOrder);
 
     const steps = ["customer", "items", "additional", "confirm"];
@@ -60,23 +57,14 @@ export function OrderFormV2({ form }: Props) {
         startOrder();
     }, []);
 
-    useEffect(() => {
-        if (debouncedSearch) {
-            searchCustomersApi.request(debouncedSearch);
-        }
-    }, [debouncedSearch]);
-
-
-    const handleCreateNew = () => {
-        const [first, ...rest] = searchString.split(" ")
+    const handleCreateNew = (first: string, last: string) => {
         form.setValues({
             customerId: '',
             firstName: first,
-            lastName: rest.length > 0? rest.join(" ") : ''
+            lastName: last
         });
         setUseCustomerSearch(false)
     }
-
     const handleItemSelection = (index: number|null, newItem: FormOrderItem|null) => {
         if (index === null) {
             itemAdded(newItem!.item!.description!)
@@ -91,8 +79,7 @@ export function OrderFormV2({ form }: Props) {
         }
     };
 
-    const handleCustomerSelect = (customerId: string) => {
-        const customer = searchCustomersApi.data?.find((c) => c.uuid === customerId);
+    const handleCustomerSelect = (customer: CustomerSearchResult) => {
         if (customer) {
             form.setValues({
                 customerId: customer.uuid,
@@ -122,7 +109,6 @@ export function OrderFormV2({ form }: Props) {
 
     const startOver = () => {
         form.reset();
-        setSearchString('');
         setStep('customer');
         startOrder();
         setUseCustomerSearch(true);
@@ -205,29 +191,10 @@ export function OrderFormV2({ form }: Props) {
                 {step === "customer" &&  (
                     <>
                         {useCustomerSearch ? (
-                            <Stack>
-                                <TextInput
-                                    label=""
-                                    placeholder="Search for Customer"
-                                    rightSection={searchCustomersApi.loading ? <Loader size="sm" /> : searchCustomersApi.error ? <IconExclamationCircle color={'orange'}/> : null}
-                                    value={searchString}
-                                    size={'lg'}
-                                    onChange={(event) => setSearchString(event.currentTarget.value)}
-                                />
-
-                                <Stack gap="xs" style={{ maxHeight: 400}}>
-
-                                    { searchString && <CustomerResultCard useAlternateStyle={true} key={'new'} text={'Create "' + searchString + '"'} onClick={handleCreateNew}/> }
-                                {(
-                                   searchString && searchCustomersApi.data && searchCustomersApi.data?.map((c: CustomerSearch) =>
-                                       <CustomerResultCard key={c.uuid}
-                                                           flagged={c.flagged}
-                                                           text={`${c.firstName || ''} ${c.lastName || ''}`.trim()}
-                                                           onClick={() => handleCustomerSelect(c.uuid)
-                                       }/>)
-                                       )}
-                                    </Stack>
-                            </Stack>
+                            <CustomerSearch
+                                onSelect={handleCustomerSelect}
+                                onSelectCreate={handleCreateNew}
+                            />
                         ) : (
                             <form style={{
                                 display: "flex",

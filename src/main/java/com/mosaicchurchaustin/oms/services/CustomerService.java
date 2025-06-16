@@ -2,9 +2,11 @@ package com.mosaicchurchaustin.oms.services;
 
 import com.mosaicchurchaustin.oms.data.entity.customer.CustomerEntity;
 import com.mosaicchurchaustin.oms.data.projections.CustomerSearchProjection;
+import com.mosaicchurchaustin.oms.data.request.CreateCustomerRequest;
 import com.mosaicchurchaustin.oms.data.request.UpdateCustomerRequest;
 import com.mosaicchurchaustin.oms.exception.EntityNotFoundException;
 import com.mosaicchurchaustin.oms.repositories.CustomerRepository;
+import com.mosaicchurchaustin.oms.services.common.CustomerResolver;
 import com.mosaicchurchaustin.oms.specifications.CustomerSpecification;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +23,9 @@ public class CustomerService {
 
     @Autowired
     CustomerRepository customerRepository;
+
+    @Autowired
+    CustomerResolver customerResolver;
 
     @Transactional
     public List<CustomerSearchProjection> searchCustomers(final String inputName) {
@@ -43,6 +48,15 @@ public class CustomerService {
         Optional.ofNullable(request.flagged()).ifPresent(customer::setFlagged);
         Optional.ofNullable(request.showerWaiverSigned()).map(OffsetDateTime::toInstant).ifPresent(customer::setShowerWaiverCompleted);
         return customerRepository.save(customer);
+    }
+
+    @Transactional
+    public CustomerEntity createCustomer(final CreateCustomerRequest request) {
+        return customerResolver.resolveOrCreate(
+                "",
+                request.firstName(),
+                request.lastName());
+
     }
 
     @Transactional

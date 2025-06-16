@@ -73,7 +73,7 @@ export interface Customer {
     flagged: boolean
 }
 
-export interface CustomerSearch {
+export interface CustomerSearchResult {
     firstName: string
     lastName: string
     id: number
@@ -242,6 +242,31 @@ export interface Device extends BaseObject{
     name: string,
     expiration?: string,
     lastAccessed?: string,
+}
+
+
+export enum ReservationStatus {
+    QUEUED = "QUEUED",
+    IN_USE = "IN_USE",
+    COMPLETED = "COMPLETED",
+    CANCELLED = "CANCELLED",
+}
+
+export interface ShowerReservationResponse {
+    uuid: string;
+    customer: Customer;
+    reservationStatus: ReservationStatus;
+    queuePosition: number;
+    startedAt?: string | null;
+    endTime?: string | null;
+    showerNumber?: number | null;
+    notes?: string | null;
+}
+
+// Used in GET /api/reservations/shower/queue
+export interface ShowerReservationGroupedResponse {
+    active: ShowerReservationResponse[];
+    queued: Page<ShowerReservationResponse>;
 }
 
 export enum Category{

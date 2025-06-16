@@ -47,17 +47,19 @@ public class Auth0ClientConfig {
         request.put("audience", managementAudience);
         request.put("grant_type", "client_credentials");
 
-        HttpEntity<Map<String, String>> entity = new HttpEntity<>(request, headers);
+        final HttpEntity<Map<String, String>> entity = new HttpEntity<>(request, headers);
 
-        ResponseEntity<Map> response = restTemplate.postForEntity(tokenUrl, entity, Map.class);
-        Map<String, Object> body = response.getBody();
+        final ResponseEntity<Map> response = restTemplate.postForEntity(tokenUrl, entity, Map.class);
+        final Map<String, Object> body = response.getBody();
         return (String) body.get("access_token");
     }
     @Bean
     ManagementAPI managementAPI() {
         return ManagementAPI.newBuilder(
                 domain,
-                getManagementApiToken())
+                "fake"
+//                getManagementApiToken()
+                )
                 .build();
     }
 

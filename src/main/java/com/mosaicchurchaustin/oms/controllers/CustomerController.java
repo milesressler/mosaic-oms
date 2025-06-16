@@ -1,5 +1,6 @@
 package com.mosaicchurchaustin.oms.controllers;
 
+import com.mosaicchurchaustin.oms.data.request.CreateCustomerRequest;
 import com.mosaicchurchaustin.oms.data.request.UpdateCustomerRequest;
 import com.mosaicchurchaustin.oms.data.response.CustomerResponse;
 import com.mosaicchurchaustin.oms.data.response.CustomerSearchResponse;
@@ -12,6 +13,7 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -43,6 +45,13 @@ public class CustomerController {
     @GetMapping(path = "/customer/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public CustomerResponse getCustomerByUuid(@PathVariable("id") final UUID id) {
         return CustomerResponse.from(customerService.getCustomer(id.toString()));
+    }
+
+
+    @ResponseBody
+    @PostMapping(path = "/customer", produces = MediaType.APPLICATION_JSON_VALUE)
+    public CustomerResponse createCustomer(@RequestBody final CreateCustomerRequest customerRequest) {
+        return CustomerResponse.from(customerService.createCustomer(customerRequest));
     }
 
 

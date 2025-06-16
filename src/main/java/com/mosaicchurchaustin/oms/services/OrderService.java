@@ -20,6 +20,7 @@ import com.mosaicchurchaustin.oms.repositories.ItemRepository;
 import com.mosaicchurchaustin.oms.repositories.OrderHistoryRepository;
 import com.mosaicchurchaustin.oms.repositories.OrderItemRepository;
 import com.mosaicchurchaustin.oms.repositories.OrderRepository;
+import com.mosaicchurchaustin.oms.services.common.CustomerResolver;
 import com.mosaicchurchaustin.oms.specifications.OrdersSpecification;
 import jakarta.transaction.Transactional;
 import org.apache.commons.lang3.StringUtils;
@@ -33,9 +34,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 import static com.mosaicchurchaustin.oms.data.entity.order.OrderItemEntity.ENTITY_NAME;
@@ -57,6 +56,9 @@ public class OrderService {
 
     @Autowired
     OrderHistoryRepository orderHistoryRepository;
+
+    @Autowired
+    CustomerResolver customerResolver;
 
     @Autowired
     UserService userService;
@@ -249,24 +251,10 @@ public class OrderService {
         }
 
         final UserEntity userEntity = userService.currentUser();
-        final CustomerEntity customer = Optional.ofNullable(request.customerUuid())
-                .map(UUID::toString)
-                .filter(StringUtils::isNotBlank)
-                .map(uuid ->
-                        customerRepository.findByUuid(uuid)
-                                .orElseThrow(() -> new EntityNotFoundException(CustomerEntity.ENTITY_TYPE, uuid)))
-                .orElseGet(() -> {
-                    if(StringUtils.isBlank(request.customerFirstName()) || StringUtils.isBlank(request.customerLastName())) {
-                        throw new InvalidRequestException("Customer first/last name or uuid is required.");
-                    }  else {
-                        return customerRepository.save(
-                                new CustomerEntity(
-                                        request.customerFirstName().trim(),
-                                        request.customerLastName().trim(),
-                                        false,
-                                        null));
-                    }
-                });
+        final CustomerEntity customer = customerResolver.resolveOrCreate(
+                request.customerUuid(),
+                request.customerFirstName(),
+                request.customerLastName());
 
         final Boolean optInNotifications = request.optInNotifications() != null && request.optInNotifications();
         final OrderEntity orderEntity = orderRepository.save(OrderEntity.builder()

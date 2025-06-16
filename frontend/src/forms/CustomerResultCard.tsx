@@ -5,7 +5,7 @@ interface props {
     key: string,
     useAlternateStyle?: boolean,
     text: string,
-    flagged: boolean,
+    flagged?: boolean,
     onClick: (customerUuid: string) => void
 }
 

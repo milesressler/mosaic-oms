@@ -29,6 +29,7 @@ import CustomerMgmtPage from "src/pages/admin/CustomerMgmtPage.tsx";
 import DevicesPage from "src/pages/admin/DevicesPage.tsx";
 import NoAccessPage from "src/pages/NoAccess.tsx";
 import CustomerDetailPage from "src/pages/search/CustomerDetailPage.tsx";
+import ShowersDashboard from "src/pages/dashboards/ShowersDashboard.tsx";
 
 
 const routes = [
@@ -130,6 +131,14 @@ const routes = [
                         element: OrderItemListView
                     }
                 ]
+            },
+            {
+                key: 'showers-dashboard',
+                path: '/dashboard/showers',
+                element: () => <ShowersDashboard/>,
+                errorElement: ErrorPage,
+                showInNavBar: false,
+                title: 'Showers',
             },
             // Add other dashboard routes here
         ],
