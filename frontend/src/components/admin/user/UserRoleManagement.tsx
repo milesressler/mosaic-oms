@@ -48,23 +48,23 @@ const UserRoleManagement = ({ selectedUser, loading }: UserRoleManagementProps) 
             <Divider mb="sm" />
 
             {/* 🔍 DEBUG PANEL */}
-            <Box
-                p="sm"
-                mb="sm"
-                style={(theme) => ({
-                    backgroundColor: theme.colors.gray[1],
-                    border: `1px solid ${theme.colors.gray[4]}`,
-                    borderRadius: theme.radius.sm,
-                    fontSize: 14,
-                })}
-            >
-                <Text fw={500}>🔍 Debug Info</Text>
-                <Text>loading: <b>{loading ? "true" : "false"}</b></Text>
-                <Text>selectedUser: <b>{selectedUser ? "present ✅" : "null ❌"}</b></Text>
-                <Text>user.userId: <b>{user?.userId ?? "N/A"}</b></Text>
-                <Text>user.roles: <b>{user?.roles?.join(", ") || "none"}</b></Text>
-                <Text>checkboxes count: <b>{checkboxes.length}</b></Text>
-            </Box>
+            {/*<Box*/}
+            {/*    p="sm"*/}
+            {/*    mb="sm"*/}
+            {/*    style={(theme) => ({*/}
+            {/*        backgroundColor: theme.colors.gray[1],*/}
+            {/*        border: `1px solid ${theme.colors.gray[4]}`,*/}
+            {/*        borderRadius: theme.radius.sm,*/}
+            {/*        fontSize: 14,*/}
+            {/*    })}*/}
+            {/*>*/}
+            {/*    <Text fw={500}>🔍 Debug Info</Text>*/}
+            {/*    <Text>loading: <b>{loading ? "true" : "false"}</b></Text>*/}
+            {/*    <Text>selectedUser: <b>{selectedUser ? "present ✅" : "null ❌"}</b></Text>*/}
+            {/*    <Text>user.userId: <b>{user?.userId ?? "N/A"}</b></Text>*/}
+            {/*    <Text>user.roles: <b>{user?.roles?.join(", ") || "none"}</b></Text>*/}
+            {/*    <Text>checkboxes count: <b>{checkboxes.length}</b></Text>*/}
+            {/*</Box>*/}
 
             {/* Only show checkboxes when data is ready */}
             {user && !loading ? (
