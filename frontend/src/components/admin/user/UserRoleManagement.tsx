@@ -51,7 +51,7 @@ const UserRoleManagement = ({ selectedUser, loading }: UserRoleManagementProps) 
             <Box
                 p="sm"
                 mb="sm"
-                sx={(theme) => ({
+                style={(theme) => ({
                     backgroundColor: theme.colors.gray[1],
                     border: `1px solid ${theme.colors.gray[4]}`,
                     borderRadius: theme.radius.sm,

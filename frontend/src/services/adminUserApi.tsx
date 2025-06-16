@@ -11,7 +11,7 @@ const getUsers = (page: number, size: number) =>
     client.get<Page<User>>("/admin/user", {params: {page, size}});
 
 const getUser = (id: string) =>
-    client.get<UserDetail>(`/admin/user/${id}`);
+    client.get<UserDetail>(`/admin/user/${encodeURIComponent(id)}`);
 const resendInvite = (id: string) =>
     client.post<any>(`/admin/user/${id}/invite`);
 
