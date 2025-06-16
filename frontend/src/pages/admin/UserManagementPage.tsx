@@ -119,7 +119,15 @@ export function UserManagementPage() {
             {(getUsersApi.data?.totalPages ?? 0) > 1 && <Pagination value={activePage} onChange={setPage} total={getUsersApi.data?.totalPages ?? 0} />}
 
             <Modal title="User Details" opened={roleModal} onClose={() => { setRoleModal(false); setSelectedUser(null); }}>
-                <LoadingOverlay visible={getUserDetailApi.loading} />
+                {/*<LoadingOverlay visible={getUserDetailApi.loading} />*/}
+                <Box mb="sm" style={{ backgroundColor: "#f0f0f0", padding: "10px", borderRadius: "5px" }}>
+                    <Text size="sm" fw={500}>🔍 Parent Debug Info</Text>
+                    <Text size="xs">selectedUser (from list): <b>{selectedUser?.userId || 'null'}</b></Text>
+                    <Text size="xs">getUserDetailApi.loading: <b>{getUserDetailApi.loading.toString()}</b></Text>
+                    <Text size="xs">getUserDetailApi.data: <b>{getUserDetailApi.data?.userId || 'null'}</b></Text>
+                    <Text size="xs">getUserDetailApi.error: <b>{getUserDetailApi.error || 'null'}</b></Text>
+                    <Text size="xs">getUserDetailApi.data.roles: <b>{getUserDetailApi.data?.roles?.join(', ') || 'none'}</b></Text>
+                </Box>
                 {selectedUser && (
                     <>
                         <UserRoleManagement selectedUser={getUserDetailApi.data} loading={getUserDetailApi.loading} />
