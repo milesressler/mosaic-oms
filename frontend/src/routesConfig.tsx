@@ -156,6 +156,13 @@ const routes = [
                 showInNavBar: true,
             },
             {
+                key: 'order-details',
+                path: '/order/:id',
+                element: OrderDetailsPage,
+                title: 'Order Details',
+                showInNavBar: false,
+            },
+            {
                 key: 'customers',
                 path: '/customers',
                 element: CustomerMgmtPage,
@@ -190,13 +197,6 @@ const routes = [
                 element: UserManagementPage,
                 title: 'Users',
                 showInNavBar: true,
-            },
-            {
-                key: 'order-details',
-                path: '/order/:id',
-                element: OrderDetailsPage,
-                title: 'Order Details',
-                showInNavBar: false,
             },
             {
                 key: 'devices',

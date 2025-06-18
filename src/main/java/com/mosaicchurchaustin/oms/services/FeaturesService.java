@@ -1,7 +1,7 @@
 package com.mosaicchurchaustin.oms.services;
 
 import com.mosaicchurchaustin.oms.data.entity.order.OrderStatus;
-import com.mosaicchurchaustin.oms.data.request.UpdateFeatureConfigRequest;
+import com.mosaicchurchaustin.oms.data.request.FeatureConfigRequestInterface;
 import com.mosaicchurchaustin.oms.data.response.FeatureConfigResponse;
 import com.mosaicchurchaustin.oms.exception.InvalidRequestException;
 import com.mosaicchurchaustin.oms.repositories.FeatureConfigRepository;
@@ -32,7 +32,7 @@ public class FeaturesService {
     }
 
     @CachePut(value = "features", key = "#root.target.FEATURES_KEY")
-    public FeatureConfigResponse updateFeaturesConfig(final UpdateFeatureConfigRequest request) {
+    public FeatureConfigResponse updateFeaturesConfig(final FeatureConfigRequestInterface request) {
         final var existing = featureConfigRepository.findFirstByOrderByIdDesc();
         if (request.groupMeEnabled() != null) {
             existing.setGroupMeEnabled(request.groupMeEnabled());

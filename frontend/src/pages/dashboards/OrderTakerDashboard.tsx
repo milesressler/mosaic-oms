@@ -1,10 +1,6 @@
-import {Grid, GridCol} from "@mantine/core";
-import OrdersTable from "src/components/orders/OrdersTable.tsx";
-import {OrdersView} from "src/components/orders/OrdersTableConfig.tsx";
-import {OrderStatus} from "src/models/types.tsx";
 import OrderFormV2 from "src/forms/OrderFormV2.tsx";
 import {useForm} from "@mantine/form";
-import {FormOrderItem, OrderFormValues} from "src/models/forms.tsx";
+import { OrderFormValues} from "src/models/forms.tsx";
 
 export function OrderTakerDashboard() {
     const form = useForm<OrderFormValues>({
@@ -24,8 +20,8 @@ export function OrderTakerDashboard() {
         },
     });
 
-    return (
-         <OrderFormV2 form={form}/>
+    return (<><OrderFormV2 form={form}/>
+        </>
    );
 }
 export default OrderTakerDashboard;

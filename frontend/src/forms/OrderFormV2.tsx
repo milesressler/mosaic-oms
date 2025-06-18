@@ -20,7 +20,6 @@ import {useMediaQuery} from "@mantine/hooks";
 import {CustomerSearchResult, OrderRequest} from "src/models/types";
 import ItemSelection from "src/components/orders/ItemSelection.tsx";
 import useApi from "src/hooks/useApi.tsx";
-import CustomerResultCard from "src/forms/CustomerResultCard.tsx";
 import {FormOrderItem, OrderFormValues} from "src/models/forms.tsx";
 import {useFeatures} from "src/contexts/FeaturesContext.tsx";
 import ordersApi from "src/services/ordersApi.tsx";
@@ -34,6 +33,7 @@ import {
 } from "@tabler/icons-react";
 import {useOrderTracking} from "src/hooks/useOrderTracking.tsx";
 import CustomerSearch from "src/components/customer/CustomerSearch.tsx";
+import OrdersOpenSwitch from "src/components/features/OrdersOpenSwitch.tsx";
 
 interface Props {
     form: UseFormReturnType<OrderFormValues>,
@@ -126,6 +126,21 @@ export function OrderFormV2({ form }: Props) {
         }
     }, [createOrderAPI.data]);
 
+    if (!ordersOpen && !featuresLoading) {
+        return (<
+                >
+
+            <Alert m={'lg'} color="red" title="Orders are currently closed" mb="md">
+                <Stack>
+                    <Text>We’re not accepting new orders right now.</Text>
+
+                    <OrdersOpenSwitch/>
+                </Stack>
+            </Alert>
+            </>
+        );
+    }
+
 
     return (
 
@@ -136,12 +151,6 @@ export function OrderFormV2({ form }: Props) {
                  flexDirection: 'column',
                  minHeight: 0,               // let children shrink
              }}>
-            {/* ❌ Orders closed banner */}
-            {!featuresLoading && !ordersOpen && (
-                <Alert color="red" title="Orders are currently closed" mb="md">
-                    We’re not accepting new orders right now.
-                </Alert>
-            )}
             <LoadingOverlay visible={createOrderAPI.loading} />
             <Stepper
                 active={steps.indexOf(step)}
@@ -261,7 +270,7 @@ export function OrderFormV2({ form }: Props) {
 
             </Box>
             {/* sticky footer */}
-            {  !(step === 'customer' && useCustomerSearch) && <Box
+            {<Box
                 style={{
                     flex: '0 0 60px',         // fixed height
                     display: 'flex',
@@ -293,6 +302,10 @@ export function OrderFormV2({ form }: Props) {
                         Back
                     </Button>
                     }
+
+                   {
+                       step == steps[0] && useCustomerSearch && ordersOpen && <OrdersOpenSwitch/>
+                   }
 
                     { step === 'customer' && !useCustomerSearch &&
                     <Button onClick={newCustomerFormCompleted}

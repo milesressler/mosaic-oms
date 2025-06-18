@@ -30,13 +30,14 @@ export const FeaturesProvider: React.FC<{ children: ReactNode }> = ({ children }
     const [features, setFeatures] = useState<FeatureConfig|null>();
 
     const featuresApi = useApi(FeaturesApi.getFeatureConfig);
-    const updateFeaturesApi = useApi(FeaturesApi.updateFeatureConfig);
+    const updateFeaturesApi = useApi(FeaturesApi.adminUpdateFeatureConfig);
+    const orderTakerUpdateFeaturesApi = useApi(FeaturesApi.ordersUpdateFeatureConfig);
 
     const setGroupMeEnabled = (enabled: boolean) => {
         updateFeaturesApi.request(enabled, null, null);
     };
     const setOrdersOpen = (enabled: boolean) => {
-        updateFeaturesApi.request(null, enabled, null);
+        orderTakerUpdateFeaturesApi.request(enabled);
     };
 
     const setPrintOnTransitionToStatus = (orderStatus: OrderStatus|null) => {
@@ -66,6 +67,12 @@ export const FeaturesProvider: React.FC<{ children: ReactNode }> = ({ children }
             setFeatures(updateFeaturesApi.data)
         }
     }, [updateFeaturesApi.data]);
+
+    useEffect(() => {
+        if (orderTakerUpdateFeaturesApi.data) {
+            setFeatures(orderTakerUpdateFeaturesApi.data)
+        }
+    }, [orderTakerUpdateFeaturesApi.data]);
 
 
     return (
