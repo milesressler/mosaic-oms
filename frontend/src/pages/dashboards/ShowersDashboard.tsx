@@ -1,118 +1,124 @@
-import {
-    Box,
-    Group,
-    Title,
-    Divider,
-    Loader,
-    Table,
-    ActionIcon,
-    Tooltip,
-    Center,
-    Text,
-    Card,
-    Stack,
-    Button,
-} from "@mantine/core";
-import { IconTrash, IconPlayerPlay, IconUserPlus, IconInfoCircle } from "@tabler/icons-react";
+import { Box, Button, Card, Divider, Group, Stack, Table, Text, Title } from "@mantine/core";
 import useApi from "src/hooks/useApi";
 import showersApi from "src/services/showersApi";
-import { ShowerReservationResponse } from "src/models/types";
 import { useEffect, useState } from "react";
 import { DateTime } from "luxon";
-import AddToShowerQueueModal from "src/components/showers/AddToShowerQueueModal.tsx";
-import {getEstimatedWaitTime, getWaitEstimates} from "src/util/ShowerUtils.tsx";
-
-const STALL_COUNT = 2;
-
+import { ReservationStatus, StallStatus } from "src/models/types";
+import AddToShowerQueueModal from "src/components/showers/AddToShowerQueueModal";
+import { IconUserPlus } from "@tabler/icons-react";
 
 export function ShowersDashboard() {
     const getShowersApi = useApi(showersApi.getShowerQueue);
-
+    const [now, setNow] = useState(() => DateTime.now());
     const [addModalOpen, setAddModalOpen] = useState(false);
-    const [now, setNow] = useState(DateTime.now());
 
-    const getRemainingTime = (endTime?: string | null): string => {
-        if (!endTime) return "-";
-        const diff = DateTime.fromISO(endTime).diff(now, ["minutes", "seconds"]);
-        if (diff.toMillis() <= 0) return "Done";
-        return `${Math.floor(diff.minutes)}m ${Math.floor(diff.seconds % 60)}s`;
-    };
-
-    const handleEndShower = async (id: string) => {
-        await showersApi.endShower(id);
-        await getShowersApi.request();
-    };
+    // Update current time every second for timers
     useEffect(() => {
-        const updateNow = () => setNow(DateTime.now());
-        updateNow(); // initial
-        const interval = setInterval(updateNow, 1000);
+        const interval = setInterval(() => setNow(DateTime.now()), 1000);
         return () => clearInterval(interval);
     }, []);
 
+    // Fetch stalls and queue
     useEffect(() => {
         getShowersApi.request();
-        const interval = setInterval(() => getShowersApi.request({ silent: true }), 15000);
+        const interval = setInterval(() => getShowersApi.request({ silent: true }), 10000);
         return () => clearInterval(interval);
     }, []);
 
-    const { data, loading, error } = getShowersApi;
-    if (loading && !data) {
-        return (
-            <Center h="300px">
-                <Loader />
-            </Center>
-        );
-    }
+    const { data, loading } = getShowersApi;
+    if (loading && !data) return null;
 
-    if (error) {
-        return (
-            <Center h="300px">
-                <Group>
-                    <IconInfoCircle size={20} />
-                    <Text c="red">Failed to load shower queue. Please try again later.</Text>
-                </Group>
-            </Center>
-        );
-    }
-
-    const active = data?.active ?? [];
-    const queued = data?.queued ?? { content: [] };
-    const estimates = getWaitEstimates(active, queued.content.length);
+    const stalls = data?.stalls || [];
+    const queue = data?.queue || [];
+    const firstAvailableStall = stalls.find((s) => !s.reservation)?.stallNumber;
 
 
-    const getStall = (n: number): ShowerReservationResponse | null =>
-        active.find((r) => r.showerNumber === n) || null;
+    const renderStallCard = (stall: StallStatus) => {
+        const { stallNumber, status, reservation, availableAt } = stall;
+        const isOverdue = DateTime.fromISO(reservation?.endTime || availableAt) < now;
 
-    const renderStallCard = (stallNumber: number) => {
-        const res = getStall(stallNumber);
+        const diff = DateTime.fromISO(reservation?.endTime || availableAt).diff(now, ["minutes", "seconds"]);
+        const minutes = Math.floor(diff.as("minutes"));
+        const seconds = Math.floor(diff.seconds % 60);
+        const timeText = isOverdue
+            ? `Over time since ${DateTime.fromISO(reservation!.endTime!).toRelative()}`
+            : `Time left: ${minutes}m ${seconds}s`;
 
         return (
-            <Card shadow="sm" padding="md" radius="md" withBorder w="100%">
+            <Card key={stallNumber} shadow="sm" padding="md" radius="md" withBorder w="100%">
                 <Group justify="space-between" mb="xs">
                     <Title order={4}>Stall #{stallNumber}</Title>
                 </Group>
-                {res ? (
+
+                {reservation ? (
                     <Stack gap={2}>
-                        <Text fw={500}>{res.customer.displayName}</Text>
-                        <Text size="sm" c="dimmed">
-                            Started: {new Date(res.startedAt!).toLocaleTimeString()}
-                        </Text>
-                        <Text size="sm">Time Left: {getRemainingTime(res.endTime)}</Text>
-                        <Group justify="flex-end" mt="xs">
+                        <Text fw={500}>{reservation.customer.displayName}</Text>
+                        <Text size="sm" c="dimmed">Status: {status}</Text>
+
+                        {status === ReservationStatus.IN_USE && (
+                            <>
+                                <Text size="sm" c={isOverdue ? "red" : undefined}>{timeText}</Text>
+                                <Button
+                                    size="xs"
+                                    variant="outline"
+                                    color="red"
+                                    onClick={async () => {
+                                        await showersApi.endShower(reservation.uuid);
+                                        await getShowersApi.request();
+                                    }}
+                                >
+                                    End Shower
+                                </Button>
+                            </>
+                        )}
+
+                        {status === ReservationStatus.READY && (
+                            <Button
+                                size="xs"
+                                variant="filled"
+                                color="blue"
+                                onClick={async () => {
+                                    await showersApi.startShower(reservation.uuid);
+                                    await getShowersApi.request();
+                                }}
+                            >
+                                Start Shower
+                            </Button>
+                        )}
+
+                        {/* Cancel option for active or in-use reservations */}
+                        {(status === ReservationStatus.READY) && (
                             <Button
                                 size="xs"
                                 variant="outline"
                                 color="red"
-                                onClick={() => handleEndShower(res.uuid)}
+                                onClick={async () => {
+                                    await showersApi.cancelReservation(reservation.uuid);
+                                    await getShowersApi.request();
+                                }}
                             >
-                                End Shower
+                                Cancel Reservation
                             </Button>
-                        </Group>
+                        )}
                     </Stack>
                 ) : (
-                    <Text c="dimmed" fs="italic">
-                        Unoccupied
-                    </Text>
+                    <Stack align="center" gap={4}>
+                        <Text c="dimmed" fs="italic">Available</Text>
+                        {queue.length > 0 && (
+                            <Button
+                                size="xs"
+                                variant="outline"
+                                color="blue"
+                                onClick={async () => {
+                                    const next = queue[0];
+                                    await showersApi.showerReady(next.uuid, stallNumber);
+                                    await getShowersApi.request();
+                                }}
+                            >
+                                Assign Next In Line
+                            </Button>
+                        )}
+                    </Stack>
                 )}
             </Card>
         );
@@ -121,38 +127,12 @@ export function ShowersDashboard() {
     return (
         <Box p="lg">
             <Group justify="space-between" mb="md">
-                <Title order={3}>Showers</Title>
+                <Title order={3}>Current Showers</Title>
             </Group>
 
             <Group grow mb="lg">
-                {Array.from({ length: STALL_COUNT }, (_, i) => renderStallCard(i + 1))}
+                {stalls.map(renderStallCard)}
             </Group>
-
-            {active.length < STALL_COUNT && queued?.content?.length > 0 && (
-                <Card withBorder mb="lg" bg="yellow.1">
-                    <Group justify="space-between">
-                        <Text>
-                            A stall is available —{" "}
-                            <Text span fw={500}>
-                                {queued?.content[0].customer.displayName}
-                            </Text>{" "}
-                            is next in line.
-                        </Text>
-                        <Button
-                            leftSection={<IconPlayerPlay size={16} />}
-                            size="xs"
-                            onClick={async () => {
-                                const next = queued.content[0];
-                                if (!next) return;
-                                await showersApi.startShower(next.uuid, active.length + 1); // assign to next open stall
-                                await getShowersApi.request();
-                            }}
-                        >
-                            Start Now
-                        </Button>
-                    </Group>
-                </Card>
-            )}
 
             <Divider my="md" />
 
@@ -168,43 +148,52 @@ export function ShowersDashboard() {
                 </Button>
             </Group>
 
-            <Table striped highlightOnHover withColumnBorders>
+            <Table striped withColumnBorders>
                 <Table.Thead>
                     <Table.Tr>
                         <Table.Th>Name</Table.Th>
-                        <Table.Th>Position</Table.Th>
-                        <Table.Th>WaitTime</Table.Th>
+                        <Table.Th>Estimated Start</Table.Th>
                         <Table.Th>Actions</Table.Th>
                     </Table.Tr>
                 </Table.Thead>
                 <Table.Tbody>
-                    {queued.content.length === 0 ? (
+                    {queue.length === 0 ? (
                         <Table.Tr>
-                            <Table.Td colSpan={3}>
-                                <Text c="dimmed" ta="center">
-                                    No one is currently waiting.
-                                </Text>
+                            <Table.Td colSpan={3} ta="center" c="dimmed">
+                                No one is currently waiting.
                             </Table.Td>
                         </Table.Tr>
                     ) : (
-                        queued.content.map((r: ShowerReservationResponse) => (
-                            <Table.Tr key={r.uuid}>
-                                <Table.Td>{r.customer.displayName}</Table.Td>
-                                <Table.Td>{queued.content.indexOf(r) + 1}</Table.Td>
-                                <Table.Td>{estimates[queued.content.indexOf(r)].readable}</Table.Td>
-
+                        queue.map((entry) => (
+                            <Table.Tr key={entry.uuid}>
+                                <Table.Td>{entry.customer.displayName}</Table.Td>
+                                <Table.Td>{entry.readyNow ? 'Now' : DateTime.fromISO(entry.estimatedStart).toRelative({ base: now })}</Table.Td>
                                 <Table.Td>
-                                    <Group gap="xs">
-                                        <Tooltip label="Start Shower">
-                                            <ActionIcon variant="light" color="blue" size="sm">
-                                                <IconPlayerPlay size={18} />
-                                            </ActionIcon>
-                                        </Tooltip>
-                                        <Tooltip label="Cancel Reservation">
-                                            <ActionIcon variant="light" color="red" size="sm">
-                                                <IconTrash size={18} />
-                                            </ActionIcon>
-                                        </Tooltip>
+                                    <Group>
+                                    {firstAvailableStall != null && (
+                                        <Button
+                                            size="xs"
+                                            variant="light"
+                                            onClick={async () => {
+                                                if (firstAvailableStall != null) {
+                                                    await showersApi.showerReady(entry.uuid, firstAvailableStall);
+                                                    await getShowersApi.request();
+                                                }
+                                            }}
+                                        >
+                                            Assign to Open Stall
+                                        </Button>
+                                    )}
+                                    <Button
+                                        size="xs"
+                                        variant="light"
+                                        onClick={async () => {
+                                            await showersApi.cancelReservation(entry.uuid);
+                                            await getShowersApi.request();
+                                        }}
+                                    >
+                                        Cancel
+                                    </Button>
                                     </Group>
                                 </Table.Td>
                             </Table.Tr>
@@ -212,7 +201,12 @@ export function ShowersDashboard() {
                     )}
                 </Table.Tbody>
             </Table>
-            <AddToShowerQueueModal opened={addModalOpen} onClose={() => setAddModalOpen(false)} onSuccess={() => getShowersApi.request()}/>
+
+            <AddToShowerQueueModal
+                opened={addModalOpen}
+                onClose={() => setAddModalOpen(false)}
+                onSuccess={() => getShowersApi.request()}
+            />
         </Box>
     );
 }

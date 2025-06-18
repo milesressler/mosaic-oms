@@ -1,13 +1,16 @@
 import client from "./client";
 import {
-    ShowerReservationGroupedResponse,
     ShowerReservationResponse,
-    Page,
+    Page, ShowerQueueResponse,
 } from "src/models/types.tsx";
 
 // GET /reservations/shower/queue
 const getShowerQueue = () =>
-    client.get<ShowerReservationGroupedResponse>("/reservations/shower/queue");
+    client.get<ShowerQueueResponse>("/reservations/shower/queue");
+
+// GET /reservations/shower/queue
+const getPublicShowerQueue = () =>
+    client.get<ShowerQueueResponse>("/reservations/shower/public");
 
 // GET /reservations/shower
 const getAllReservations = (params?: object) =>
@@ -26,8 +29,12 @@ const updatePosition = (id: string, newPosition: number) =>
     client.put<ShowerReservationResponse>(`/reservations/${id}/position`, { newPosition });
 
 // PUT /reservations/{id}/start
-const startShower = (id: string, showerNumber: number) =>
-    client.put<ShowerReservationResponse>(`/reservations/${id}/start`, { showerNumber });
+const startShower = (id: string) =>
+    client.put<ShowerReservationResponse>(`/reservations/${id}/start`);
+
+// PUT /reservations/{id}/start
+const showerReady = (id: string, showerNumber: number) =>
+    client.put<ShowerReservationResponse>(`/reservations/${id}/ready`, { showerNumber });
 
 const endShower = (id: string) =>
     client.put<ShowerReservationResponse>(`/reservations/${id}/end`);
@@ -42,6 +49,8 @@ export default {
     createReservation,
     updatePosition,
     startShower,
+    showerReady,
     endShower,
     cancelReservation,
+    getPublicShowerQueue,
 };

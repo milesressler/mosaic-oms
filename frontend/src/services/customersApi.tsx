@@ -16,10 +16,17 @@ const updateCustomer = (uuid: string,  body: {
 }) =>
     client.put<Customer>(`/customer/${uuid}`, body);
 
+const createCustomer = (body: {
+    firstName: string,
+    lastName: string,
+}) =>
+    client.post<Customer>(`/customer`, body);
+
 
 export default {
     search,
     getCustomers,
     getCustomer,
     updateCustomer,
+    createCustomer,
 };

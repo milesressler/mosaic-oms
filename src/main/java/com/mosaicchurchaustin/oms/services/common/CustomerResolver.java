@@ -43,8 +43,13 @@ public class CustomerResolver {
             throw new InvalidRequestException("Customer first/last name or uuid is required.");
         }
 
-        return customerRepository.save(
-                new CustomerEntity(firstName.trim(), lastName.trim(), false, null));
+        CustomerEntity customerEntity = CustomerEntity.builder()
+                .firstName(firstName.trim())
+                .lastName(lastName.trim())
+                .flagged(false)
+                .build();
+
+        return customerRepository.save(customerEntity);
     }
 }
 

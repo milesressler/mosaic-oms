@@ -110,6 +110,9 @@ public class SecurityConfig {
                     registry.requestMatchers(HttpMethod.GET, "/api/device/me")
                             .access(KIOSK_OR_ANY_AUTHORITY);
 
+                    registry.requestMatchers(HttpMethod.GET, "/api/reservations/shower/public")
+                            .access(KIOSK_OR_ANY_AUTHORITY);
+
                     registry.requestMatchers(HttpMethod.GET, "/api/device/logout")
                             .permitAll();
                     registry.requestMatchers("/api/ws")

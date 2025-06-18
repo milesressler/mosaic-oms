@@ -10,6 +10,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -18,6 +20,10 @@ public interface ShowerReservationRepository extends JpaRepository<ShowerReserva
     Optional<ShowerReservationEntity> findTopByReservationStatusOrderByQueuePositionDesc(ReservationStatus status);
     Optional<ShowerReservationEntity> findByUuid(String uuid);
     Optional<ShowerReservationEntity> findByShowerNumberAndReservationStatus(Integer showerNumber, ReservationStatus reservationStatus);
+    List<ShowerReservationEntity> findByReservationStatusIn(List<ReservationStatus> reservationStatus);
+    List<ShowerReservationEntity> findByReservationStatusAndEndedAtAfter(ReservationStatus reservationStatus, Instant endAt);
+    Page<ShowerReservationEntity> findByReservationStatusOrderByQueuePositionAsc(ReservationStatus reservationStatus, Pageable pageable);
+
 
     @Query("""
     SELECT r FROM ShowerReservationEntity r

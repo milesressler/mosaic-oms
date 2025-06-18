@@ -12,31 +12,33 @@ type WaitEstimate = {
 };
 
 /**
- * Calculates wait time for each person in the queue
- */
-export function getWaitEstimates(
+ * Calculates wait time for each person in the queue who is NOT already assigned to a stall.
+ */export function getWaitEstimates(
     active: ShowerReservationResponse[],
-    queueLength: number
+    queued: ShowerReservationResponse[]
 ): WaitEstimate[] {
     const now = DateTime.now();
+    const activeEndTimes = active.map((r) => {
+        if (r.endTime) return DateTime.fromISO(r.endTime);
+        return now.plus({ minutes: SHOWER_DURATION_MINUTES + CLEANUP_MINUTES });
+    }).filter(dt => dt.isValid);
 
-    // Build initial stall availability (sorted by earliest available)
-    const activeEndTimes = active
-        .map((r) => DateTime.fromISO(r.endTime!))
-        .filter((dt) => dt.isValid && dt > now)
+    const stallSchedule: DateTime[] = activeEndTimes
         .sort((a, b) => a.toMillis() - b.toMillis());
 
-    const stallSchedule: DateTime[] = [...activeEndTimes];
-
-    // Fill with immediately available stalls if any
+// Fill in additional empty stalls (i.e. unoccupied)
     while (stallSchedule.length < STALL_COUNT) {
         stallSchedule.push(now);
     }
 
-    const estimates: WaitEstimate[] = [];
+// Optional: re-sort again in case "now" inserted
+    stallSchedule.sort((a, b) => a.toMillis() - b.toMillis());
 
-    for (let i = 0; i < queueLength; i++) {
-        // Find next stall that becomes available
+
+    const estimates: WaitEstimate[] = [];
+    const unassigned = queued.filter((r) => r.showerNumber == null);
+
+    for (let i = 0; i < unassigned.length; i++) {
         const earliestAvailable = stallSchedule.shift()!;
         const waitDuration = earliestAvailable.diff(now, ["minutes"]).as("minutes");
         const waitMinutes = Math.max(0, Math.round(waitDuration));
@@ -50,7 +52,6 @@ export function getWaitEstimates(
 
         estimates.push({ waitMinutes, readable, readyNow });
 
-        // Add new end time to the stall schedule after this person's shower completes
         const nextAvailable = earliestAvailable.plus({
             minutes: SHOWER_DURATION_MINUTES + CLEANUP_MINUTES,
         });
@@ -59,5 +60,9 @@ export function getWaitEstimates(
         stallSchedule.sort((a, b) => a.toMillis() - b.toMillis());
     }
 
-    return estimates;
+    return queued.map((r) => {
+        const idx = unassigned.findIndex((u) => u.uuid === r.uuid);
+        return idx >= 0 ? estimates[idx] : { waitMinutes: 0, readable: "-", readyNow: false };
+    });
 }
+

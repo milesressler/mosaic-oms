@@ -22,11 +22,13 @@ SELECT scored.firstName as firstName,
        scored.lastName as lastName,
        scored.uuid as uuid,
        scored.flagged as flagged,
+       scored.showerWaiverCompleted as showerWaiverCompleted,
        (scored.firstScore + scored.lastScore) AS matchScore
 FROM (
     SELECT c.firstName AS firstName,
            c.lastName AS lastName,
            c.uuid AS uuid,
+           c.showerWaiverCompleted AS showerWaiverCompleted,
            c.flagged AS flagged,
            CASE
                       WHEN c.firstName = :firstName THEN 5
@@ -36,7 +38,7 @@ FROM (
                       ELSE 0
                   END +
                   CASE
-                      WHEN SOUNDEX(c.firstName) = SOUNDEX(:firstName) THEN 2
+                      WHEN c.firstNameSoundex = SOUNDEX(:firstName) THEN 2
                       ELSE 0
                   END AS firstScore,
                   CASE
@@ -47,7 +49,7 @@ FROM (
                       ELSE 0
                   END +
                   CASE
-                      WHEN SOUNDEX(c.lastName) = SOUNDEX(:lastName) THEN 2
+                      WHEN c.lastNameSoundex = SOUNDEX(:lastName) THEN 2
                       ELSE 0
                   END AS lastScore
     FROM CustomerEntity c

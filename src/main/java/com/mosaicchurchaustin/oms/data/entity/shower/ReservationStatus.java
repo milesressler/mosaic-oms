@@ -9,6 +9,7 @@ import java.util.List;
 public enum ReservationStatus {
 
     WAITING,
+    READY,
     IN_USE,
     COMPLETED,
     CANCELLED;

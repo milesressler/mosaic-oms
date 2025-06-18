@@ -1,4 +1,4 @@
-import {Box, Grid, GridCol, Paper, Table, Text} from "@mantine/core";
+import { Box, Grid, Paper, Table, Text } from "@mantine/core";
 import Transit from "src/components/transit/Transit.tsx";
 import useApi from "src/hooks/useApi.tsx";
 import ordersApi from "src/services/ordersApi.tsx";
@@ -7,6 +7,7 @@ import { useInterval } from "@mantine/hooks";
 import StatusBadge from "src/components/StatusBadge.tsx";
 import { OrderStatus } from "src/models/types.tsx";
 import TimeWidget from "src/components/TimeWidget.tsx";
+import ShowersWidget from "src/components/showers/ShowersWidget";
 
 const CustomerDashboard = () => {
     const getOrdersApi = useApi(ordersApi.getOrdersDashboardViewKiosk);
@@ -59,52 +60,66 @@ const CustomerDashboard = () => {
 
     return (
         <Box style={{ height: "100vh", display: "flex", flexDirection: "column" }}>
-            {/* Main content scrolls if too tall */}
-            <Box style={{ flexGrow: 1, overflow: "hidden" }}>
-                <Grid style={{ minHeight: 0 }}>
-                    <GridCol span={6}>
-                        <Box style={{ paddingRight: "1rem", overflowY: "auto", maxHeight: "100%" }}>
-                            <Table>
-                                <Table.Thead>
-                                    <Table.Tr>
-                                        <Table.Th>Friend</Table.Th>
-                                        <Table.Th align="right">Status</Table.Th>
-                                    </Table.Tr>
-                                </Table.Thead>
-                                <Table.Tbody>
-                                    { getOrdersApi.data?.map((order) => (
-                                        <Table.Tr key={order.id}>
-                                            <Table.Td>
-                                                <Text fz={45}>
-                                                    {order.customer?.firstName} {(order.customer?.lastName || '')?.[0]}
-                                                </Text>
-                                            </Table.Td>
-                                            <Table.Td>
-                                                <StatusBadge size={'lg'}
-                                                    orderStatus={getObfusgatedStatus(order.orderStatus)}
-                                                />
-                                            </Table.Td>
-                                        </Table.Tr>
-                                    ))}
-                                </Table.Tbody>
-                            </Table>
-                        </Box>
-                    </GridCol>
-                    <GridCol span={6} pr={'md'} pt={'md'}>
-                        <Paper
-                            shadow="sm"        // subtle drop shadow
-                            radius="md"        // medium rounded corners
-                            withBorder         // 1‑px theme‑colored border
-                            p="md"             // Mantine padding token
-                            ta="center"
-                        >
-                        <TimeWidget/>
-                        </Paper>
-                    </GridCol>
-                </Grid>
+            {/* Main content area above Transit */}
+            <Box style={{ flexGrow: 1, display: "flex", overflow: "hidden" }}>
+                {/* Left: Orders Table */}
+                <Box pt={'xs'} style={{ flex: 1, overflowY: "auto", padding: "xs" }}>
+                    <Table>
+                        <Table.Thead>
+                            <Table.Tr>
+                                <Table.Th>Friend</Table.Th>
+                                <Table.Th align="right">Status</Table.Th>
+                            </Table.Tr>
+                        </Table.Thead>
+                        <Table.Tbody>
+                            {getOrdersApi.data?.map((order) => (
+                                <Table.Tr key={order.id}>
+                                    <Table.Td>
+                                        <Text fz={45}>
+                                            {order.customer?.firstName} {(order.customer?.lastName || '')?.[0]}
+                                        </Text>
+                                    </Table.Td>
+                                    <Table.Td>
+                                        <StatusBadge
+                                            size="lg"
+                                            orderStatus={getObfusgatedStatus(order.orderStatus)}
+                                        />
+                                    </Table.Td>
+                                </Table.Tr>
+                            ))}
+                        </Table.Tbody>
+                    </Table>
+                </Box>
+
+                {/* Right: TimeWidget + ShowersWidget */}
+                <Box style={{ flex: 1, display: "flex", flexDirection: "column", padding: "1rem", gap: "0.5rem", overflow: "hidden" }}>
+                    <Paper
+                        shadow="sm"
+                        radius="md"
+                        withBorder
+                        p="md"
+                        style={{ flex: "1 1 20%", display: "flex", justifyContent: "center", alignItems: "center" }}
+                    >
+                        <TimeWidget />
+                    </Paper>
+                    <Box
+                        style={{ flex: "1 1 80%", overflowY: "auto" }}
+                    >
+
+                    </Box>
+                    {/*<Paper*/}
+                    {/*    shadow="sm"*/}
+                    {/*    radius="md"*/}
+                    {/*    withBorder*/}
+                    {/*    p="md"*/}
+                    {/*    style={{ flex: "1 1 80%", overflowY: "auto" }}*/}
+                    {/*>*/}
+                    {/*    <ShowersWidget />*/}
+                    {/*</Paper>*/}
+                </Box>
             </Box>
 
-            {/* Always visible at bottom */}
+            {/* Footer: Transit */}
             <Box style={{ borderTop: "1px solid #eee" }}>
                 <Transit />
             </Box>

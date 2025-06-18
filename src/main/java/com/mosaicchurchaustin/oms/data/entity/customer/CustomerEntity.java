@@ -5,6 +5,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -21,6 +22,7 @@ import java.util.stream.Stream;
 @Getter
 @Setter
 @ToString
+@Builder
 @AllArgsConstructor
 @NoArgsConstructor
 public class CustomerEntity extends BaseUuidEntity {
@@ -37,6 +39,12 @@ public class CustomerEntity extends BaseUuidEntity {
 
     @Column(name = "last_name")
     String lastName;
+
+    @Column(name = "first_name_soundex", updatable = false, insertable = false)
+    String firstNameSoundex;
+
+    @Column(name = "last_name_soundex", updatable = false, insertable = false)
+    String lastNameSoundex;
 
     @Column(name = "flagged")
     boolean flagged;

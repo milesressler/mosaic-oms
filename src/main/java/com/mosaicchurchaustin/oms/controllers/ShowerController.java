@@ -2,15 +2,16 @@ package com.mosaicchurchaustin.oms.controllers;
 
 
 import com.mosaicchurchaustin.oms.data.entity.shower.ShowerReservationEntity;
+import com.mosaicchurchaustin.oms.data.request.shower.ShowerReadyRequest;
 import com.mosaicchurchaustin.oms.data.request.shower.ShowerReservationRequest;
-import com.mosaicchurchaustin.oms.data.request.shower.StartShowerRequest;
 import com.mosaicchurchaustin.oms.data.request.shower.UpdatePositionRequest;
-import com.mosaicchurchaustin.oms.data.response.ShowerReservationGroupedResponse;
+import com.mosaicchurchaustin.oms.data.response.ShowerQueueResponse;
 import com.mosaicchurchaustin.oms.data.response.ShowerReservationResponse;
 import com.mosaicchurchaustin.oms.services.showers.ShowersService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -29,8 +30,14 @@ import java.util.UUID;
 public class ShowerController {
     private final ShowersService showerService;
 
+    @GetMapping("/reservations/shower/public")
+    public ShowerQueueResponse getPublicQueue(
+    ) {
+        return showerService.getGroupedQueue(PageRequest.of(0, 10));
+    }
+
     @GetMapping("/reservations/shower/queue")
-    public ShowerReservationGroupedResponse getQueue(
+    public ShowerQueueResponse getQueue(
             Pageable pageable
     ) {
         return showerService.getGroupedQueue(pageable);
@@ -61,9 +68,16 @@ public class ShowerController {
 
     @PutMapping("/reservations/{id}/start")
     public ShowerReservationResponse startShower(
+            @PathVariable UUID id) {
+        final ShowerReservationEntity entity = showerService.startShower(id);
+        return ShowerReservationResponse.from(entity);
+    }
+
+    @PutMapping("/reservations/{id}/ready")
+    public ShowerReservationResponse showerIsReady(
             @PathVariable UUID id,
-            @RequestBody StartShowerRequest request) {
-        final ShowerReservationEntity entity = showerService.startShower(id, request.showerNumber());
+            @RequestBody ShowerReadyRequest request) {
+        final ShowerReservationEntity entity = showerService.showerIsReady(id, request.showerNumber());
         return ShowerReservationResponse.from(entity);
     }
 

@@ -79,6 +79,8 @@ export interface CustomerSearchResult {
     id: number
     uuid: string
     flagged: boolean
+    waiverValid: boolean
+    showerWaiverCompleted: string
 }
 
 export interface BasicUser {
@@ -243,31 +245,57 @@ export interface Device extends BaseObject{
     expiration?: string,
     lastAccessed?: string,
 }
-
-
+// ReservationStatus now matches backend Java enum
 export enum ReservationStatus {
     QUEUED = "QUEUED",
     IN_USE = "IN_USE",
     COMPLETED = "COMPLETED",
     CANCELLED = "CANCELLED",
+    READY = "READY",
 }
 
+// Core reservation response used for individual reservations
 export interface ShowerReservationResponse {
     uuid: string;
-    customer: Customer;
-    reservationStatus: ReservationStatus;
+    customer: Customer;              // assume existing Customer interface with displayName
+    status: ReservationStatus;
     queuePosition: number;
     startedAt?: string | null;
-    endTime?: string | null;
+    endTime?: string | null;        // actual end timestamp or projected availability
     showerNumber?: number | null;
     notes?: string | null;
 }
 
-// Used in GET /api/reservations/shower/queue
-export interface ShowerReservationGroupedResponse {
-    active: ShowerReservationResponse[];
-    queued: Page<ShowerReservationResponse>;
+/**
+ * Represents the status of a single shower stall
+ */
+export interface StallStatus {
+    stallNumber: number;
+    status: ReservationStatus;
+    reservation: ShowerReservationResponse | null;
+    availableAt: string;            // ISO timestamp when stall next frees up
 }
+
+/**
+ * Represents a single entry in the waiting queue, with estimates
+ */
+export interface QueueEntryResponse {
+    uuid: string;
+    customer: Customer;
+    queuePosition: number;
+    estimatedStart: string;         // ISO timestamp when they can start
+    readyNow: boolean;
+}
+
+/**
+ * Combined response for the shower queue endpoint
+ */
+export interface ShowerQueueResponse {
+    stalls: StallStatus[];
+    queue: QueueEntryResponse[];
+}
+
+
 
 export enum Category{
     CLOTHING = "CLOTHING",

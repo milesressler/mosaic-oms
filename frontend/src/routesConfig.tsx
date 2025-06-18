@@ -137,7 +137,7 @@ const routes = [
                 path: '/dashboard/showers',
                 element: () => <ShowersDashboard/>,
                 errorElement: ErrorPage,
-                showInNavBar: false,
+                showInNavBar: true ,
                 title: 'Showers',
             },
             // Add other dashboard routes here

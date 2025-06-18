@@ -4,7 +4,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Max;
 
-public record StartShowerRequest(
+public record ShowerReadyRequest(
         @NotNull
         @Min(1)
         @Max(2)
