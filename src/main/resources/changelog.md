@@ -1,6 +1,20 @@
 # Changelog
 
-## [2025-06-05]
+## [2025-06-19]
+
+### Added
+- Showers dashboard done, widget on customer monitor hidden until approved
+- Only My Orders button on orders page filters to order the current users has touched
+- Filter to query order by numeric ID
+
+### Changed
+- Moved orders closed toggle to order taker view
+
+### Fixed
+- Permissions issue 
+- Fixed user role management not appearing on some browsers
+
+## [2025-06-12]
 
 ### Added
 - Finished label printing with QR code scanning in dashboards
