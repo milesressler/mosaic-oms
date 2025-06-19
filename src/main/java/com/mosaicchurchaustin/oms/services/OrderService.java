@@ -21,7 +21,7 @@ import com.mosaicchurchaustin.oms.repositories.OrderHistoryRepository;
 import com.mosaicchurchaustin.oms.repositories.OrderItemRepository;
 import com.mosaicchurchaustin.oms.repositories.OrderRepository;
 import com.mosaicchurchaustin.oms.services.common.CustomerResolver;
-import com.mosaicchurchaustin.oms.specifications.OrdersSpecification;
+import com.mosaicchurchaustin.oms.specifications.OrderSpecBuilder;
 import jakarta.transaction.Transactional;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -77,13 +77,24 @@ public class OrderService {
         return orderHistoryRepository.findAllByOrderEntityId(pageable, orderId).getContent();
     }
 
-    public Page<OrderEntity> getOrders(final Pageable pageable, final List<String> statusFilters, final String customer, final String customerUuid, final Long orderId) {
+    public Page<OrderEntity> getOrders(final Pageable pageable,
+                                       final List<String> statusFilters,
+                                       final String customer,
+                                       final String customerUuid,
+                                       final Long orderId,
+                                       final boolean onlyMyOrders) {
         final List<OrderStatus> statusList = (statusFilters != null && !statusFilters.isEmpty())
                 ? statusFilters.stream().map(OrderStatus::from).toList()
                 : null;
 
-        final Specification<OrderEntity> spec = OrdersSpecification.withFilters(statusList, customer, customerUuid, orderId);
 
+        final Specification<OrderEntity> spec = OrderSpecBuilder.create()
+                .statuses(statusList)
+                .customerName(customer)
+                .customerUuid(customerUuid)
+                .orderId(orderId)
+                .handledByUser(onlyMyOrders ? userService.currentUser().getId() : null)
+                .build();
         return orderRepository.findAll(spec, pageable);
     }
 

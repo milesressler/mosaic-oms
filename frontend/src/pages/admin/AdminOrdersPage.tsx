@@ -6,7 +6,7 @@ import {
     Box,
     Center,
     Group, Image,
-    Pagination, rem, Select,
+    Pagination, rem, Select, Switch,
     Table, Text,
     TextInput, UnstyledButton
 } from "@mantine/core";
@@ -41,6 +41,7 @@ const AdminOrdersPage = () => {
     const sortField = searchParams.get("sort") || 'created';
     const reversed = (searchParams.get("direction") || 'desc') === 'desc';
     const statusFilter = searchParams.get("status") || null;
+    const onlyMyOrdersFilter = searchParams.get("onlyMyOrders") === "true";
     const customerFilter = searchParams.get("customer") || null;
     const [customerSearchString, setCustomerSearchString] = useState(customerFilter);
 
@@ -56,8 +57,9 @@ const AdminOrdersPage = () => {
             sort: `${sortField},${reversed ? 'desc' : 'asc'}`,
             customer: customerFilter,
             customerUuid: customerUuidFilter,
+            onlyMyOrders: onlyMyOrdersFilter,
         });
-    }, [page, sortField, reversed, statusFilter, customerFilter, customerUuidFilter, orderId]);
+    }, [page, sortField, reversed, statusFilter, customerFilter, customerUuidFilter, orderId, onlyMyOrdersFilter]);
 
     useEffect(() => {
         const params = new URLSearchParams(searchParams);
@@ -115,6 +117,17 @@ const AdminOrdersPage = () => {
         params.set('page', '1'); // reset pagination
         setSearchParams(params, { replace: true });
     };
+
+    const setOnlyMyOrders = (val: boolean) => {
+        const params = new URLSearchParams(searchParams);
+        console.log(val);
+        if (val) {
+            params.set('onlyMyOrders', 'true');
+        } else {
+            params.delete('onlyMyOrders');
+        }
+        setSearchParams(params, { replace: true });
+    }
 
     function Th({ field, children }: ThProps) {
         const isSorted = field === sortField;
@@ -198,6 +211,12 @@ const AdminOrdersPage = () => {
                         type={'number'}
                         onChange={(e) => setOrderId(e.currentTarget.value)}
                     />
+                    <Switch
+                        label={"Only my orders"}
+                      description={"Filters to orders that you've handled"}
+                        checked={onlyMyOrdersFilter}
+                        onChange={(e) => setOnlyMyOrders(e.currentTarget.checked)}
+                        />
                     {customerUuidFilter && (
                         <Badge
                             size={'md'}
