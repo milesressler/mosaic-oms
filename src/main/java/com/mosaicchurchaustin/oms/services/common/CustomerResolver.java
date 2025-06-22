@@ -23,7 +23,7 @@ public class CustomerResolver {
             final String lastName) {
 
         return resolveOrCreate(
-                Optional.of(uuid).map(UUID::toString).orElse(null),
+                Optional.ofNullable(uuid).map(UUID::toString).orElse(null),
                 firstName,
                 lastName
         );
