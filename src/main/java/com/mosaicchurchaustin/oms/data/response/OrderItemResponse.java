@@ -18,6 +18,7 @@ public class OrderItemResponse {
     private Integer quantityFulfilled;
     private String notes;
     private Long id;
+    private SuggestedItemResponse item;
     private Map<String, String> attributes;
 
     public static OrderItemResponse from(final OrderItemEntity orderItemEntity) {
@@ -28,6 +29,7 @@ public class OrderItemResponse {
                 .quantityRequested(orderItemEntity.getQuantity())
                 .notes(orderItemEntity.getNotes())
                 .id(orderItemEntity.getId())
+                .item(SuggestedItemResponse.from(orderItemEntity.getItemEntity()))
                 .attributes(orderItemEntity.getAttributes().entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey,
                         (val) -> val.getValue().toString())))
                 .build();

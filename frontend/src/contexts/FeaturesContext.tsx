@@ -77,7 +77,7 @@ export const FeaturesProvider: React.FC<{ children: ReactNode }> = ({ children }
 
     return (
         <FeaturesContext.Provider value={{
-            ordersOpen: !!features?.ordersOpen,
+            ordersOpen: features ? features.ordersOpen : true,
             groupMeEnabled: !!features?.groupMeEnabled,
             printOnTransitionToStatus: features?.printOnTransitionToStatus ?? null,
             setGroupMeEnabled,

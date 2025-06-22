@@ -1,5 +1,5 @@
 import {useEffect} from 'react';
-import {Link, useParams} from 'react-router-dom';
+import {Link, useNavigate, useParams} from 'react-router-dom';
 import useApi from 'src/hooks/useApi';
 import ordersApi from 'src/services/ordersApi';
 import {DateTime} from 'luxon';
@@ -26,10 +26,6 @@ import {statusDisplay} from "src/util/StatusUtils.tsx";
 import AttributeBadges from 'src/components/common/items/AttributeBadges';
 import classes from "src/styles/LinkStyles.module.css";
 
-interface OrderDetailsProps {
-    id: string;
-}
-
 // Basic status label and color mappings
 
 const STATUS_COLORS: Record<string, string> = {
@@ -41,9 +37,10 @@ const STATUS_COLORS: Record<string, string> = {
 };
 
 export default function OrderDetailsPage() {
-    const { id } = useParams<OrderDetailsProps>();
+    const { id } = useParams();
     const getOrder = useApi(ordersApi.getOrderById);
     const updateOrder = useApi(ordersApi.updateOrderStatus);
+    const navigate = useNavigate();
 
     useEffect(() => {
         if (id) {
@@ -52,6 +49,7 @@ export default function OrderDetailsPage() {
     }, [id]);
 
     const order = getOrder.data;
+    const canEdit = order && [OrderStatus.PENDING_ACCEPTANCE, OrderStatus.NEEDS_INFO].indexOf(order.orderStatus) !== -1;
 
     const cancel = () => {
         order && updateOrder.request(order.uuid, OrderStatus.CANCELLED)
@@ -60,6 +58,10 @@ export default function OrderDetailsPage() {
     const complete = () => {
         order && updateOrder.request(order.uuid, OrderStatus.COMPLETED);
     }
+
+    const edit = () => {
+        order && navigate(`/dashboard/taker/${order.id}`);
+    };
 
     useEffect(() => {
         if (updateOrder.data) {
@@ -97,6 +99,7 @@ export default function OrderDetailsPage() {
                     <Menu.Dropdown>
                         <Menu.Item onClick={cancel}>Cancel</Menu.Item>
                         <Menu.Item onClick={complete}>Mark Complete</Menu.Item>
+                        <Menu.Item disabled={!canEdit} onClick={edit}>Edit</Menu.Item>
                     </Menu.Dropdown>
                 </Menu>
             </Group>
@@ -153,9 +156,11 @@ export default function OrderDetailsPage() {
             )}
 
             {/* Items Table */}
+            <Group justify={'space-between'} mb={'xs'}>
             <Title order={4} mb="sm">
-                Items Requested
+                Items
             </Title>
+            </Group>
             <Card withBorder mb="lg">
                 <ScrollArea>
 

@@ -12,7 +12,7 @@ const getOrderByUuid = (uuid: string) => client.get(`/order/${uuid}`);
 const updateOrderStatusBulk = (uuids: string[], state: OrderStatus) => client.put<Order>(`/order/bulk/state/${state}`, {orderUuids: uuids});
 const updateOrderStatus = (uuid: string, state: OrderStatus) => client.put<Order>(`/order/${uuid}/state/${state}`);
 const changeAssignee = (uuid: string, unassign: boolean) => client.put<Order>(`/order/${uuid}/assign?unassign=${unassign}`);
-const updateOrderDetails = (uuid: string) => client.put(`/order/${uuid}`);
+const updateOrderDetails = (uuid: string, data: OrderRequest) => client.put(`/order/${uuid}`, data);
 const updateOrderItem = (id: number) => client.put(`/orderitem/${id}`);
 const updateOrderItems = (data: object) => client.put(`/orderitem/quantity/bulk`, data);
 

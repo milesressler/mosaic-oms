@@ -15,6 +15,8 @@ import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -153,13 +155,14 @@ public class OrderController {
     @ResponseBody
     @GetMapping(path ="/order/history", produces = MediaType.APPLICATION_JSON_VALUE)
     public List<OrderFeedResponse> getOrderHistory(
-            @RequestParam(required = false) final Long orderId
+            @RequestParam(required = false) final Long orderId,
+            @PageableDefault(sort = {"timestamp"}, direction = Sort.Direction.DESC) Pageable pageable
     ) {
         final List<OrderHistoryEntity> results;
         if (orderId != null) {
-            results = orderService.getOrderHistory(orderId);
+            results = orderService.getOrderHistory(pageable, orderId);
         } else {
-            results = orderService.getOrderHistory();
+            results = orderService.getOrderHistory(pageable);
         }
         return results.stream().map(OrderFeedResponse::from).toList();
     }

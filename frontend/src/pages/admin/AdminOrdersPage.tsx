@@ -11,7 +11,7 @@ import {
     TextInput, UnstyledButton
 } from "@mantine/core";
 import {useDebouncedValue} from "@mantine/hooks";
-import {IconChevronDown, IconChevronUp, IconSearch, IconSelector, IconX} from "@tabler/icons-react";
+import {IconChevronDown, IconChevronUp, IconPencil, IconSearch, IconSelector, IconX} from "@tabler/icons-react";
 import useApi from "src/hooks/useApi.tsx";
 import ordersApi from "src/services/ordersApi.tsx";
 import {useEffect, useState} from "react";
@@ -178,6 +178,11 @@ const AdminOrdersPage = () => {
                         <StatusBadge orderStatus={order.orderStatus} />
                         <Text c={'dimmed'} size={'xs'}>{DateTime.fromISO(order.lastStatusChange?.timestamp).toRelative()}</Text>
                     </div>
+                </Table.Td>
+                <Table.Td>
+                    { [OrderStatus.PENDING_ACCEPTANCE, OrderStatus.NEEDS_INFO].indexOf(order.orderStatus) !== -1 &&
+                        <IconPencil style={{cursor: 'pointer'}} color={'gray'} onClick={(e) => { e.stopPropagation(); navigate(`/dashboard/taker/${order.id}`);}}/>
+                    }
                 </Table.Td>
             </Table.Tr>
         </>

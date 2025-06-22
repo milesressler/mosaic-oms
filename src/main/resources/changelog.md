@@ -6,6 +6,7 @@
 - Showers dashboard done, widget on customer monitor hidden until approved
 - Only My Orders button on orders page filters to order the current users has touched
 - Filter to query order by numeric ID
+- Edit customers flow intended for order takers (click pencil icon in orders page)
 
 ### Changed
 - Moved orders closed toggle to order taker view

@@ -27,6 +27,7 @@ export interface FormOrderItem {
     quantity: number,
     notes?: string,
     attributes?: Record<string, AttributeValue>;
+    orderItemId?: number;
 }
 
 export interface OrderFormValues {
@@ -37,4 +38,6 @@ export interface OrderFormValues {
     specialInstructions?: string | null;
     optInNotifications?: boolean | null;
     items: FormOrderItem[];
+    deletedItemIds?: number[];
+
 }

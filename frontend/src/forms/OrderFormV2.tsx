@@ -17,14 +17,13 @@ import {
     Title, useMantineTheme
 } from "@mantine/core";
 import {useMediaQuery} from "@mantine/hooks";
-import {CustomerSearchResult, OrderRequest} from "src/models/types";
+import {CustomerSearchResult, OrderDetails, OrderRequest} from "src/models/types";
 import ItemSelection from "src/components/orders/ItemSelection.tsx";
 import useApi from "src/hooks/useApi.tsx";
 import {FormOrderItem, OrderFormValues} from "src/models/forms.tsx";
 import {useFeatures} from "src/contexts/FeaturesContext.tsx";
 import ordersApi from "src/services/ordersApi.tsx";
 import {
-    IconExclamationCircle,
     IconNote,
     IconNotes,
     IconSend,
@@ -37,9 +36,12 @@ import OrdersOpenSwitch from "src/components/features/OrdersOpenSwitch.tsx";
 
 interface Props {
     form: UseFormReturnType<OrderFormValues>,
+    mode: "create" | "edit",
+    order: OrderDetails|null,
+    onUpdateComplete?: () => void,
 }
 
-export function OrderFormV2({ form }: Props) {
+export function OrderFormV2({ form, mode, order, onUpdateComplete }: Props) {
     const theme = useMantineTheme();
 
     const isMobile = useMediaQuery(`(max-width: ${DEFAULT_THEME.breakpoints.lg})`);
@@ -50,12 +52,22 @@ export function OrderFormV2({ form }: Props) {
     const [useCustomerSearch, setUseCustomerSearch] = useState(true);
 
     const createOrderAPI = useApi(ordersApi.createOrder);
+    const updateOrderApi = useApi(ordersApi.updateOrderDetails);
 
     const steps = ["customer", "items", "additional", "confirm"];
 
     useEffect(() => {
         startOrder();
     }, []);
+
+    useEffect(() => {
+        if (mode === 'edit') {
+            setStep('items');
+        } else {
+            setStep('customer');
+        }
+
+    }, [mode]);
 
     const handleCreateNew = (first: string, last: string) => {
         form.setValues({
@@ -74,6 +86,13 @@ export function OrderFormV2({ form }: Props) {
             form.removeListItem('items', index);
             form.insertListItem('items', newItem)
         } else {
+            const removedItem = form.values.items[index];
+            if (removedItem.orderItemId != null) {
+                form.setFieldValue(
+                    'deletedItemIds',
+                    [...(form.values.deletedItemIds || []), removedItem.orderItemId]
+                );
+            }
             // posthog.capture('order_funnel_item_removed', {});
             form.removeListItem('items', index);
         }
@@ -93,18 +112,30 @@ export function OrderFormV2({ form }: Props) {
 
     const submitOrder = (values: OrderFormValues) => {
         form.validate();
-        const request: OrderRequest = {
-            customerFirstName: values.firstName,
-            customerLastName: values.lastName,
-            customerUuid: values.customerId,
-            customerPhone: values.customerPhone,
-            specialInstructions: values.specialInstructions || '',
-            optInNotifications: !!values.optInNotifications,
-            items: values.items.map((formItem: FormOrderItem) => {
-                return {...formItem, 'item': formItem.item.id};
-            }),
-        };
-        createOrderAPI.request(request);
+        if (mode === 'create') {
+            const request: OrderRequest = {
+                customerFirstName: values.firstName,
+                customerLastName: values.lastName,
+                customerUuid: values.customerId,
+                customerPhone: values.customerPhone,
+                specialInstructions: values.specialInstructions || '',
+                optInNotifications: !!values.optInNotifications,
+                items: values.items.map((formItem: FormOrderItem) => {
+                    return {...formItem, 'item': formItem.item.id};
+                }),
+            };
+            createOrderAPI.request(request);
+        } else {
+            const request: Partial<OrderRequest> = {
+                specialInstructions: values.specialInstructions || '',
+                upsertItems: values.items.map((formItem: FormOrderItem) => ({
+                    ...formItem,
+                    item: formItem.item.id,
+                })),
+                removeItems: values.deletedItemIds || [],
+            };
+            updateOrderApi.request(order!.uuid, request);
+        }
     }
 
     const startOver = () => {
@@ -122,9 +153,20 @@ export function OrderFormV2({ form }: Props) {
     useEffect(() => {
         if (createOrderAPI.data) {
             completeOrder({id: createOrderAPI.data.orderId});
-            startOver();
+            if (mode == 'create') {
+                startOver();
+            }
         }
     }, [createOrderAPI.data]);
+
+    useEffect(() => {
+        if (updateOrderApi.data) {
+
+            if (onUpdateComplete) {
+                onUpdateComplete();
+            }
+        }
+    }, [updateOrderApi.data]);
 
     if (!ordersOpen && !featuresLoading) {
         return (<
@@ -155,7 +197,7 @@ export function OrderFormV2({ form }: Props) {
             <Stepper
                 active={steps.indexOf(step)}
                 onStepClick={(index) => {
-                    if (index === 0) setStep("customer");
+                    if (index === 0 && mode !== 'edit') setStep("customer");
                     if (index === 1 && form.values.firstName) setStep("items");
                     if (index === 2 && form.values.items.length > 0) setStep("additional");
                     if (index === 3 && form.values.items.length > 0) setStep("confirm");
@@ -288,7 +330,7 @@ export function OrderFormV2({ form }: Props) {
                         </Button>
                     )}
 
-                    {step !== steps[0] &&
+                    {step !== steps[0] && (step !== steps[1] && mode === 'edit') &&
                     <Button
                         variant="outline"
                         color="gray"
@@ -332,7 +374,7 @@ export function OrderFormV2({ form }: Props) {
                     <Button
                         disabled={!ordersOpen || featuresLoading}
                         onClick={() => submitOrder(form.values)}>
-                        { groupMeEnabled ? "Send to GroupMe" : "Submit Order"}
+                        { groupMeEnabled ? "Send to GroupMe" : mode === 'create'  ? "Submit Order" : 'Update Order'}
                     </Button>}
                 </Group>
             </Box>

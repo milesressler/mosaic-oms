@@ -216,6 +216,7 @@ export interface OrderItem {
     attributes: { [key: string]: string };
     notes: string | null;
     id: number;
+    item: Item;
 }
 
 export interface AdminUser {

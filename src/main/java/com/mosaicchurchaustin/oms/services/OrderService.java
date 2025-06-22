@@ -15,7 +15,6 @@ import com.mosaicchurchaustin.oms.data.request.UpdateOrderItemRequest;
 import com.mosaicchurchaustin.oms.data.request.UpdateOrderRequest;
 import com.mosaicchurchaustin.oms.exception.EntityNotFoundException;
 import com.mosaicchurchaustin.oms.exception.InvalidRequestException;
-import com.mosaicchurchaustin.oms.repositories.CustomerRepository;
 import com.mosaicchurchaustin.oms.repositories.ItemRepository;
 import com.mosaicchurchaustin.oms.repositories.OrderHistoryRepository;
 import com.mosaicchurchaustin.oms.repositories.OrderItemRepository;
@@ -26,16 +25,16 @@ import jakarta.transaction.Transactional;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static com.mosaicchurchaustin.oms.data.entity.order.OrderItemEntity.ENTITY_NAME;
 
@@ -44,9 +43,6 @@ public class OrderService {
 
     @Autowired
     OrderRepository orderRepository;
-
-    @Autowired
-    CustomerRepository customerRepository;
 
     @Autowired
     ItemRepository itemRepository;
@@ -66,14 +62,11 @@ public class OrderService {
     @Autowired
     FeaturesService featuresService;
 
-    public List<OrderHistoryEntity> getOrderHistory() {
-        final Pageable pageable = PageRequest.of(0, 20, Sort.by(Sort.Order.desc("timestamp")));
-
+    public List<OrderHistoryEntity> getOrderHistory(final Pageable pageable) {
         return orderHistoryRepository.findAll(pageable).getContent();
     }
 
-    public List<OrderHistoryEntity> getOrderHistory(final Long orderId) {
-        final Pageable pageable = PageRequest.of(0, 20, Sort.by(Sort.Order.desc("timestamp")));
+    public List<OrderHistoryEntity> getOrderHistory(final Pageable pageable, final Long orderId) {
         return orderHistoryRepository.findAllByOrderEntityId(pageable, orderId).getContent();
     }
 
@@ -83,10 +76,10 @@ public class OrderService {
                                        final String customerUuid,
                                        final Long orderId,
                                        final boolean onlyMyOrders) {
-        final List<OrderStatus> statusList = (statusFilters != null && !statusFilters.isEmpty())
-                ? statusFilters.stream().map(OrderStatus::from).toList()
-                : null;
-
+        final List<OrderStatus> statusList = Stream.ofNullable(statusFilters)
+                .flatMap(Collection::stream)
+                .map(OrderStatus::from)
+                .toList();
 
         final Specification<OrderEntity> spec = OrderSpecBuilder.create()
                 .statuses(statusList)
@@ -99,11 +92,11 @@ public class OrderService {
     }
 
     public List<OrderEntity> getDashboardOrders(final Pageable pageable) {
-
-        return orderRepository.findOrdersForDashboard().stream().limit(pageable.getPageSize()).toList();
+        return orderRepository.findOrdersForDashboard()
+                .stream()
+                .limit(pageable.getPageSize())
+                .toList();
     }
-
-
 
     public OrderEntity getOrder(final String orderUuid) {
         return orderRepository.findByUuid(orderUuid).orElseThrow(() ->
@@ -218,6 +211,10 @@ public class OrderService {
                                    final UpdateOrderRequest request) {
 
         final OrderEntity orderEntity = getOrder(orderUuid);
+        final var modifiableStatuses = List.of(OrderStatus.PENDING_ACCEPTANCE, OrderStatus.NEEDS_INFO);
+        if (!modifiableStatuses.contains(orderEntity.getOrderStatus())) {
+            throw new InvalidRequestException("Cannot modify order with status " + orderEntity.getOrderStatus());
+        }
 
         if (request.optInNotifications() != null) {
             orderEntity.setOptInNotifications(request.optInNotifications());
@@ -231,26 +228,47 @@ public class OrderService {
             orderEntity.setPhoneNumber(request.customerPhone().trim());
         }
 
-        // TODO figure out what can be updated - ie, once being fulfilled, can items still be changed?
-//        if (StringUtils.isNotBlank(request.customerName())) {
-//            final CustomerEntity customer = getOrCreateCustomer(request.customerName());
-//            orderEntity.setCustomer(customer);
-//        }
-
         if (request.removeItems() != null && !request.removeItems().isEmpty()) {
-            final Set<Long> removeIds = request.removeItems().stream().filter(itemId ->
-                    orderEntity.getOrderItemList().stream().map(BaseEntity::getId).collect(Collectors.toSet()).contains(itemId))
+            final Set<Long> currentIds = orderEntity.getOrderItemList().stream()
+                    .map(BaseEntity::getId)
                     .collect(Collectors.toSet());
+
+            final Set<Long> removeIds = request.removeItems().stream()
+                    .filter(currentIds::contains)
+                    .collect(Collectors.toSet());
+
             orderItemRepository.deleteByIdIn(removeIds);
         }
 
-        if (request.addItems() != null && !request.addItems().isEmpty()) {
-            addItemsToOrder(orderEntity, request.addItems());
-        }
+        final var mappedInserts = Stream.ofNullable(request.upsertItems())
+                .flatMap(Collection::stream)
+                .filter(i -> i.orderItemId() == null)
+                .map(uoir -> new OrderItemRequest(
+                        uoir.item(),
+                        uoir.notes(),
+                        uoir.quantity(),
+                        uoir.attributes()
+                )).toList();
+        addItemsToOrder(orderEntity, mappedInserts);
 
-        if (request.setItems() != null && !request.setItems().isEmpty()) {
-            throw new RuntimeException("SetItems not yet supported.");
-        }
+        final Map<Long, OrderItemEntity> existingItemsById = orderEntity.getOrderItemList().stream()
+                .collect(Collectors.toMap(OrderItemEntity::getId, item -> item));
+
+        Stream.ofNullable(request.upsertItems())
+                .flatMap(Collection::stream)
+                .filter(i -> i.orderItemId() != null)
+                .forEach(itemRequest -> {
+                    final OrderItemEntity existing = existingItemsById.get(itemRequest.orderItemId());
+                    if (existing == null) {
+                        throw new InvalidRequestException("Invalid orderItemId: " + itemRequest.orderItemId());
+                    }
+
+                    if (itemRequest.quantity() != null) {
+                        existing.setQuantity(itemRequest.quantity());
+                    }
+                    existing.setNotes(StringUtils.isBlank(itemRequest.notes()) ? null : itemRequest.notes().trim());
+                    existing.setAttributes(itemRequest.attributes());
+                });
 
         return orderRepository.save(orderEntity);
     }

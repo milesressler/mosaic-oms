@@ -88,6 +88,14 @@ const routes = [
                 showInNavBar: true,
             },
             {
+                key: 'taker-edit',
+                path: '/dashboard/taker/:id',
+                element: OrderTakerDashboard,
+                errorElement: ErrorPage,
+                title: 'Edit Order',
+                showInNavBar: false,
+            },
+            {
                 key: 'filler-dashboard',
                 path: '/dashboard/filler',
                 element: () => <SelectedOrderProvider><OrderFillerDashboard/></SelectedOrderProvider>,
