@@ -2,9 +2,8 @@ import {
     Avatar, Box,
     Button,
     Group,
-    LoadingOverlay,
     Modal,
-    Pagination,
+    Pagination, Stack,
     Table,
     Text,
     Tooltip
@@ -69,24 +68,34 @@ export function UserManagementPage() {
             }}
         >
             <Table.Td><Avatar src={user.picture} alt="Avatar" /></Table.Td>
-            <Table.Td>{user.name}</Table.Td>
-            <Table.Td>{user.sources?.map(source => source.toLowerCase() === "google" ?
+            <Table.Td>
+                <Stack gap={0}>
+                    <Text>
+                {user.name}
+                    </Text>
+                    <Group>
+                        <Text size={'sm'} c={'dimmed'}>
+                            {user.email}
+                        </Text>
+                        {user.emailVerified && <Tooltip label="Verified"><IconCircleCheck color={'green'} size={20} /></Tooltip>}
+                        {!user.emailVerified && (
+                            <Button size={'xs'} variant={'outline'} loading={resendInviteApi.loading} onClick={(e) => resendInvite(e, user)}>
+                                Resend
+                            </Button>
+                        )}
+                    </Group>
+                </Stack>
+            </Table.Td>
+            <Table.Td>
+                <Stack gap={0}>{user.sources?.map(source => source.toLowerCase() === "google" ?
                 <Tooltip label="Google" withArrow><IconBrandGoogleFilled/></Tooltip> :
                 <Tooltip label="Username/password" withArrow><IconAt/></Tooltip>)
-            }</Table.Td>
+            }
+                </Stack>
+            </Table.Td>
             <Table.Td>{DateTime.fromMillis(user.created).toLocaleString(DateTime.DATE_MED)}</Table.Td>
             <Table.Td><Text c='dimmed' size={'xs'}>{user.lastLogin && DateTime.fromMillis(user.lastLogin).toRelative()}</Text></Table.Td>
-            <Table.Td>
-                <Group>
-                    {user.email}
-                    {user.emailVerified && <Tooltip label="Verified"><IconCircleCheck color={'green'} size={20} /></Tooltip>}
-                    {!user.emailVerified && (
-                        <Button size={'xs'} variant={'outline'} loading={resendInviteApi.loading} onClick={(e) => resendInvite(e, user)}>
-                            Resend
-                        </Button>
-                    )}
-                </Group>
-            </Table.Td>
+
         </Table.Tr>
     ));
 
@@ -98,10 +107,10 @@ export function UserManagementPage() {
                         <Table.Tr>
                             <Table.Th></Table.Th>
                             <Table.Th>Name</Table.Th>
-                            <Table.Th>Source</Table.Th>
+                            <Table.Th>Src</Table.Th>
                             <Table.Th>Created</Table.Th>
                             <Table.Th>Last Logged In</Table.Th>
-                            <Table.Th>Email</Table.Th>
+                            {/*<Table.Th>Email</Table.Th>*/}
                         </Table.Tr>
                     </Table.Thead>
                     <Table.Tbody>
@@ -119,7 +128,7 @@ export function UserManagementPage() {
             {(getUsersApi.data?.totalPages ?? 0) > 1 && <Pagination value={activePage} onChange={setPage} total={getUsersApi.data?.totalPages ?? 0} />}
 
             <Modal title="User Details" opened={roleModal} onClose={() => { setRoleModal(false); setSelectedUser(null); }}>
-                <LoadingOverlay visible={getUserDetailApi.loading} />
+                {/*<LoadingOverlay visible={getUserDetailApi.loading} />*/}
                 {/*<Box mb="sm" style={{ backgroundColor: "#f0f0f0", padding: "10px", borderRadius: "5px" }}>*/}
                 {/*    <Text size="sm" fw={500}>🔍 Parent Debug Info</Text>*/}
                 {/*    <Text size="xs">selectedUser (from list): <b>{selectedUser?.userId || 'null'}</b></Text>*/}
@@ -130,7 +139,7 @@ export function UserManagementPage() {
                 {/*</Box>*/}
                 {selectedUser && (
                     <>
-                        <UserRoleManagement selectedUser={getUserDetailApi.data} loading={getUserDetailApi.loading} />
+                        <UserRoleManagement selectedUser={getUserDetailApi.data} loading={getUserDetailApi.loading} error={getUserDetailApi.error} />
                         <UserHistory selectedUser={getUserDetailApi.data} loading={getUserDetailApi.loading} />
                     </>
                 )}

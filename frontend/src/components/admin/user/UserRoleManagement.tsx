@@ -1,78 +1,101 @@
 import { UserDetail } from "src/models/types.tsx";
 import useApi from "src/hooks/useApi.tsx";
 import AdminUserApi from "src/services/adminUserApi.tsx";
-import { Box, Checkbox, Divider, Title, Text } from "@mantine/core";
+import {
+    Box,
+    Checkbox,
+    Divider,
+    Title,
+    Text,
+    Stack,
+    Loader,
+    Center,
+} from "@mantine/core";
 import { ROLE_NAMES } from "src/models/constants.tsx";
+import {IconExclamationCircle} from "@tabler/icons-react";
 
 interface UserRoleManagementProps {
     selectedUser: UserDetail | null;
     loading: boolean;
+    error: string;
 }
 
-const UserRoleManagement = ({ selectedUser, loading }: UserRoleManagementProps) => {
+const UserRoleManagement = ({ selectedUser, loading, error }: UserRoleManagementProps) => {
     const updateUserApi = useApi(AdminUserApi.updateUser);
 
-    const handleRoleChange = (roleName: string, checked: boolean) => {
-        if (selectedUser?.userId) {
-            updateUserApi.request(
-                selectedUser.userId,
-                checked ? [roleName] : [],
-                !checked ? [roleName] : [],
-            );
-        }
-    };
-
+    const isUpdating = updateUserApi.loading;
+    const isLoading = loading;
     const user =
         selectedUser?.userId &&
         updateUserApi?.data?.userId === selectedUser.userId
             ? updateUserApi.data
             : selectedUser;
 
-    const checkboxes = ROLE_NAMES.map((value) => (
-        <Checkbox
-            indeterminate={loading}
-            mt="xs"
-            ml={33}
-            label={value}
-            key={value}
-            checked={
-                user?.roles?.map((i) => i.toLowerCase()).includes(value.toLowerCase()) ?? false
-            }
-            onChange={(event) => handleRoleChange(value, event.currentTarget.checked)}
-        />
-    ));
+    const handleRoleChange = (roleName: string, checked: boolean) => {
+        if (!selectedUser?.userId) return;
+
+        updateUserApi.request(
+            selectedUser.userId,
+            checked ? [roleName] : [],
+            !checked ? [roleName] : []
+        );
+    };
 
     return (
         <Box>
             <Title>Roles</Title>
             <Divider mb="sm" />
 
-            {/* 🔍 DEBUG PANEL */}
-            {/*<Box*/}
-            {/*    p="sm"*/}
-            {/*    mb="sm"*/}
-            {/*    style={(theme) => ({*/}
-            {/*        backgroundColor: theme.colors.gray[1],*/}
-            {/*        border: `1px solid ${theme.colors.gray[4]}`,*/}
-            {/*        borderRadius: theme.radius.sm,*/}
-            {/*        fontSize: 14,*/}
-            {/*    })}*/}
-            {/*>*/}
-            {/*    <Text fw={500}>🔍 Debug Info</Text>*/}
-            {/*    <Text>loading: <b>{loading ? "true" : "false"}</b></Text>*/}
-            {/*    <Text>selectedUser: <b>{selectedUser ? "present ✅" : "null ❌"}</b></Text>*/}
-            {/*    <Text>user.userId: <b>{user?.userId ?? "N/A"}</b></Text>*/}
-            {/*    <Text>user.roles: <b>{user?.roles?.join(", ") || "none"}</b></Text>*/}
-            {/*    <Text>checkboxes count: <b>{checkboxes.length}</b></Text>*/}
-            {/*</Box>*/}
+            {isLoading && (
+                <Center mt="md">
+                    <Loader size="sm" />
+                    <Text ml="sm">Loading user roles...</Text>
+                </Center>
+            )}
 
-            {/* Only show checkboxes when data is ready */}
-            {user && !loading ? (
-                <Box>{checkboxes}</Box>
-            ) : (
+            {!selectedUser && !error && !isLoading && (
                 <Text ml={33} mt="sm" c="dimmed">
-                    {loading ? "Loading..." : "No user selected"}
+                    No user selected
                 </Text>
+            )}
+
+            {error && !isLoading && (
+                <Stack gap={0}>
+                    <Center>
+                        <IconExclamationCircle color={'red'}/>
+                    </Center>
+                    <Center>
+                        <Text c="red">
+                            {error}
+                        </Text>
+                    </Center>
+                </Stack>
+            )}
+
+            {selectedUser && !user?.roles?.length && !isLoading && (
+                <Text ml={33} mt="sm" c="dimmed">
+                    No roles found for this user.
+                </Text>
+            )}
+
+            {user && user.roles && !isLoading && (
+                <Stack ml={33}>
+                    {ROLE_NAMES.map((roleName) => (
+                        <Checkbox
+                            key={roleName}
+                            label={roleName}
+                            checked={
+                                user.roles
+                                    .map((r) => r.toLowerCase())
+                                    .includes(roleName.toLowerCase())
+                            }
+                            onChange={(e) =>
+                                handleRoleChange(roleName, e.currentTarget.checked)
+                            }
+                            disabled={isUpdating}
+                        />
+                    ))}
+                </Stack>
             )}
         </Box>
     );
