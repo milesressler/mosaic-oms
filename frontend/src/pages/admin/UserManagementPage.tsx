@@ -67,17 +67,17 @@ export function UserManagementPage() {
                 setRoleModal(true);
             }}
         >
-            <Table.Td><Avatar src={user.picture} alt="Avatar" /></Table.Td>
+            <Table.Td><Avatar size={'sm'} src={user.picture} alt="Avatar" /></Table.Td>
             <Table.Td>
                 <Stack gap={0}>
                     <Text>
                 {user.name}
                     </Text>
-                    <Group>
+                    <Group gap={4}>
+                        {user.emailVerified && <Tooltip label="Verified"><IconCircleCheck color={'green'} size={20} /></Tooltip>}
                         <Text size={'sm'} c={'dimmed'}>
                             {user.email}
                         </Text>
-                        {user.emailVerified && <Tooltip label="Verified"><IconCircleCheck color={'green'} size={20} /></Tooltip>}
                         {!user.emailVerified && (
                             <Button size={'xs'} variant={'outline'} loading={resendInviteApi.loading} onClick={(e) => resendInvite(e, user)}>
                                 Resend
@@ -88,8 +88,8 @@ export function UserManagementPage() {
             </Table.Td>
             <Table.Td>
                 <Stack gap={0}>{user.sources?.map(source => source.toLowerCase() === "google" ?
-                <Tooltip label="Google" withArrow><IconBrandGoogleFilled/></Tooltip> :
-                <Tooltip label="Username/password" withArrow><IconAt/></Tooltip>)
+                <Tooltip label="Google" withArrow><IconBrandGoogleFilled size={'18'}/></Tooltip> :
+                <Tooltip label="Username/password" withArrow><IconAt size={18}/></Tooltip>)
             }
                 </Stack>
             </Table.Td>
@@ -109,8 +109,7 @@ export function UserManagementPage() {
                             <Table.Th>Name</Table.Th>
                             <Table.Th>Src</Table.Th>
                             <Table.Th>Created</Table.Th>
-                            <Table.Th>Last Logged In</Table.Th>
-                            {/*<Table.Th>Email</Table.Th>*/}
+                            <Table.Th>Last Login</Table.Th>
                         </Table.Tr>
                     </Table.Thead>
                     <Table.Tbody>
