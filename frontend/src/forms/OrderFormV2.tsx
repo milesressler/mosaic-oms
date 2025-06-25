@@ -33,6 +33,7 @@ import {
 import {useOrderTracking} from "src/hooks/useOrderTracking.tsx";
 import CustomerSearch from "src/components/customer/CustomerSearch.tsx";
 import OrdersOpenSwitch from "src/components/features/OrdersOpenSwitch.tsx";
+import OrdersClosedAlert from "src/components/common/orders/OrdersClosedAlert.tsx";
 
 interface Props {
     form: UseFormReturnType<OrderFormValues>,
@@ -169,18 +170,7 @@ export function OrderFormV2({ form, mode, order, onUpdateComplete }: Props) {
     }, [updateOrderApi.data]);
 
     if (!ordersOpen && !featuresLoading) {
-        return (<
-                >
-
-            <Alert m={'lg'} color="red" title="Orders are currently closed" mb="md">
-                <Stack>
-                    <Text>We’re not accepting new orders right now.</Text>
-
-                    <OrdersOpenSwitch/>
-                </Stack>
-            </Alert>
-            </>
-        );
+        return <OrdersClosedAlert withToggle={true}/>
     }
 
 

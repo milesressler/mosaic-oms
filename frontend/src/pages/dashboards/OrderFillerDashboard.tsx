@@ -6,6 +6,8 @@ import {SelectedOrderProvider, useSelectedOrder} from "src/contexts/SelectedOrde
 import OrderDetailSection from "src/components/fillers/OrderDetailSection.tsx";
 import {OrdersView} from "src/components/orders/OrdersTableConfig.tsx";
 import {useState} from "react";
+import {useFeatures} from "src/contexts/FeaturesContext.tsx";
+import OrdersClosedAlert from "src/components/common/orders/OrdersClosedAlert.tsx";
 
 export function OrderFillerDashboard() {
     const navigate = useNavigate();
@@ -28,6 +30,8 @@ export function OrderFillerDashboard() {
 
     const customerName = `${selectedOrder?.customer?.firstName || ''} ${selectedOrder?.customer?.lastName || ''}`.trim()
 
+    const { ordersOpen, featuresLoading} = useFeatures();
+
     return (
         <SelectedOrderProvider>
             <Modal size={'md'}
@@ -38,6 +42,9 @@ export function OrderFillerDashboard() {
                 <OrderDetailSection  onUpdate={triggerTableRefresh}/>
             </Modal>
             <>
+            {
+                !featuresLoading && !ordersOpen && <OrdersClosedAlert/>
+            }
             <Grid gutter={0}>
                 <OrdersTable
                     statusFilter={[OrderStatus.ACCEPTED, OrderStatus.PENDING_ACCEPTANCE, OrderStatus.PACKING]}
