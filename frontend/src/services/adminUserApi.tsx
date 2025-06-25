@@ -5,7 +5,7 @@ const createUser = (email: string, name: string) =>
     client.post<User>("/admin/user", {email, name});
 
 const updateUser = (userId: string, addRoles: string[], removeRoles: string[]) =>
-    client.put<UserDetail>(`/admin/user/${userId}`, {addRoles, removeRoles});
+    client.put<UserDetail>(`/admin/user/${encodeURIComponent(userId)}`, {addRoles, removeRoles});
 
 const getUsers = (page: number, size: number) =>
     client.get<Page<User>>("/admin/user", {params: {page, size}});
@@ -13,7 +13,7 @@ const getUsers = (page: number, size: number) =>
 const getUser = (id: string) =>
     client.get<UserDetail>(`/admin/user/${encodeURIComponent(id)}`);
 const resendInvite = (id: string) =>
-    client.post<any>(`/admin/user/${id}/invite`);
+    client.post<any>(`/admin/user/${encodeURIComponent(id)}/invite`);
 
 
 export default {
