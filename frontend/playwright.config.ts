@@ -1,10 +1,24 @@
 import { defineConfig } from '@playwright/test';
 import * as dotenv from 'dotenv';
+// these two let us reconstruct __dirname in ESM
+import { fileURLToPath } from 'url';
+import { dirname, resolve } from 'path';
+
+// the only fs function we need
+import { existsSync } from 'fs';
+
 dotenv.config();
 
-function storageStateOrEmpty(filePath: string) {
-    return fs.existsSync(filePath)
-        ? filePath
+
+// recreate __dirname
+const __filename = fileURLToPath(import.meta.url);
+const __dirname  = dirname(__filename);
+
+// helper: if the JSON exists, use its path; otherwise start empty
+function storageStateOrEmpty(relPath: string) {
+    const abs = resolve(__dirname, relPath);
+    return existsSync(abs)
+        ? abs
         : { cookies: [], origins: [] };
 }
 
