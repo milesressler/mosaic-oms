@@ -5,7 +5,7 @@ on:
     # runs at 13:00 America/Chicago → 18:00 UTC every Saturday
     - cron: '0 18 * * SAT'
   workflow_dispatch:
-    
+
 jobs:
   e2e:
     runs-on: ubuntu-latest
@@ -21,6 +21,10 @@ jobs:
       - name: Install dependencies
         working-directory: frontend
         run: npm ci
+
+      - name: Install Playwright browsers     # ← add this
+        working-directory: frontend
+        run: npx playwright install
 
       # 3. (If needed) regenerate auth state or ensure you have prod-storage.json
       - name: Capture Prod Auth State
