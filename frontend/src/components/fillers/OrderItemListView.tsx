@@ -1,6 +1,6 @@
 import {Badge, Button, Group, Paper, Text} from '@mantine/core';
 import { OrderStatus } from 'src/models/types.tsx';
-import { useSelectedOrder } from 'src/contexts/SelectedOrderContext.tsx';
+import { useSelectedOrder } from 'src/context/SelectedOrderContext.tsx';
 import { useNavigate, useParams } from 'react-router-dom';
 
 function OrderItemListView() {

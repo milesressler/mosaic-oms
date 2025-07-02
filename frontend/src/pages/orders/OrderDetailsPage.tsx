@@ -22,7 +22,7 @@ import {Category, categoryDisplayNames, OrderStatus} from "src/models/types.tsx"
 import UserAvatar from 'src/components/common/userAvatar/UserAvatar';
 import {IconArrowRight, IconChevronDown} from '@tabler/icons-react';
 import React from 'react';
-import {statusDisplay} from "src/util/StatusUtils.tsx";
+import {statusDisplay} from "src/utils/StatusUtils.tsx";
 import AttributeBadges from 'src/components/common/items/AttributeBadges';
 import classes from "src/styles/LinkStyles.module.css";
 

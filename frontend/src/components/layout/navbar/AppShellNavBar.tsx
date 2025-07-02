@@ -7,7 +7,7 @@ import {LogoutButton} from "src/components/auth0/LogoutButton.tsx";
 import {useAuth0} from "@auth0/auth0-react";
 import LoginButton from "src/components/auth0/LoginButton.tsx";
 import {getRolesFromAuth0User} from "src/components/auth0/Auth0Utils.tsx";
-import {usePreferences} from "src/contexts/PreferencesContext.tsx";
+import {usePreferences} from "src/context/PreferencesContext.tsx";
 import {DeviceLogoutButton} from "src/components/admin/devices/DeviceLogoutButton.tsx";
 import {IconBrandSlack, IconHelpCircle, IconLink, IconLinkOff, IconReport, IconSpeakerphone} from "@tabler/icons-react";
 import {useStompConnectionStatus} from "src/hooks/useStompConnectionStatus.tsx";

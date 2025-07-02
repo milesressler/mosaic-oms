@@ -21,7 +21,7 @@ import {CustomerSearchResult, OrderDetails, OrderRequest} from "src/models/types
 import ItemSelection from "src/components/orders/ItemSelection.tsx";
 import useApi from "src/hooks/useApi.tsx";
 import {FormOrderItem, OrderFormValues} from "src/models/forms.tsx";
-import {useFeatures} from "src/contexts/FeaturesContext.tsx";
+import {useFeatures} from "src/context/FeaturesContext.tsx";
 import ordersApi from "src/services/ordersApi.tsx";
 import {
     IconNote,
@@ -242,8 +242,8 @@ export function OrderFormV2({ form, mode, order, onUpdateComplete }: Props) {
                                 flexDirection: "column",
                                 gap: "1rem" }}
                             >
-                                <TextInput label="First Name" size={'lg'} {...form.getInputProps("firstName")} />
-                                <TextInput label="Last Name" size={'lg'} {...form.getInputProps("lastName")} />
+                                <TextInput label="First Name" id='customerFirstInput' size={'lg'} {...form.getInputProps("firstName")} />
+                                <TextInput label="Last Name" id='customerLastInput' size={'lg'} {...form.getInputProps("lastName")} />
                             </form>
                         )}
                     </>
@@ -258,6 +258,7 @@ export function OrderFormV2({ form, mode, order, onUpdateComplete }: Props) {
                 {/* Step 3: notes and additional */}
                 {step === "additional" &&
                     <Textarea
+                        id='specialInstructions'
                         label="Special Instructions"
                         placeholder="General notes about the order"
                         {...form.getInputProps('specialInstructions')}

@@ -1,8 +1,8 @@
 import { Box, Select, Switch, Stack } from "@mantine/core";
-import { useFeatures } from "src/contexts/FeaturesContext.tsx";
+import { useFeatures } from "src/context/FeaturesContext.tsx";
 import { useEffect } from "react";
 import { OrderStatus } from "src/models/types.tsx";
-import { statusDisplay } from "src/util/StatusUtils.tsx";
+import { statusDisplay } from "src/utils/StatusUtils.tsx";
 
 const orderStatusOptions = [OrderStatus.ACCEPTED, OrderStatus.PACKED].map(
     (status) => ({

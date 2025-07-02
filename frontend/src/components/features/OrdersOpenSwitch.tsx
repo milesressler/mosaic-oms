@@ -1,5 +1,5 @@
 import {Switch} from "@mantine/core";
-import {useFeatures} from "src/contexts/FeaturesContext.tsx";
+import {useFeatures} from "src/context/FeaturesContext.tsx";
 
 export const OrdersOpenSwitch = () => {
     const { setOrdersOpen, ordersOpen, featuresLoading} = useFeatures();

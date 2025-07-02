@@ -2,12 +2,12 @@ import { Button, Group, Text, Paper, Divider, Box, Loader } from '@mantine/core'
 import { IconPrinter } from '@tabler/icons-react';
 import ItemQuantitySelector from 'src/components/fillers/ItemQuantitySelector.tsx';
 import {OrderDetails, OrderItem, OrderStatus} from 'src/models/types.tsx';
-import { useSelectedOrder } from 'src/contexts/SelectedOrderContext.tsx';
+import { useSelectedOrder } from 'src/context/SelectedOrderContext.tsx';
 import { useEffect, useState } from 'react';
 import useApi from 'src/hooks/useApi.tsx';
 import ordersApi from 'src/services/ordersApi.tsx';
 import { useNavigate } from 'react-router-dom';
-import { useFeatures } from 'src/contexts/FeaturesContext.tsx';
+import { useFeatures } from 'src/context/FeaturesContext.tsx';
 import {useAuth0} from "@auth0/auth0-react";
 import {useOrderFulfillmentTracking} from "src/hooks/useOrderFulfillmentTracking.tsx";
 

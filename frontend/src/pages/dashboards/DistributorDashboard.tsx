@@ -2,7 +2,7 @@ import {Box, Modal} from "@mantine/core";
 import {Order, OrderStatus} from "src/models/types.tsx";
 import OrdersTable from "src/components/orders/OrdersTable.tsx";
 import {useNavigate, useParams} from "react-router-dom";
-import {SelectedOrderProvider, useSelectedOrder} from "src/contexts/SelectedOrderContext.tsx";
+import {SelectedOrderProvider, useSelectedOrder} from "src/context/SelectedOrderContext.tsx";
 import OrderDetailSection from "src/components/fillers/OrderDetailSection.tsx";
 import {OrdersView} from "src/components/orders/OrdersTableConfig.tsx";
 import {useState} from "react";

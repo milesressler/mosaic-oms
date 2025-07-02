@@ -1,6 +1,6 @@
-import './App.css'
+import 'src/styles/App.css'
 import {Auth0ProviderWithNavigate} from "src/components/auth0/Auth0ProviderWithNavigate.tsx";
-import {AuthContextProvider, useAuthContext} from "src/contexts/AuthContext";
+import {AuthContextProvider, useAuthContext} from "src/context/AuthContext";
 import '@mantine/core/styles.css';
 import '@mantine/dates/styles.css';
 import '@mantine/charts/styles.css';
@@ -13,8 +13,8 @@ import {AppShellComponent} from "src/components/layout/AppShellComponent.tsx";
 import { StompSessionProvider} from "react-stomp-hooks";
 import { CookiesProvider, useCookies} from "react-cookie";
 import {useAuth0} from "@auth0/auth0-react";
-import {PreferencesProvider} from "src/contexts/PreferencesContext.tsx";
-import {FeaturesProvider} from "src/contexts/FeaturesContext.tsx";
+import {PreferencesProvider} from "src/context/PreferencesContext.tsx";
+import {FeaturesProvider} from "src/context/FeaturesContext.tsx";
 import {ModalsProvider} from "@mantine/modals";
 import {PostHogProvider} from "posthog-js/react";
 const WS_URL = import.meta.env.VITE_API_WEBSOCKET_URL;

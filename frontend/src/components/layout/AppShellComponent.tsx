@@ -14,7 +14,7 @@ import LoginButton from "src/components/auth0/LoginButton.tsx";
 import AsideContent from "src/components/layout/aside/AsideContent.tsx";
 import UserApi from "src/services/userApi.tsx";
 import {IconArrowsMaximize, IconArrowsMinimize} from "@tabler/icons-react";
-import { SelectedOrderProvider} from "src/contexts/SelectedOrderContext.tsx";
+import { SelectedOrderProvider} from "src/context/SelectedOrderContext.tsx";
 import NotificationsHandler from "src/components/notifications/NotificationsHandler.tsx";
 import {DeviceLogoutButton} from "src/components/admin/devices/DeviceLogoutButton.tsx";
 import {usePageTracking} from "src/hooks/usePageTracking.tsx";

@@ -5,7 +5,7 @@ import ordersApi from "src/services/ordersApi.tsx";
 import {Box, Center, LoadingOverlay, Text} from "@mantine/core";
 import {useAuth0} from "@auth0/auth0-react";
 import {Outlet} from "react-router-dom";
-import { useSelectedOrder} from "src/contexts/SelectedOrderContext";
+import { useSelectedOrder} from "src/context/SelectedOrderContext";
 import OrderInfoBlock from "src/components/orders/OrderInfoBlock.tsx";
 
 interface OrderDetailsProps {

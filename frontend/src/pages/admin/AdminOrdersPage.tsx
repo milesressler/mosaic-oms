@@ -19,7 +19,7 @@ import {DateTime} from "luxon";
 import groupmeImage from "src/assets/groupme_icon.png";
 import StatusBadge from "src/components/StatusBadge.tsx";
 import classes from "src/components/orders/TableSort.module.css";
-import {statusDisplay} from "src/util/StatusUtils.tsx";
+import {statusDisplay} from "src/utils/StatusUtils.tsx";
 import QrScannerButton from "src/components/scanner/QrScannerButton.tsx";
 
 
@@ -217,6 +217,7 @@ const AdminOrdersPage = () => {
                         onChange={(e) => setOrderId(e.currentTarget.value)}
                     />
                     <Switch
+                        id={'onlyMyOrdersToggle'}
                         label={"Only my orders"}
                       description={"Filters to orders that you've handled"}
                         checked={onlyMyOrdersFilter}

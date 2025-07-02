@@ -121,9 +121,9 @@ export function ItemsManagementPage() {
                        onClick={(e) => { e.stopPropagation(); toggleAvailability(item);}}
                        size={'xs'}>{item.availability}</Badge>
             </Table.Td>
-            <Table.Td>
-                {item.totalFilled} / {item.totalOrdered ?? 0}
-            </Table.Td>
+            {/*<Table.Td>*/}
+            {/*    {item.totalFilled} / {item.totalOrdered ?? 0}*/}
+            {/*</Table.Td>*/}
             <Table.Td>
                 <IconPencil color={'gray'} onClick={(e) => { e.stopPropagation(); setEditingItem(item)}}></IconPencil>
                 { item.managed && <IconX color={'red'}  onClick={(e) => { e.stopPropagation(); handleDelete(item)}}></IconX> }
@@ -172,7 +172,7 @@ export function ItemsManagementPage() {
                         <Table.Th>Placeholder</Table.Th>
                         <Table.Th>Attributes</Table.Th>
                         <Table.Th>Availability</Table.Th>
-                        <Table.Th>Filled / Ordered</Table.Th>
+                        {/*<Table.Th>Filled / Ordered</Table.Th>*/}
                         <Table.Th></Table.Th>
                     </Table.Tr>
                 </Table.Thead>

@@ -9,7 +9,14 @@
     "buildFast": "vite build",
     "buildForBoot": "vite build  --mode integrated",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test:local":       "npx playwright test --project=local",
+    "test:qa":          "npx playwright test --project=qa",
+    "test:prod":        "npx playwright test --project=prod",
+    "record:local":     "RECORD=true npx playwright test e2e/login-record.spec.ts --project=local",
+    "record:qa":        "RECORD=true npx playwright test e2e/login-record.spec.ts --project=qa",
+    "record:prod":      "RECORD=true npx playwright test e2e/login-record.spec.ts --project=prod"
+
   },
   "dependencies": {
     "posthog-js": "^1.242.2",
@@ -31,6 +38,7 @@
     "@mantine/notifications": "^7.17.4",
     "@mantine/nprogress": "^7.17.4",
     "@mantine/spotlight": "^7.17.4",
+    "@playwright/test": "^1.53.2",
     "@stomp/stompjs": "^7.0.0",
     "@tabler/icons-react": "^3.1.0",
     "@types/luxon": "^3.4.2",
@@ -42,6 +50,7 @@
     "@yudiel/react-qr-scanner": "^2.2.1",
     "axios": "^1.5.1",
     "dayjs": "^1.11.10",
+    "dotenv": "^17.0.1",
     "eslint": "^8.46.0",
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.3",

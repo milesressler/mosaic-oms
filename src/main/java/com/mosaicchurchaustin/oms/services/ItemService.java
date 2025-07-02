@@ -63,26 +63,26 @@ public class ItemService {
         Specification<ItemEntity> spec = Specification.where(null);
 
         if (Boolean.TRUE.equals(managedItemsOnly)) {
-            spec = spec.and((root, query, cb) -> cb.isTrue(root.get("managed")));
+            spec = spec.and((root, query, cb) ->
+                    cb.isTrue(root.get("managed")));
         }
 
         if (categories != null && !categories.isEmpty()) {
-            spec = spec.and((root, query, cb) -> root.get("category").in(categories));
+            spec = spec.and((root, query, cb) ->
+                    root.get("category").in(categories));
         }
 
         final Page<ItemEntity> result = itemRepository.findAll(spec, pageable);
-        return result.map(itemEntity -> {
-            Hibernate.initialize(itemEntity.getOrderItems());
-            Hibernate.initialize(itemEntity.getAttributes());
-            return itemEntity;
-        });
+        result.map(ItemEntity::getAttributes)
+                .forEach(Hibernate::initialize);
+        return result;
     }
 
     @Transactional
     @CacheEvict(value = "items", key = "#root.target.ITEMS_KEY")
     public void removeItem(final Long id) {
         final ItemEntity itemEntity = itemRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Item", id.toString()));
+                .orElseThrow(() -> new EntityNotFoundException(ItemEntity.ENTITY_TYPE, id.toString()));
 
         itemEntity.setManaged(false);
         itemRepository.save(itemEntity);
@@ -93,7 +93,7 @@ public class ItemService {
     @CacheEvict(value = "items", key = "#root.target.ITEMS_KEY")
     public ItemEntity updateItem(final Long id, final UpdateItemRequest request) {
         final ItemEntity itemEntity = itemRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Item", id.toString()));
+                .orElseThrow(() -> new EntityNotFoundException(ItemEntity.ENTITY_TYPE, id.toString()));
 
         if (request.managed() != null) {
             itemEntity.setManaged(request.managed());

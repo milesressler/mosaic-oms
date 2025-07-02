@@ -28,6 +28,7 @@ export const CustomerResultCard = ({onClick, key, text, useAlternateStyle, flagg
             })}
             onClick={() => onClick(key)}
             shadow="xs"
+            className={'customerResultCard'}
         >
             <Group justify={'space-between'}>
                 <Text size="sm" fw={useAlternateStyle ? 500 : 400}>{text}</Text>

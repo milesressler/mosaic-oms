@@ -3,7 +3,7 @@ import {IconCheckbox, IconChevronDown, IconNotes, IconPrinter, IconTrash} from '
 import classes from './filler-order-action-button.module.css';
 import {OrderDetails, OrderStatus} from "src/models/types.tsx";
 import {useAuth0} from "@auth0/auth0-react";
-import {useFeatures} from "src/contexts/FeaturesContext.tsx";
+import {useFeatures} from "src/context/FeaturesContext.tsx";
 
 interface OrderActionButtonProps {
     loading?: boolean,

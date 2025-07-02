@@ -1,0 +1,42 @@
+name: Scheduled Prod E2E Tests
+
+on:
+  schedule:
+    # runs at 13:00 America/Chicago → 18:00 UTC every Saturday
+    - cron: '0 18 * * SAT'
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    steps:
+      # 1. Check out your code
+      - uses: actions/checkout@v4
+
+      # 2. Install Node & deps
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Install dependencies
+        working-directory: frontend
+        run: npm ci
+
+      # 3. (If needed) regenerate auth state or ensure you have prod-storage.json
+      - name: Capture Prod Auth State
+        working-directory: frontend
+        run: npm run record:prod
+        env:
+          PROD_URL: ${{ secrets.PROD_URL }}
+          AUTH0_DOMAIN: ${{ secrets.AUTH0_DOMAIN }}
+          AUTH0_TEST_USER: ${{ secrets.AUTH0_TEST_USER }}
+          AUTH0_TEST_PW: ${{ secrets.AUTH0_TEST_PW }}
+
+      # 4. Run your Playwright suite against prod
+      - name: Run Prod E2E Tests
+        run: npm run test:prod
+        env:
+          # these should be stored in your repository secrets
+          PROD_URL: ${{ secrets.PROD_URL }}
+          AUTH0_DOMAIN: ${{ secrets.AUTH0_DOMAIN }}
+          AUTH0_TEST_USER: ${{ secrets.AUTH0_TEST_USER }}
+          AUTH0_TEST_PW: ${{ secrets.AUTH0_TEST_PW }}

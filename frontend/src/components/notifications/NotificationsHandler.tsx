@@ -2,10 +2,10 @@ import { notifications } from '@mantine/notifications';
 import {useSubscription} from "react-stomp-hooks";
 import {BulkOrderNotification, OrderNotification} from "src/models/types.tsx";
 import {useAuth0} from "@auth0/auth0-react";
-import {usePreferences} from "src/contexts/PreferencesContext.tsx";
+import {usePreferences} from "src/context/PreferencesContext.tsx";
 import routes from "src/routesConfig.tsx";
 import {matchPath, useLocation} from "react-router-dom";
-import {statusDisplay} from "src/util/StatusUtils.tsx";
+import {statusDisplay} from "src/utils/StatusUtils.tsx";
 const USE_NOTIFICATIONS = import.meta.env.VITE_NOTIFICATIONS_ENABLED === 'true';
 const SHOW_SELF_ACTIONS = import.meta.env.VITE_NOTIFICATIONS_SHOW_SELF === 'true';
 

@@ -38,6 +38,7 @@ const CustomerSearch  = ({onSelect, onSelectCreate}: props) => {
         return (<Stack>
             <TextInput
                 label=""
+                id={'customerSearchInput'}
                 placeholder="Search for Customer"
                 rightSection={searchCustomersApi.loading ? <Loader size="sm" /> : searchCustomersApi.error ? <IconExclamationCircle color={'orange'}/> : null}
                 value={searchString}

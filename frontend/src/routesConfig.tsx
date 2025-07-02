@@ -21,7 +21,7 @@ import ReportPlaceholder from "src/pages/reports/ReportPlaceholder.tsx";
 import UserManagementPage from "src/pages/admin/UserManagementPage.tsx";
 import PackingView from "src/components/fillers/PackingView.tsx";
 import OrderItemListView from "src/components/fillers/OrderItemListView.tsx";
-import {SelectedOrderProvider} from "src/contexts/SelectedOrderContext.tsx";
+import {SelectedOrderProvider} from "src/context/SelectedOrderContext.tsx";
 import RunnerDashboard from "src/pages/dashboards/RunnerDashboard.tsx";
 import DistributorDashboard from "src/pages/dashboards/DistributorDashboard.tsx";
 import AdminSettingsPage from "src/pages/admin/AdminSettingsPage.tsx";
