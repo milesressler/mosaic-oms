@@ -10,6 +10,9 @@ jobs:
   e2e:
     runs-on: ubuntu-latest
     environment: prod       # ← this must match the name of your GitHub Environment
+    defaults:
+      run:
+        working-directory: frontend
     env:
       # these should be stored in your repository secrets
       PROD_URL: ${{ secrets.PROD_URL }}
@@ -25,16 +28,13 @@ jobs:
           node-version: 18
 
       - name: Install dependencies
-        working-directory: frontend
         run: npm ci
 
       - name: Install Playwright browsers     # ← add this
-        working-directory: frontend
         run: npx playwright install
 
       # 3. (If needed) regenerate auth state or ensure you have prod-storage.json
       - name: Capture Prod Auth State
-        working-directory: frontend
         run: npm run record:prod
 
       # 4. Run your Playwright suite against prod
