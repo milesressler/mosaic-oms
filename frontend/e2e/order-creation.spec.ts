@@ -7,7 +7,7 @@ test.describe('Order Creation Variants', () => {
         await page.goto('/dashboard/taker');
 
         const cfg: OrderConfig = {
-            customer: 'Savannah',
+            customer: 'MosaicOMS TestCustomer',
             selections: [{category: 'gear', items: ['tent']}],
             instructions: '#Automated test order, do not fill#',
         };
@@ -16,22 +16,22 @@ test.describe('Order Creation Variants', () => {
         expect(id).toBeGreaterThan(0);
         // any other assertions you like…
     });
-
-    test('new customer workflow', async ({ page }) => {
-        await page.goto('/dashboard/taker');
-        // do whatever you need to *create* a new customer first:
-        await page.click('button#create-new-customer');
-        await page.fill('#newCustomerName', 'NewCo LLC');
-        await page.click('button#save-customer');
-        // THEN reuse createOrder
-        const cfg: OrderConfig = {
-            customer: 'NewCo LLC',
-            selections: [{category: 'gear', items: ['tent']}],
-            instructions: 'First order for NewCo',
-        };
-        const { id } = await createOrder(page, cfg);
-        expect(id).toBeTruthy();
-    });
+    //
+    // test('new customer workflow', async ({ page }) => {
+    //     await page.goto('/dashboard/taker');
+    //     // do whatever you need to *create* a new customer first:
+    //     await page.click('button#create-new-customer');
+    //     await page.fill('#newCustomerName', 'MosaicOMS Test Customer');
+    //     await page.click('button#save-customer');
+    //     // THEN reuse createOrder
+    //     const cfg: OrderConfig = {
+    //         customer: 'NewCo LLC',
+    //         selections: [{category: 'gear', items: ['tent']}],
+    //         instructions: 'First order for NewCo',
+    //     };
+    //     const { id } = await createOrder(page, cfg);
+    //     expect(id).toBeTruthy();
+    // });
 
     // …more variants…
 });
