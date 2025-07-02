@@ -9,7 +9,7 @@ on:
 jobs:
   e2e:
     runs-on: ubuntu-latest
-
+    environment: prod       # ← this must match the name of your GitHub Environment
     env:
       # these should be stored in your repository secrets
       PROD_URL: ${{ secrets.PROD_URL }}
