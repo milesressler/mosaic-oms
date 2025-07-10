@@ -19,7 +19,7 @@ public class AdminFeatureController {
     final FeaturesService featuresService;
 
     @ResponseBody
-    @PutMapping(path = "/feature/orders", produces = MediaType.APPLICATION_JSON_VALUE)
+    @PutMapping(path = "/feature", produces = MediaType.APPLICATION_JSON_VALUE)
     public FeatureConfigResponse updateItem(
             @RequestBody final AdminUpdateFeatureConfigRequest request) {
         return featuresService.updateFeaturesConfig(request);
