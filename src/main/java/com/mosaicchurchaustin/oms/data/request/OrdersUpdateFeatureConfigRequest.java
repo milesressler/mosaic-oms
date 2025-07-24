@@ -15,6 +15,6 @@ public record OrdersUpdateFeatureConfigRequest(
 
     @Override
     public String printOnTransitionToStatus() {
-        return "";
+        return null;
     }
 }
