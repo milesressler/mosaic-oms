@@ -2,6 +2,7 @@ package com.mosaicchurchaustin.oms.controllers;
 
 import com.mosaicchurchaustin.oms.data.entity.order.OrderEntity;
 import com.mosaicchurchaustin.oms.data.entity.order.OrderHistoryEntity;
+import com.mosaicchurchaustin.oms.data.entity.order.OrderStatus;
 import com.mosaicchurchaustin.oms.data.request.CreateOrderRequest;
 import com.mosaicchurchaustin.oms.data.request.UpdateOrderRequest;
 import com.mosaicchurchaustin.oms.data.request.UpdateOrderStatusBulkRequest;
@@ -53,6 +54,17 @@ public class OrderController {
 //        } else {
             return OrderDetailResponse.from(orderEntity);
 //        }
+    }
+
+    @ResponseBody
+    @PostMapping(path = "/order/{uuid}/print/{state}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public OrderDetailResponse printOrderLabel(
+            @PathVariable("uuid") String uuid,
+            @PathVariable("state") String orderState
+    ) {
+        final OrderEntity orderEntity = orderService.getOrder(uuid);
+        orderNotifier.printOrder(orderEntity, OrderStatus.from(orderState));
+        return OrderDetailResponse.from(orderEntity);
     }
 
 

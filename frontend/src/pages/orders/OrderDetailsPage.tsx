@@ -3,14 +3,16 @@ import {Link, useNavigate, useParams} from 'react-router-dom';
 import useApi from 'src/hooks/useApi';
 import ordersApi from 'src/services/ordersApi';
 import {DateTime} from 'luxon';
+import { notifications } from '@mantine/notifications';
+
 import {
     Avatar,
     Badge,
     Button,
-    Card,
+    Card, Center,
     Container,
     Divider,
-    Group,
+    Group, Loader, LoadingOverlay,
     Menu, ScrollArea,
     Stack,
     Table,
@@ -38,6 +40,7 @@ const STATUS_COLORS: Record<string, string> = {
 
 export default function OrderDetailsPage() {
     const { id } = useParams();
+    const printOrder = useApi(ordersApi.print);
     const getOrder = useApi(ordersApi.getOrderById);
     const updateOrder = useApi(ordersApi.updateOrderStatus);
     const navigate = useNavigate();
@@ -50,6 +53,7 @@ export default function OrderDetailsPage() {
 
     const order = getOrder.data;
     const canEdit = order && [OrderStatus.PENDING_ACCEPTANCE, OrderStatus.NEEDS_INFO].indexOf(order.orderStatus) !== -1;
+    const canPrint = order && [OrderStatus.PACKED, OrderStatus.IN_TRANSIT].indexOf(order.orderStatus) !== -1;
 
     const cancel = () => {
         order && updateOrder.request(order.uuid, OrderStatus.CANCELLED)
@@ -63,6 +67,22 @@ export default function OrderDetailsPage() {
         order && navigate(`/dashboard/taker/${order.id}`);
     };
 
+    const reprint = () => {
+        if (order) {
+            printOrder.request(order.uuid, OrderStatus.PACKED).then(
+                (result) => {
+                    if (result?.data) {
+                        notifications.show({
+                            title: `New label printed`,
+                            message: null,
+                            autoClose: 3000,
+                        });
+                    }
+                }
+            )
+        }
+    }
+
     useEffect(() => {
         if (updateOrder.data) {
             getOrder.request(order!.id);
@@ -70,10 +90,10 @@ export default function OrderDetailsPage() {
     }, [updateOrder.data]);
 
     if (getOrder.loading) {
-        return <Text>Loading order details...</Text>;
+        return <Center><Loader></Loader></Center>;
     }
     if (!order) {
-        return <Text c="red">Order not found.</Text>;
+        return <Center><Text c="red">Order not found.</Text></Center>;
     }
 
     // Group items by category
@@ -100,6 +120,7 @@ export default function OrderDetailsPage() {
                         <Menu.Item onClick={cancel}>Cancel</Menu.Item>
                         <Menu.Item onClick={complete}>Mark Complete</Menu.Item>
                         <Menu.Item disabled={!canEdit} onClick={edit}>Edit</Menu.Item>
+                        <Menu.Item disabled={!canPrint} onClick={reprint}>Print Completed Label</Menu.Item>
                     </Menu.Dropdown>
                 </Menu>
             </Group>

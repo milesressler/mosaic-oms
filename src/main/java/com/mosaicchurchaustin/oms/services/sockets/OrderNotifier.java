@@ -50,7 +50,17 @@ public class OrderNotifier {
         this.messagingTemplate = messagingTemplate;
     }
 
+
     // Method to send a message
+    public void printOrder(final OrderEntity orderEntity, final OrderStatus orderStatus) {
+        var printingActions = Map.<OrderStatus, Consumer<OrderEntity>>of(
+                OrderStatus.PACKED, printingService::printPackedLabel,
+                OrderStatus.ACCEPTED, printingService::printAcceptedOrderLabel
+        );
+        Optional.ofNullable(printingActions.get(orderStatus))
+                        .ifPresent(action -> action.accept(orderEntity));
+    }
+
     public void notifyOrderCreated(final OrderEntity orderEntity) {
         final OrderNotification orderNotification = OrderNotification.builder()
                 .orderId(orderEntity.getId())
