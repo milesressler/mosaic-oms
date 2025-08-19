@@ -46,6 +46,7 @@ public class CustomerService {
         final var customer = customerRepository.findByUuid(uuid).orElseThrow(() -> new EntityNotFoundException(CustomerEntity.ENTITY_TYPE, uuid));
 
         Optional.ofNullable(request.flagged()).ifPresent(customer::setFlagged);
+        Optional.ofNullable(request.obfuscateName()).ifPresent(customer::setObfuscateName);
         Optional.ofNullable(request.showerWaiverSigned()).map(OffsetDateTime::toInstant).ifPresent(customer::setShowerWaiverCompleted);
         return customerRepository.save(customer);
     }

@@ -10,7 +10,7 @@ import {
     Loader,
     LoadingOverlay, Pill,
     Stack,
-    Stepper,
+    Stepper, Switch,
     Text,
     Textarea,
     TextInput,
@@ -70,11 +70,12 @@ export function OrderFormV2({ form, mode, order, onUpdateComplete }: Props) {
 
     }, [mode]);
 
-    const handleCreateNew = (first: string, last: string) => {
+    const handleCreateNew = (first: string, last: string, obfuscateName: boolean) => {
         form.setValues({
             customerId: '',
             firstName: first,
-            lastName: last
+            lastName: last,
+            obfuscateName: obfuscateName,
         });
         setUseCustomerSearch(false)
     }
@@ -117,6 +118,7 @@ export function OrderFormV2({ form, mode, order, onUpdateComplete }: Props) {
             const request: OrderRequest = {
                 customerFirstName: values.firstName,
                 customerLastName: values.lastName,
+                customerNameObfuscated: values.obfuscateName,
                 customerUuid: values.customerId,
                 customerPhone: values.customerPhone,
                 specialInstructions: values.specialInstructions || '',
@@ -182,6 +184,7 @@ export function OrderFormV2({ form, mode, order, onUpdateComplete }: Props) {
                  display: 'flex',
                  flexDirection: 'column',
                  minHeight: 0,               // let children shrink
+                 overflow: 'hidden',      // <-- scoped here (only this page)
              }}>
             <LoadingOverlay visible={createOrderAPI.loading} />
             <Stepper
@@ -244,6 +247,7 @@ export function OrderFormV2({ form, mode, order, onUpdateComplete }: Props) {
                             >
                                 <TextInput label="First Name" id='customerFirstInput' size={'lg'} {...form.getInputProps("firstName")} />
                                 <TextInput label="Last Name" id='customerLastInput' size={'lg'} {...form.getInputProps("lastName")} />
+                                <Switch label="Keep name hidden" id='obfuscatedInput' size={'lg'} {...form.getInputProps("obfuscateName")} />
                             </form>
                         )}
                     </>
@@ -309,7 +313,7 @@ export function OrderFormV2({ form, mode, order, onUpdateComplete }: Props) {
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'space-between',
-                    paddingBottom: 'env(safe-area-inset-bottom)',
+                    // paddingBottom: 'env(safe-area-inset-bottom)',
                     borderTop: `1px solid ${theme.colors.gray[2]}`,
                     backgroundColor: theme.white,
                 }}

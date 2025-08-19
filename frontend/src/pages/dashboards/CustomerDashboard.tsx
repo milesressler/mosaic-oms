@@ -18,7 +18,7 @@ const CustomerDashboard = () => {
     const refreshPercent = refreshInterval / 100;
     const pageParams = { size: 25 };
 
-    const getObfusgatedStatus = useCallback((status: OrderStatus) => {
+    const getObfuscatedStatus = useCallback((status: OrderStatus) => {
         const inProgressStatuses = [
             OrderStatus.ACCEPTED,
             OrderStatus.PACKING,
@@ -76,13 +76,14 @@ const CustomerDashboard = () => {
                                 <Table.Tr key={order.id}>
                                     <Table.Td>
                                         <Text fz={45}>
-                                            {order.customer?.firstName} {(order.customer?.lastName || '')?.[0]}
+                                            {order.customer?.obfuscatedName ? "Guest" :
+                                                <>{order.customer?.firstName} {(order.customer?.lastName || '')?.[0]}</>}
                                         </Text>
                                     </Table.Td>
                                     <Table.Td>
                                         <StatusBadge
                                             size="lg"
-                                            orderStatus={getObfusgatedStatus(order.orderStatus)}
+                                            orderStatus={getObfuscatedStatus(order.orderStatus)}
                                         />
                                     </Table.Td>
                                 </Table.Tr>

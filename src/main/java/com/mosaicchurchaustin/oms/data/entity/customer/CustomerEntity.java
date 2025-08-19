@@ -49,6 +49,9 @@ public class CustomerEntity extends BaseUuidEntity {
     @Column(name = "flagged")
     boolean flagged;
 
+    @Column(name = "obfuscate_name")
+    boolean obfuscateName;
+
     @Column(name = "shower_waiver_completed")
     Instant showerWaiverCompleted;
 

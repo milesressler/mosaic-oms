@@ -118,7 +118,7 @@ export function AppShellComponent() {
     return (
         <AppShell
             styles={{
-                root: { height: '100vh' },
+                root: { height: '100dvh' },
             }}
             header={{ height: headerIsVisible ? headerHeight : 0 }}
             navbar={{ width: isAuthenticated ? 250 : 0, breakpoint: 'md', collapsed: { mobile: !opened, desktop: !opened || activeRoute.isMonitor} }}

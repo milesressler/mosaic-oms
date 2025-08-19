@@ -38,6 +38,7 @@ public class OrderDetailResponse extends OrderResponse {
                                 .firstName(orderEntity.getCustomer().getFirstName())
                                 .lastName(orderEntity.getCustomer().getLastName())
                                 .uuid(orderEntity.getCustomer().getUuid())
+                                .obfuscatedName(orderEntity.getCustomer().isObfuscateName())
                                 .build()
                 )
                 .assignee(

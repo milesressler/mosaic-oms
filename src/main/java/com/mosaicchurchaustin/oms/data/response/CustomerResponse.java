@@ -21,12 +21,14 @@ public class CustomerResponse {
     private boolean waiverIsValid;
     private String uuid;
     private boolean flagged;
+    private boolean obfuscatedName;
 
     public static CustomerResponse from(final CustomerEntity customerEntity) {
         return CustomerResponse.builder()
                 .firstName(customerEntity.getFirstName())
                 .lastName(customerEntity.getLastName())
                 .flagged(customerEntity.isFlagged())
+                .obfuscatedName(customerEntity.isObfuscateName())
                 .displayName(Stream.of(customerEntity.getFirstName(), customerEntity.getLastName())
                         .filter(StringUtils::isNotBlank)
                         .collect(Collectors.joining(" ")))

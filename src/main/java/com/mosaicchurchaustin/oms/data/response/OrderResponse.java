@@ -43,6 +43,7 @@ public class OrderResponse {
                                 .firstName(orderEntity.getCustomer().getFirstName())
                                 .lastName(orderEntity.getCustomer().getLastName())
                                 .uuid(orderEntity.getCustomer().getUuid())
+                                .obfuscatedName(orderEntity.getCustomer().isObfuscateName())
                                 .build()
                 )
                 .build();
@@ -54,5 +55,6 @@ public class OrderResponse {
         private String firstName;
         private String lastName;
         private String uuid;
+        private Boolean obfuscatedName;
     }
 }

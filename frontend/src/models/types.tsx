@@ -71,6 +71,7 @@ export interface Customer {
     created: number
     showerWaiverCompleted: number
     flagged: boolean
+    obfuscatedName: boolean
 }
 
 export interface CustomerSearchResult {
@@ -154,6 +155,7 @@ export interface ItemRequest {
 export interface OrderRequest {
     customerFirstName?: string;
     customerLastName?: string;
+    customerNameObfuscated?: boolean;
     customerUuid?: string;
     customerPhone?: string;
     specialInstructions?: string;

@@ -15,6 +15,7 @@ import com.mosaicchurchaustin.oms.data.request.UpdateOrderItemRequest;
 import com.mosaicchurchaustin.oms.data.request.UpdateOrderRequest;
 import com.mosaicchurchaustin.oms.exception.EntityNotFoundException;
 import com.mosaicchurchaustin.oms.exception.InvalidRequestException;
+import com.mosaicchurchaustin.oms.repositories.CustomerRepository;
 import com.mosaicchurchaustin.oms.repositories.ItemRepository;
 import com.mosaicchurchaustin.oms.repositories.OrderHistoryRepository;
 import com.mosaicchurchaustin.oms.repositories.OrderItemRepository;
@@ -43,6 +44,9 @@ public class OrderService {
 
     @Autowired
     OrderRepository orderRepository;
+
+    @Autowired
+    CustomerRepository customerRepository;
 
     @Autowired
     ItemRepository itemRepository;
@@ -284,6 +288,12 @@ public class OrderService {
                 request.customerUuid(),
                 request.customerFirstName(),
                 request.customerLastName());
+
+        if(request.customerNameObfuscated() != null) {
+            customer.setObfuscateName(request.customerNameObfuscated());
+            customerRepository.save(customer);
+        }
+
 
         final Boolean optInNotifications = request.optInNotifications() != null && request.optInNotifications();
         final OrderEntity orderEntity = orderRepository.save(OrderEntity.builder()

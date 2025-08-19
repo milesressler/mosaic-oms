@@ -34,6 +34,7 @@ export interface OrderFormValues {
     customerId?: string;
     firstName: string;
     lastName: string;
+    obfuscateName?: boolean;
     customerPhone: string;
     specialInstructions?: string | null;
     optInNotifications?: boolean | null;

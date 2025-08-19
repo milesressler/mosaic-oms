@@ -81,6 +81,10 @@ const CustomerDetailPage = () => {
         updateCustomerRequest.request(customer!.uuid, {flagged: checked});
     }
 
+    const updateHiddenName = (checked: boolean) => {
+        updateCustomerRequest.request(customer!.uuid, {obfuscateName: checked});
+    }
+
     if (customerRequest.loading) {
         return <Skeleton height={200} />;
     }
@@ -139,6 +143,9 @@ const CustomerDetailPage = () => {
                                 <Text size="sm" fw={500} >
                                     Flagged
                                 </Text>
+                                <Text size="sm" fw={500} >
+                                    Keep name private
+                                </Text>
                             </Grid.Col>
                             <Grid.Col span={6}>
                                 <Group justify="flex-end">
@@ -151,6 +158,20 @@ const CustomerDetailPage = () => {
                                         checked={customer.flagged}
                                         onChange={(e) =>
                                             updateEligibility(e.currentTarget.checked)
+                                        }
+                                    />
+                                </Tooltip>
+                                </Group>
+                                <Group justify="flex-end">
+                                <Tooltip
+                                    label="Toggle this if the friend prefers their name hidden from the dashboard"
+                                    withArrow
+                                >
+                                    <Switch
+                                        size="md"
+                                        checked={customer.obfuscatedName}
+                                        onChange={(e) =>
+                                            updateHiddenName(e.currentTarget.checked)
                                         }
                                     />
                                 </Tooltip>
