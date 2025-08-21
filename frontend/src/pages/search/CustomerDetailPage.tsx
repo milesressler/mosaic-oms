@@ -10,10 +10,11 @@ import {
     Skeleton,
     Stack, Switch,
     Text,
+    TextInput,
     Tooltip,
     useMantineTheme,
 } from '@mantine/core';
-import {IconBath, IconEdit, IconShoppingCart, IconUser} from '@tabler/icons-react';
+import {IconBath, IconCheck, IconEdit, IconPencil, IconShoppingCart, IconUser, IconX} from '@tabler/icons-react';
 import {useNavigate, useParams} from 'react-router-dom';
 import {useEffect, useState} from 'react';
 import { DateTime } from 'luxon';
@@ -37,6 +38,51 @@ const CustomerDetailPage = () => {
     const [isEditingWaiver, setIsEditingWaiver] = useState(false);
     const [waiverDate, setWaiverDate] = useState<Date>(new Date());
     const navigate = useNavigate();
+
+    const [isEditingName, setIsEditingName] = useState(false);
+    const [firstNameDraft, setFirstNameDraft] = useState(customer?.firstName ?? '');
+    const [lastNameDraft, setLastNameDraft] = useState(customer?.lastName ?? '');
+
+    useEffect(() => {
+        setFirstNameDraft(customer?.firstName ?? '');
+        setLastNameDraft(customer?.lastName ?? '');
+    }, [customer]);
+    const startEditName = () => {
+        setFirstNameDraft(customer!.firstName ?? '');
+        setLastNameDraft(customer!.lastName ?? '');
+        setIsEditingName(true);
+    };
+
+    const cancelEditName = () => {
+        setIsEditingName(false);
+        setFirstNameDraft(customer!.firstName ?? '');
+        setLastNameDraft(customer!.lastName ?? '');
+    };
+
+    const saveName = async () => {
+        const first = firstNameDraft.trim();
+        const last = lastNameDraft.trim();
+        if (!first || !last) return; // optional validation
+
+        const prevFirst = customer!.firstName;
+        const prevLast = customer!.lastName;
+
+        // optimistic update
+        setCustomer({ ...customer!, firstName: first, lastName: last });
+
+        try {
+            await updateCustomerRequest.request(customer!.uuid, {
+                firstName: first,
+                lastName: last,
+            });
+            setIsEditingName(false);
+        } catch {
+            // rollback on error if you want
+            setCustomer({ ...customer!, firstName: prevFirst, lastName: prevLast });
+        }
+    };
+
+
 
     const handleStartEdit = () => {
         setIsEditingWaiver(true);
@@ -120,12 +166,62 @@ const CustomerDetailPage = () => {
                                 customer.flagged ? '#fff4f4' : '#f9f9fb',
                         }}
                     >
-                        <Group>
-                            <IconUser size={18} />
-                            <Text fw={600} size="sm">
-                                {customer.displayName}
-                            </Text>
+                        <Group justify="space-between" wrap="nowrap">
+                            <Group gap="xs">
+                                <IconUser size={18} />
+                                {!isEditingName ? (
+                                    <Text fw={600} size="sm">
+                                        {customer.firstName} {customer.lastName}
+                                    </Text>
+                                ) : (
+                                    <Group gap="xs" align="flex-end">
+                                        <TextInput
+                                            size="xs"
+                                            label="First"
+                                            value={firstNameDraft}
+                                            onChange={(e) => setFirstNameDraft(e.currentTarget.value)}
+                                            style={{ maxWidth: 140 }}
+                                        />
+                                        <TextInput
+                                            size="xs"
+                                            label="Last"
+                                            value={lastNameDraft}
+                                            onChange={(e) => setLastNameDraft(e.currentTarget.value)}
+                                            style={{ maxWidth: 140 }}
+                                        />
+                                        <ActionIcon
+                                            size="sm"
+                                            variant="subtle"
+                                            aria-label="Save"
+                                            onClick={saveName}
+                                        >
+                                            <IconCheck size={14} />
+                                        </ActionIcon>
+                                        <ActionIcon
+                                            size="sm"
+                                            variant="subtle"
+                                            aria-label="Cancel"
+                                            onClick={cancelEditName}
+                                        >
+                                            <IconX size={14} />
+                                        </ActionIcon>
+                                    </Group>
+                                )}
+
+                            </Group>
+
+                            {!isEditingName && (
+                                <ActionIcon
+                                    size="sm"
+                                    variant="light"
+                                    aria-label="Edit name"
+                                    onClick={startEditName}
+                                >
+                                    <IconPencil size={'md'} />
+                                </ActionIcon>
+                            )}
                         </Group>
+
                         <Divider my={'xs'}/>
                         <Grid gutter="xs" align="center">
                             <Grid.Col span={6}>

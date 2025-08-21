@@ -14,6 +14,8 @@ const updateCustomer = (uuid: string,  body: {
     showerWaiverSigned?: Date,
     flagged?: boolean,
     obfuscateName?: boolean,
+    firstName?: string,
+    lastName?: string,
 }) =>
     client.put<Customer>(`/customer/${uuid}`, body);
 

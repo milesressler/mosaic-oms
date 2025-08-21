@@ -8,6 +8,8 @@ import java.time.OffsetDateTime;
 public record UpdateCustomerRequest(
         Boolean flagged,
         Boolean obfuscateName,
-        OffsetDateTime showerWaiverSigned
+        OffsetDateTime showerWaiverSigned,
+        String firstName,
+        String lastName
 ){
 }
