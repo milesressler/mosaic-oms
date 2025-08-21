@@ -1,11 +1,11 @@
-import { Box, Button, Card, Divider, Group, Stack, Table, Text, Title } from "@mantine/core";
+import { Box, Button, Card, Divider, Group, Menu, Stack, Table, Text, Title} from "@mantine/core";
 import useApi from "src/hooks/useApi";
 import showersApi from "src/services/showersApi";
 import { useEffect, useState } from "react";
 import { DateTime } from "luxon";
 import { ReservationStatus, StallStatus } from "src/models/types";
 import AddToShowerQueueModal from "src/components/showers/AddToShowerQueueModal";
-import { IconUserPlus } from "@tabler/icons-react";
+import {IconChevronDown, IconUserPlus} from "@tabler/icons-react";
 
 export function ShowersDashboard() {
     const getShowersApi = useApi(showersApi.getShowerQueue);
@@ -152,7 +152,7 @@ export function ShowersDashboard() {
                 <Table.Thead>
                     <Table.Tr>
                         <Table.Th>Name</Table.Th>
-                        <Table.Th>Estimated Start</Table.Th>
+                        <Table.Th>Ready in:</Table.Th>
                         <Table.Th>Actions</Table.Th>
                     </Table.Tr>
                 </Table.Thead>
@@ -169,33 +169,95 @@ export function ShowersDashboard() {
                                 <Table.Td>{entry.customer.displayName}</Table.Td>
                                 <Table.Td>{entry.readyNow ? 'Now' : DateTime.fromISO(entry.estimatedStart).toRelative({ base: now })}</Table.Td>
                                 <Table.Td>
-                                    <Group>
-                                    {firstAvailableStall != null && (
+                                    <Group justify="space-between" w="100%">
+                                        {(() => {
+                                            const availableStalls = stalls
+                                                .filter((s) => !s.reservation)
+                                                .map((s) => s.stallNumber)
+                                                .sort((a, b) => a - b); // optional: stable order
+
+                                            if (availableStalls.length === 1) {
+                                                const only = availableStalls[0];
+                                                return (
+                                                    <Button
+                                                        size="xs"
+                                                        variant="light"
+                                                        onClick={async () => {
+                                                            await showersApi.showerReady(entry.uuid, only);
+                                                            await getShowersApi.request();
+                                                        }}
+                                                    >
+                                                        Assign to Stall #{only}
+                                                    </Button>
+                                                );
+                                            }
+
+                                            if (availableStalls.length >= 2) {
+                                                const defaultStall = availableStalls[0]; // or choose your heuristic
+                                                return (
+                                                    <Button.Group>
+                                                        <Button
+                                                            size="xs"
+                                                            variant="light"
+                                                            onClick={async () => {
+                                                                await showersApi.showerReady(entry.uuid, defaultStall);
+                                                                await getShowersApi.request();
+                                                            }}
+                                                        >
+                                                            Auto-assign
+                                                        </Button>
+
+                                                        <Menu position="bottom-end" shadow="md" withinPortal>
+                                                            <Menu.Target>
+                                                                <Button
+                                                                    size="xs"
+                                                                    variant="light"
+                                                                    style={{
+                                                                        borderTopLeftRadius: 0,
+                                                                        borderBottomLeftRadius: 0
+                                                                    }}
+                                                                >
+                                                                    <IconChevronDown size={14} />
+                                                                </Button>
+                                                            </Menu.Target>
+                                                            <Menu.Dropdown>
+                                                                {availableStalls.map((stallNo) => (
+                                                                    <Menu.Item
+                                                                        key={stallNo}
+                                                                        onClick={async () => {
+                                                                            await showersApi.showerReady(entry.uuid, stallNo);
+                                                                            await getShowersApi.request();
+                                                                        }}
+                                                                    >
+                                                                        Stall #{stallNo}
+                                                                    </Menu.Item>
+                                                                ))}
+                                                            </Menu.Dropdown>
+                                                        </Menu>
+                                                    </Button.Group>
+
+                                                );
+                                            }
+
+                                            // no open stalls
+                                            return null;
+                                        })()}
+
+
                                         <Button
                                             size="xs"
-                                            variant="light"
+                                            variant="outline"
+                                            color="red"
                                             onClick={async () => {
-                                                if (firstAvailableStall != null) {
-                                                    await showersApi.showerReady(entry.uuid, firstAvailableStall);
-                                                    await getShowersApi.request();
-                                                }
+                                                await showersApi.cancelReservation(entry.uuid);
+                                                await getShowersApi.request();
                                             }}
                                         >
-                                            Assign to Open Stall
+                                            Cancel
                                         </Button>
-                                    )}
-                                    <Button
-                                        size="xs"
-                                        variant="light"
-                                        onClick={async () => {
-                                            await showersApi.cancelReservation(entry.uuid);
-                                            await getShowersApi.request();
-                                        }}
-                                    >
-                                        Cancel
-                                    </Button>
                                     </Group>
                                 </Table.Td>
+
                             </Table.Tr>
                         ))
                     )}
