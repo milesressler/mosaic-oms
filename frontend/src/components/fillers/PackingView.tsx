@@ -127,14 +127,21 @@ function PackingView() {
 
             <Group justify="space-between" gap={2}>
                 <Group gap="xs">
-                    <Button variant="light" onClick={clearAll}>Clear All</Button>
-                    <Button variant="light" onClick={fillAll}>Fill All</Button>
+                    <Button variant="light"
+                            disabled={!assignedToMe}
+                            onClick={clearAll}>Clear All</Button>
+                    <Button variant="light"
+                            disabled={!assignedToMe}
+                            onClick={fillAll}>Fill All</Button>
                 </Group>
                 <Group>
                     {hasStateChanged ? (
-                        <Button onClick={saveProgress}>Save Progress</Button>
+                        <Button
+                            disabled={!assignedToMe}
+                            onClick={saveProgress}>Save Progress</Button>
                     ) : (
                         <Button
+                            disabled={!assignedToMe}
                             onClick={moveToWagon}
                             leftSection={printOnTransitionToStatus === OrderStatus.PACKED && <IconPrinter />}
                         >
