@@ -5,7 +5,7 @@ interface props {
     user: { name: string; avatar?: string } | BasicUser;
 }
 
-export const UserAvatar = ({ user }: props) => {
+export const    UserAvatar = ({ user }: props) => {
     return (
         <Box
             style={{

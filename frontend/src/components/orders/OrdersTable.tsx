@@ -183,16 +183,16 @@ export function OrdersTable({
              return (
                 <Table.Td key={key} colSpan={index === visibleColumns.length - 1 ? 2 : 1}>
                     {key === 'assigned' &&
-                        <AssigneeAvatar assigned={assigned}/>
+                        <UserAvatar user={assigned ? assigned : {name: "Unassigned"}}/>
                     }
-                    {key === 'Order #' && <>{order.id}{order.postedToGroupMe && <Image w={16} h={16} src={groupmeImage}></Image>}</>}
+                    {key === '#' && <>{order.id}{order.postedToGroupMe && <Image w={16} h={16} src={groupmeImage}></Image>}</>}
                     {key === 'Created' && <>
                         <Text size={'sm'}>{DateTime.fromISO(order.created).toLocaleString(DateTime.TIME_SIMPLE)}</Text>
                         <Text c={"dimmed"} size={'xs'}>{DateTime.fromISO(order.created).toLocaleString(DateTime.DATE_MED)}</Text>
                     </>}
                     {key === 'Updated' && <Text c={'dimmed'}>{DateTime.fromISO(order.lastStatusChange?.timestamp).toRelative()}</Text>}
                     {key === 'Status' && <div>
-                        <StatusBadge orderStatus={order.orderStatus} />
+                        <StatusBadge variant={'outline'} orderStatus={order.orderStatus} />
                         <Text c={'dimmed'} size={'xs'}>{DateTime.fromISO(order.lastStatusChange?.timestamp).toRelative()}</Text>
                     </div>}
                     {key === 'filler' &&
