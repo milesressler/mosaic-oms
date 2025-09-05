@@ -1,6 +1,6 @@
 import { ActionIcon, Badge, Box } from '@mantine/core';
 import { IconMessageCircle } from '@tabler/icons-react';
-import { useEffect } from 'react';
+import { useEffect, memo } from 'react';
 import { useChat } from 'src/context/ChatContext';
 
 interface ChatIconWithNotificationsProps {
@@ -9,7 +9,7 @@ interface ChatIconWithNotificationsProps {
   size?: number;
 }
 
-export default function ChatIconWithNotifications({ 
+const ChatIconWithNotifications = memo(function ChatIconWithNotifications({ 
   asideOpened, 
   onToggle, 
   size = 18 
@@ -60,4 +60,6 @@ export default function ChatIconWithNotifications({
       )}
     </Box>
   );
-}
+});
+
+export default ChatIconWithNotifications;
