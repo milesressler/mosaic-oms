@@ -47,6 +47,9 @@ export function ChatProvider({ children, isOpen }: ChatProviderProps) {
   const [messages, setMessages] = useState<ChatMessageResponse[]>([]);
   const [participants, setParticipants] = useState<ChatParticipant[]>([]);
   
+  // Message deduplication - track all processed message IDs
+  const [processedMessageIds] = useState(new Set<string>());
+  
   // Unread counts
   const [globalUnreadCount, setGlobalUnreadCount] = useState(0);
   const [dmUnreadCount, setDmUnreadCount] = useState(0);
@@ -61,6 +64,42 @@ export function ChatProvider({ children, isOpen }: ChatProviderProps) {
     setGlobalUnreadCount(0);
     setDmUnreadCount(0);
   }, []);
+
+  // Helper functions for message deduplication
+  const addMessage = useCallback((newMessage: ChatMessageResponse) => {
+    // Check if we've already processed this message
+    if (processedMessageIds.has(newMessage.id)) {
+      console.log('Message already processed, skipping:', newMessage.id);
+      return false;
+    }
+
+    // Mark message as processed
+    processedMessageIds.add(newMessage.id);
+    
+    setMessages(prev => {
+      // If this is our own message, replace any temp message with matching UUID
+      if (newMessage.sender.externalId === user?.sub) {
+        // Find and replace temp message by looking for recent temp messages
+        const tempMessageIndex = prev.findIndex(m => 
+          m.uuid.startsWith('temp-') && 
+          m.sender.externalId === user.sub &&
+          m.content === newMessage.content
+        );
+        
+        if (tempMessageIndex !== -1) {
+          console.log('Replacing temp message with WebSocket message:', prev[tempMessageIndex].uuid);
+          const updated = [...prev];
+          updated[tempMessageIndex] = newMessage;
+          return updated;
+        }
+      }
+      
+      // Otherwise just add the new message
+      return [...prev, newMessage];
+    });
+    
+    return true;
+  }, [user?.sub, processedMessageIds]);
 
   // Clear unread counts when chat becomes visible
   useEffect(() => {
@@ -83,40 +122,9 @@ export function ChatProvider({ children, isOpen }: ChatProviderProps) {
         return;
       }
       
-      // Update messages if on global tab
+      // Update messages if on global tab using improved deduplication
       if (activeTab === 'global') {
-        setMessages(prev => {
-          // Check if this message already exists (avoid duplicates)
-          if (prev.some(m => m.id === notification.message.id)) {
-            console.log('Duplicate global message ignored:', notification.message.id);
-            return prev;
-          }
-          
-          // If this is our own message, merge with or replace any temp messages
-          if (notification.message.sender.externalId === user.sub) {
-            const messageTime = new Date(notification.message.createdAt).getTime();
-            const filtered = prev.filter(m => {
-              // Keep all non-temp messages
-              if (!m.uuid.startsWith('temp-')) return true;
-              
-              // Remove temp messages that match this real message (content + timing)
-              const tempTime = new Date(m.createdAt).getTime();
-              const timeDiff = Math.abs(messageTime - tempTime);
-              const contentMatches = m.content === notification.message.content;
-              const timeMatches = timeDiff < 10000; // Within 10 seconds
-              
-              if (contentMatches && timeMatches) {
-                console.log('Replacing temp message with WebSocket message:', m.uuid);
-                return false;
-              }
-              return true;
-            });
-            return [...filtered, notification.message];
-          } else {
-            // For messages from others, just add if not duplicate
-            return [...prev, notification.message];
-          }
-        });
+        addMessage(notification.message);
       }
       
       // Update unread count if chat is closed and not our message
@@ -144,34 +152,8 @@ export function ChatProvider({ children, isOpen }: ChatProviderProps) {
     if (activeTab === 'dm' && selectedParticipant && 
         (notification.message.sender.externalId === selectedParticipant.externalId || 
          notification.message.recipient?.externalId === selectedParticipant.externalId)) {
-      // Currently viewing this conversation - add message to current view
-      setMessages(prev => {
-        // Check if this message already exists (avoid duplicates)
-        if (prev.some(m => m.id === notification.message.id)) {
-          return prev;
-        }
-        
-        // If this is our own message, remove any temp messages with similar content and timestamp
-        if (notification.message.sender.externalId === user?.sub) {
-          const messageTime = new Date(notification.message.createdAt).getTime();
-          const filtered = prev.filter(m => {
-            // Keep all non-temp messages and temp messages that don't match
-            if (!m.uuid.startsWith('temp-')) return true;
-            
-            // Remove temp messages that are ours and have similar content/timing (within 10 seconds)
-            const tempTime = new Date(m.createdAt).getTime();
-            const timeDiff = Math.abs(messageTime - tempTime);
-            const contentMatches = m.content === notification.message.content;
-            const timeMatches = timeDiff < 10000; // Within 10 seconds
-            
-            return !(contentMatches && timeMatches);
-          });
-          return [...filtered, notification.message];
-        } else {
-          // For messages from others, just add if not duplicate
-          return [...prev, notification.message];
-        }
-      });
+      // Currently viewing this conversation - add message using improved deduplication
+      addMessage(notification.message);
     } else if (isFromOtherUser) {
       // Message from someone else not currently viewing - increment unread count
       const senderExternalId = notification.message.sender.externalId;
