@@ -1,0 +1,20 @@
+CREATE TABLE chat_messages (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    created DATETIME(6) NULL,
+    updated DATETIME(6) NULL,
+    uuid VARCHAR(255) NULL,
+    sender_id BIGINT NOT NULL,
+    recipient_id BIGINT NULL,
+    content VARCHAR(1000) NOT NULL,
+    message_type VARCHAR(20) NOT NULL DEFAULT 'TEXT',
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    is_edited BOOLEAN NOT NULL DEFAULT FALSE,
+    edited_at TIMESTAMP NULL,
+    UNIQUE KEY UK_chat_messages_uuid (uuid),
+    KEY FK_chat_messages_sender (sender_id),
+    KEY FK_chat_messages_recipient (recipient_id),
+    KEY IDX_chat_messages_created_at (created_at),
+    KEY IDX_chat_messages_global (recipient_id, created_at),
+    CONSTRAINT FK_chat_messages_sender FOREIGN KEY (sender_id) REFERENCES users (id),
+    CONSTRAINT FK_chat_messages_recipient FOREIGN KEY (recipient_id) REFERENCES users (id)
+);

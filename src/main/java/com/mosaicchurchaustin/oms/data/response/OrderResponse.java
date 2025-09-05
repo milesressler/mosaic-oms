@@ -23,6 +23,7 @@ public class OrderResponse {
     private Long id;
     private String uuid;
     private Customer customer;
+    private UserResponse assignee;
     private OrderStatus orderStatus;
 
     public static OrderResponse from(final OrderEntity orderEntity) {

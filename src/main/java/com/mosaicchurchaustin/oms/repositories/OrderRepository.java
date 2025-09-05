@@ -2,6 +2,7 @@ package com.mosaicchurchaustin.oms.repositories;
 
 import com.mosaicchurchaustin.oms.data.entity.order.OrderEntity;
 import com.mosaicchurchaustin.oms.data.entity.order.OrderStatus;
+import com.mosaicchurchaustin.oms.data.projections.OrderPreviewProjection;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -37,4 +38,13 @@ public interface OrderRepository extends JpaRepository<OrderEntity, Long>, JpaSp
             "END, " +
             "o.created ASC")
     List<OrderEntity> findOrdersForDashboard();
+
+    @Query("SELECT o.id as id, o.orderStatus as orderStatus, " +
+           "c.firstName as customerFirstName, c.lastName as customerLastName, " +
+           "u.name as assigneeName, u.uuid as assigneeUuid " +
+           "FROM OrderEntity o " +
+           "LEFT JOIN o.customer c " +
+           "LEFT JOIN o.assignee u " +
+           "WHERE o.id IN :orderIds")
+    List<OrderPreviewProjection> findOrderPreviewsByIds(List<Long> orderIds);
 }

@@ -1,18 +1,16 @@
-import {Divider, Group, Title} from "@mantine/core";
-import ActivityFeed from "src/components/layout/aside/ActivityFeed.tsx";
-import useApi from "src/hooks/useApi.tsx";
-import activityFeed from "src/components/layout/aside/ActivityFeed.tsx";
-import ordersApi from "src/services/ordersApi.tsx";
-import {useEffect} from "react";
+import ChatSidebar from "src/components/chat/ChatSidebar.tsx";
 
 export function AsideContent() {
     return(
-    <div style={{padding: '7px'}}>
-        <Group justify="space-between">
-            <Title>Activity</Title>
-        </Group>
-        <Divider style={{marginTop: "5px", marginBottom: '5px'}}></Divider>
-        <ActivityFeed/>
+    <div style={{
+        padding: '7px', 
+        height: '100%', 
+        display: 'flex', 
+        flexDirection: 'column',
+        minHeight: 0,
+        overflow: 'hidden'
+    }}>
+        <ChatSidebar isOpen={true} onClose={() => {}} embedded={true} />
     </div>);
 }
 export default AsideContent;

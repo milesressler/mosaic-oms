@@ -1,4 +1,4 @@
-import {AppShell, Burger, DEFAULT_THEME, Group} from "@mantine/core";
+import {AppShell, Burger, DEFAULT_THEME, Group, Box} from "@mantine/core";
 import AppShellNavBar from "src/components/layout/navbar/AppShellNavBar.tsx";
 import {Link, matchPath, Route, Routes, useLocation} from "react-router-dom";
 import {AuthenticationGuard} from "src/components/auth0/AuthenticationGuard.tsx";
@@ -18,6 +18,7 @@ import { SelectedOrderProvider} from "src/context/SelectedOrderContext.tsx";
 import NotificationsHandler from "src/components/notifications/NotificationsHandler.tsx";
 import {DeviceLogoutButton} from "src/components/admin/devices/DeviceLogoutButton.tsx";
 import {usePageTracking} from "src/hooks/usePageTracking.tsx";
+import ChatIconWithNotifications from "src/components/chat/ChatIconWithNotifications.tsx";
 
 const mappedRoutes = routes.flatMap((route: any) => route.children || [route]).map((route) => {
     const Element = route.public
@@ -162,15 +163,27 @@ export function AppShellComponent() {
                                 {!isAuthenticated && <LoginButton></LoginButton>}
                                 <DeviceLogoutButton/>
 
-                            { isAuthenticated && <Burger opened={asideOpened} size="sm"   onClick={() => {
-                                asideHandler.toggle()
-                                close();
-                            }}/> }
+                            { isAuthenticated && <ChatIconWithNotifications
+                                asideOpened={asideOpened}
+                                onToggle={() => {
+                                    asideHandler.toggle()
+                                    close();
+                                }}
+                                size={18}
+                            /> }
                         </Group> }
-                        { isAuthenticated && <Burger opened={asideOpened} onClick={() => {
-                            asideHandler.toggle()
-                            close();
-                        }} size="sm" hiddenFrom={'md'} /> }
+                        { isAuthenticated && 
+                            <Box hiddenFrom={'md'}>
+                                <ChatIconWithNotifications
+                                    asideOpened={asideOpened}
+                                    onToggle={() => {
+                                        asideHandler.toggle()
+                                        close();
+                                    }}
+                                    size={18}
+                                />
+                            </Box>
+                        }
 
 
 

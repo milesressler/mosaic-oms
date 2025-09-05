@@ -4,6 +4,8 @@ import com.mosaicchurchaustin.oms.data.entity.user.UserEntity;
 import lombok.Builder;
 import lombok.Getter;
 
+import java.time.Instant;
+
 @Builder
 @Getter
 public class UserResponse {
@@ -11,6 +13,10 @@ public class UserResponse {
     private String uuid;
     private String externalId;
     private String avatar;
+    private String lastMessageContent;
+    private Instant lastMessageTime;
+    private Boolean lastMessageFromMe;
+    private Boolean isOnline;
 
     public static UserResponse from(final UserEntity userEntity) {
         return UserResponse.builder()

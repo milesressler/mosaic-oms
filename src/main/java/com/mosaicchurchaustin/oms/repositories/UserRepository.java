@@ -11,6 +11,7 @@ import java.util.stream.Stream;
 @Repository
 public interface UserRepository extends JpaRepository<UserEntity, Long> {
     Optional<UserEntity> findByExternalId(String externalId);
+    Optional<UserEntity> findByUuid(String uuid);
     Stream<UserEntity> findBySource(UserSource userSource);
 
 }
