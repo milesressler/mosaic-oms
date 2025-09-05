@@ -1,6 +1,5 @@
 import {
   ActionIcon,
-  Badge,
   Box,
   Button,
   Divider,
@@ -10,18 +9,16 @@ import {
   ScrollArea,
   Stack,
   Text,
-  Textarea,
-  UnstyledButton,
 } from '@mantine/core';
-import { IconMessageCircle, IconSend, IconX, IconUsers } from '@tabler/icons-react';
+import { IconMessageCircle, IconX, IconUsers } from '@tabler/icons-react';
 import { useState, useEffect, useRef } from 'react';
 import { useAuth0 } from '@auth0/auth0-react';
 import chatApi from 'src/services/chatApi';
-import { ChatMessageResponse } from 'src/models/chat';
-import {AssigneeAvatar} from 'src/components/orders/AssigneeAvatar';
-import { DateTime } from 'luxon';
-import OrderPreview from './OrderPreview';
+import { ChatMessageResponse, ChatParticipant } from 'src/models/chat';
 import OrderTaggingTip from './OrderTaggingTip';
+import MessageBubble from './MessageBubble';
+import MessageInput from './MessageInput';
+import ParticipantList from './ParticipantList';
 import { useChat } from 'src/context/ChatContext';
 
 interface ChatSidebarProps {
@@ -135,190 +132,30 @@ export default function
 
   // WebSocket subscriptions are now handled by ChatContext
 
-  const shouldGroupWithPrevious = (currentMessage: ChatMessageResponse, prevMessage: ChatMessageResponse | undefined): boolean => {
-    if (!prevMessage) return false;
-    
-    const isSameSender = currentMessage.sender.externalId === prevMessage.sender.externalId;
-    const currentTime = new Date(currentMessage.createdAt).getTime();
-    const prevTime = new Date(prevMessage.createdAt).getTime();
-    const timeDiff = currentTime - prevTime;
-    const withinGroupingWindow = timeDiff < 5 * 60 * 1000; // 5 minutes
-    
-    return isSameSender && withinGroupingWindow;
-  };
-
-  const shouldShowTimestamp = (currentMessage: ChatMessageResponse, nextMessage: ChatMessageResponse | undefined): boolean => {
-    if (!nextMessage) return true; // Always show on last message
-    return !shouldGroupWithPrevious(nextMessage, currentMessage);
-  };
-
-  const formatTime = (timestamp: string): string => {
-    return DateTime.fromISO(timestamp).toFormat('h:mm a');
-  };
-
   const renderMessage = (message: ChatMessageResponse, index: number) => {
     const isOwnMessage = message.sender.externalId === user?.sub;
-    const prevMessage = index > 0 ? messages[index - 1] : undefined;
-    const nextMessage = index < messages.length - 1 ? messages[index + 1] : undefined;
-    const isGrouped = shouldGroupWithPrevious(message, prevMessage);
-    const showTimestamp = shouldShowTimestamp(message, nextMessage);
     
     return (
-      <Box
+      <MessageBubble
         key={message.id}
-        mt={!isGrouped ? "xs" : 2}
-        style={{ width: '100%' }}
-      >
-        <Flex
-          direction="row"
-          gap="xs"
-          align="flex-start"
-          w="100%"
-        >
-          {/* Avatar area - always present for consistent spacing */}
-          {!isOwnMessage && (
-            <Box style={{ width: '32px', height: '32px', flexShrink: 0 }}>
-              {!isGrouped && <AssigneeAvatar assigned={message.sender} />}
-            </Box>
-          )}
-          
-          {/* Message content area */}
-          <Flex 
-            direction="column" 
-            style={{ 
-              flex: 1, 
-              minWidth: 0,
-              alignItems: isOwnMessage ? 'flex-end' : 'flex-start'
-            }}
-          >
-            {/* Show name only on first message of group in global chat */}
-            {!isOwnMessage && activeTab === 'global' && !isGrouped && (
-              <Text size="xs" fw={600} mb={2} c="dimmed" style={{ alignSelf: 'flex-start' }}>
-                {message.sender.name}
-              </Text>
-            )}
-            
-            {/* Message bubble */}
-            <Box
-              style={{
-                maxWidth: '75%',
-                background: isOwnMessage ? 'var(--mantine-color-blue-6)' : 'var(--mantine-color-gray-1)',
-                color: isOwnMessage ? 'white' : 'inherit',
-                borderRadius: '8px',
-                padding: '4px 8px',
-                wordBreak: 'break-word'
-              }}
-            >
-              <Text size="sm">
-                {message.content}
-              </Text>
-            </Box>
-            
-            {/* Order references */}
-            {message.orderDetails && message.orderDetails.length > 0 && (
-              <Stack gap="xs" mt="xs" style={{ alignSelf: isOwnMessage ? 'flex-end' : 'flex-start', maxWidth: '75%' }}>
-                {message.orderDetails.map(order => (
-                  <OrderPreview key={order.id} order={order} />
-                ))}
-              </Stack>
-            )}
-          </Flex>
-          
-          {/* Your message avatar area - for symmetry */}
-          {isOwnMessage && (
-            <Box style={{ width: '32px', height: '32px', flexShrink: 0 }}>
-              {!isGrouped && <AssigneeAvatar assigned={message.sender} />}
-            </Box>
-          )}
-        </Flex>
-        
-        {/* Timestamp - always right aligned */}
-        {showTimestamp && (
-          <Flex justify="flex-end" mt="2px">
-            <Text size="xs" c="dimmed">
-              {formatTime(message.createdAt)}
-            </Text>
-          </Flex>
-        )}
-      </Box>
+        message={message}
+        isOwnMessage={isOwnMessage}
+        messages={messages}
+        index={index}
+        isGlobalChat={activeTab === 'global'}
+        currentUserExternalId={user?.sub}
+      />
     );
   };
 
-  const renderParticipantList = () => (
-    <Stack gap="xs">
-      {participants.map(participant => {
-        const unreadCount = participantUnreadCount[participant.externalId] || 0;
-        return (
-          <UnstyledButton
-            key={participant.uuid}
-            p="xs"
-            bg={selectedParticipant?.uuid === participant.uuid ? 'blue.0' : undefined}
-            onClick={() => {
-              setSelectedParticipant(participant);
-              // Clear unread count when selecting participant
-              setParticipantUnreadCount(prev => ({
-                ...prev,
-                [participant.externalId]: 0
-              }));
-            }}
-            w="100%"
-          >
-            <Group justify="space-between" align="flex-start">
-              <Group gap="sm" align="flex-start" style={{ flex: 1, minWidth: 0 }}>
-                <Box style={{ position: 'relative' }}>
-                  <AssigneeAvatar assigned={participant} />
-                  {participant.isOnline && (
-                    <Box
-                      style={{
-                        position: 'absolute',
-                        bottom: -2,
-                        right: -2,
-                        width: 12,
-                        height: 12,
-                        backgroundColor: 'var(--mantine-color-green-5)',
-                        border: '2px solid white',
-                        borderRadius: '50%',
-                        boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-                      }}
-                    />
-                  )}
-                </Box>
-                <Flex direction="column" style={{ flex: 1, minWidth: 0 }}>
-                  <Text size="sm" fw={500}>{participant.name}</Text>
-                  {participant.lastMessageContent && (
-                    <Text size="xs" c="dimmed" truncate style={{ maxWidth: '200px' }}>
-                      {participant.lastMessageFromMe ? 'You: ' : ''}
-                      {participant.lastMessageContent}
-                    </Text>
-                  )}
-                </Flex>
-              </Group>
-              {unreadCount > 0 && (
-                <Badge
-                  size="xs"
-                  variant="filled"
-                  color="red"
-                  style={{
-                    minWidth: 16,
-                    height: 16,
-                    padding: 0,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: '10px',
-                    fontWeight: 600,
-                    flexShrink: 0
-                  }}
-                >
-                  {unreadCount > 99 ? '99+' : unreadCount}
-                </Badge>
-              )}
-            </Group>
-          </UnstyledButton>
-        );
-      })}
-    </Stack>
-  );
+  const handleSelectParticipant = (participant: ChatParticipant) => {
+    setSelectedParticipant(participant);
+    // Clear unread count when selecting participant
+    setParticipantUnreadCount(prev => ({
+      ...prev,
+      [participant.externalId]: 0
+    }));
+  };
 
   if (!isOpen) return null;
 
@@ -391,7 +228,12 @@ export default function
             Select someone to message:
           </Text>
           <ScrollArea style={{ height: '100%' }}>
-            {renderParticipantList()}
+            <ParticipantList
+              participants={participants}
+              selectedParticipant={selectedParticipant}
+              participantUnreadCount={participantUnreadCount}
+              onSelectParticipant={handleSelectParticipant}
+            />
           </ScrollArea>
         </Box>
       )}
@@ -427,31 +269,12 @@ export default function
             <Divider my="sm" />
             
             {/* Message Input - Always at bottom */}
-            <Group gap="xs">
-              <Textarea
-                placeholder="Type a message..."
-                value={newMessage}
-                onChange={(e) => setNewMessage(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault();
-                    void sendMessage();
-                  }
-                }}
-                autosize
-                size={'lg'}
-                minRows={1}
-                maxRows={3}
-                style={{ flex: 1 }}
-              />
-              <ActionIcon
-                variant="filled"
-                onClick={sendMessage}
-                disabled={!newMessage.trim()}
-              >
-                <IconSend size={16} />
-              </ActionIcon>
-            </Group>
+            <MessageInput
+              value={newMessage}
+              onChange={setNewMessage}
+              onSend={sendMessage}
+              placeholder="Type a message..."
+            />
           </Box>
         </Flex>
       )}
