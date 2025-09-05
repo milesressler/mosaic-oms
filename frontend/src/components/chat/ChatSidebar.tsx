@@ -15,14 +15,14 @@ import {
 } from '@mantine/core';
 import { IconMessageCircle, IconSend, IconX, IconUsers } from '@tabler/icons-react';
 import { useState, useEffect, useRef } from 'react';
-import { useSubscription } from 'react-stomp-hooks';
 import { useAuth0 } from '@auth0/auth0-react';
 import chatApi from 'src/services/chatApi';
-import { ChatMessageResponse, ChatNotification, ChatParticipant } from 'src/models/chat';
+import { ChatMessageResponse } from 'src/models/chat';
 import {AssigneeAvatar} from 'src/components/orders/AssigneeAvatar';
 import { DateTime } from 'luxon';
 import OrderPreview from './OrderPreview';
 import OrderTaggingTip from './OrderTaggingTip';
+import { useChat } from 'src/context/ChatContext';
 
 interface ChatSidebarProps {
   isOpen: boolean;
@@ -33,13 +33,23 @@ interface ChatSidebarProps {
 export default function
     ChatSidebar({ isOpen, onClose, embedded = false }: ChatSidebarProps) {
   const { user } = useAuth0();
-  const [activeTab, setActiveTab] = useState<'global' | 'dm'>('global');
-  const [messages, setMessages] = useState<ChatMessageResponse[]>([]);
+  const chat = useChat();
   const [newMessage, setNewMessage] = useState('');
-  const [participants, setParticipants] = useState<ChatParticipant[]>([]);
-  const [selectedParticipant, setSelectedParticipant] = useState<ChatParticipant | null>(null);
-  const [participantUnreadCount, setParticipantUnreadCount] = useState<Record<string, number>>({});
   const scrollAreaRef = useRef<HTMLDivElement>(null);
+  
+  // Use chat context state
+  const {
+    messages,
+    setMessages,
+    participants,
+    setParticipants,
+    activeTab,
+    setActiveTab,
+    selectedParticipant,
+    setSelectedParticipant,
+    participantUnreadCount,
+    setParticipantUnreadCount
+  } = chat;
 
   // Load initial messages
   useEffect(() => {
@@ -82,7 +92,6 @@ export default function
     }
   };
 
-
   const sendMessage = async (): Promise<void> => {
     if (!newMessage.trim()) return;
 
@@ -91,20 +100,20 @@ export default function
 
     // Add optimistic update FIRST - before API call
     const optimisticMessage: ChatMessageResponse = {
-      id: Date.now(), // Temporary ID
+      id: String(Date.now()), // Temporary ID - convert to string
       uuid: 'temp-' + Date.now(),
       sender: {
         uuid: user?.sub || '',
         externalId: user?.sub || '',
         name: user?.name || '',
-        avatar: user?.picture
+        avatar: user?.picture || ''
       },
-      recipient: activeTab === 'dm' ? selectedParticipant : undefined,
+      recipient: activeTab === 'dm' && selectedParticipant ? selectedParticipant : undefined,
       content: messageContent,
       messageType: messageContent.match(/#\d+/) ? 'ORDER_REFERENCE' : 'TEXT',
       createdAt: new Date().toISOString(),
       isEdited: false,
-      editedAt: null,
+      editedAt: undefined,
       isDirectMessage: activeTab === 'dm',
       orderReferences: messageContent.match(/#(\d+)/g)?.map(m => m.slice(1)) || []
     };
@@ -124,96 +133,7 @@ export default function
     }
   };
 
-  // WebSocket subscriptions
-  useSubscription('/topic/chat/global', (message) => {
-    const notification: ChatNotification = JSON.parse(message.body);
-    if (activeTab === 'global') {
-      setMessages(prev => {
-        // Check if this message already exists (avoid duplicates)
-        if (prev.some(m => m.id === notification.message.id)) {
-          return prev;
-        }
-        
-        // If this is our own message, remove any temp messages with similar content and timestamp
-        if (notification.message.sender.externalId === user?.sub) {
-          const messageTime = new Date(notification.message.createdAt).getTime();
-          const filtered = prev.filter(m => {
-            // Keep all non-temp messages and temp messages that don't match
-            if (!m.uuid.startsWith('temp-')) return true;
-            
-            // Remove temp messages that are ours and have similar content/timing (within 10 seconds)
-            const tempTime = new Date(m.createdAt).getTime();
-            const timeDiff = Math.abs(messageTime - tempTime);
-            const contentMatches = m.content === notification.message.content;
-            const timeMatches = timeDiff < 10000; // Within 10 seconds
-            
-            return !(contentMatches && timeMatches);
-          });
-          return [...filtered, notification.message];
-        } else {
-          // For messages from others, just add if not duplicate
-          return [...prev, notification.message];
-        }
-      });
-    }
-  });
-
-  useSubscription(`/topic/chat/dm/${user?.sub}`, (message) => {
-    const notification: ChatNotification = JSON.parse(message.body);
-    const isFromOtherUser = notification.message.sender.externalId !== user?.sub;
-    
-    if (activeTab === 'dm' && selectedParticipant && 
-        (notification.message.sender.externalId === selectedParticipant.externalId || 
-         notification.message.recipient?.externalId === selectedParticipant.externalId)) {
-      // Currently viewing this conversation - add message to current view
-      setMessages(prev => {
-        // Check if this message already exists (avoid duplicates)
-        if (prev.some(m => m.id === notification.message.id)) {
-          return prev;
-        }
-        
-        // If this is our own message, remove any temp messages with similar content and timestamp
-        if (notification.message.sender.externalId === user?.sub) {
-          const messageTime = new Date(notification.message.createdAt).getTime();
-          const filtered = prev.filter(m => {
-            // Keep all non-temp messages and temp messages that don't match
-            if (!m.uuid.startsWith('temp-')) return true;
-            
-            // Remove temp messages that are ours and have similar content/timing (within 10 seconds)
-            const tempTime = new Date(m.createdAt).getTime();
-            const timeDiff = Math.abs(messageTime - tempTime);
-            const contentMatches = m.content === notification.message.content;
-            const timeMatches = timeDiff < 10000; // Within 10 seconds
-            
-            return !(contentMatches && timeMatches);
-          });
-          return [...filtered, notification.message];
-        } else {
-          // For messages from others, just add if not duplicate
-          return [...prev, notification.message];
-        }
-      });
-    } else if (isFromOtherUser) {
-      // Message from someone else not currently viewing - increment unread count
-      const senderExternalId = notification.message.sender.externalId;
-      setParticipantUnreadCount(prev => ({
-        ...prev,
-        [senderExternalId]: (prev[senderExternalId] || 0) + 1
-      }));
-    }
-  });
-
-  // WebSocket subscription for user status changes
-  useSubscription('/topic/user-status', (message) => {
-    const statusChange = JSON.parse(message.body);
-    
-    // Update participant online status
-    setParticipants(prev => prev.map(participant => 
-      participant.externalId === statusChange.externalId 
-        ? { ...participant, isOnline: statusChange.isOnline }
-        : participant
-    ));
-  });
+  // WebSocket subscriptions are now handled by ChatContext
 
   const shouldGroupWithPrevious = (currentMessage: ChatMessageResponse, prevMessage: ChatMessageResponse | undefined): boolean => {
     if (!prevMessage) return false;
@@ -519,6 +439,7 @@ export default function
                   }
                 }}
                 autosize
+                size={'lg'}
                 minRows={1}
                 maxRows={3}
                 style={{ flex: 1 }}

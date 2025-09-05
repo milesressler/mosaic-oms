@@ -1,9 +1,7 @@
 import { ActionIcon, Badge, Box } from '@mantine/core';
 import { IconMessageCircle } from '@tabler/icons-react';
-import { useState, useEffect } from 'react';
-import { useSubscription } from 'react-stomp-hooks';
-import { useAuth0 } from '@auth0/auth0-react';
-import { ChatNotification } from 'src/models/chat';
+import { useEffect } from 'react';
+import { useChat } from 'src/context/ChatContext';
 
 interface ChatIconWithNotificationsProps {
   asideOpened: boolean;
@@ -16,42 +14,17 @@ export default function ChatIconWithNotifications({
   onToggle, 
   size = 18 
 }: ChatIconWithNotificationsProps) {
-  const { user } = useAuth0();
-  const [globalUnread, setGlobalUnread] = useState(0);
-  const [dmUnread, setDmUnread] = useState(0);
+  const { globalUnreadCount, dmUnreadCount, clearUnreadCounts } = useChat();
 
-  // Listen for global messages
-  useSubscription('/topic/chat/global', (message) => {
-    if (!asideOpened) {
-      const notification: ChatNotification = JSON.parse(message.body);
-      // Don't count our own messages
-      if (notification.message.sender.externalId !== user?.sub) {
-        setGlobalUnread(prev => prev + 1);
-      }
-    }
-  });
-
-  // Listen for direct messages
-  useSubscription(`/topic/chat/dm/${user?.sub}`, (message) => {
-    if (!asideOpened) {
-      const notification: ChatNotification = JSON.parse(message.body);
-      // Don't count our own messages
-      if (notification.message.sender.externalId !== user?.sub) {
-        setDmUnread(prev => prev + 1);
-      }
-    }
-  });
-
-  // Clear unread count when chat is opened
+  // Clear unread counts when chat is opened
   useEffect(() => {
-    if (asideOpened) {
-      setGlobalUnread(0);
-      setDmUnread(0);
+    if (asideOpened && (globalUnreadCount > 0 || dmUnreadCount > 0)) {
+      clearUnreadCounts();
     }
-  }, [asideOpened]);
+  }, [asideOpened, globalUnreadCount, dmUnreadCount, clearUnreadCounts]);
 
-  const totalUnread = globalUnread + dmUnread;
-  const hasDmUnread = dmUnread > 0;
+  const totalUnread = globalUnreadCount + dmUnreadCount;
+  const hasDmUnread = dmUnreadCount > 0;
 
   return (
     <Box style={{ position: 'relative' }}>

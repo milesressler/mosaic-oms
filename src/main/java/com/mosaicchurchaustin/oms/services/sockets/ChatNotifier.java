@@ -3,6 +3,7 @@ package com.mosaicchurchaustin.oms.services.sockets;
 import com.mosaicchurchaustin.oms.data.entity.chat.ChatMessageEntity;
 import com.mosaicchurchaustin.oms.data.response.ChatMessageResponse;
 import com.mosaicchurchaustin.oms.data.sockets.ChatNotification;
+import com.mosaicchurchaustin.oms.services.ChatMessageEnricher;
 import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Component;
@@ -12,10 +13,14 @@ import org.springframework.stereotype.Component;
 public class ChatNotifier {
 
     private final SimpMessagingTemplate messagingTemplate;
+    private final ChatMessageEnricher chatMessageEnricher;
 
     public void notifyNewMessage(ChatMessageEntity message) {
+        // Enrich the message with order details before sending via WebSocket
+        ChatMessageResponse enrichedMessage = chatMessageEnricher.enrichMessageWithOrderDetails(message);
+        
         ChatNotification notification = ChatNotification.builder()
-                .message(ChatMessageResponse.from(message))
+                .message(enrichedMessage)
                 .senderExtId(message.getSender().getExternalId())
                 .senderName(message.getSender().getName())
                 .build();

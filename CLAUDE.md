@@ -159,29 +159,44 @@ npm run test:prod                   # Playwright tests (production)
 - Real-time notifications for order changes, assignments, and status updates
 
 ### Chat System Architecture
-**Database Migration**: `V00038__add-chat-messages.sql` creates chat_messages table
+**Database Migrations**: 
+- `V00038__add-chat-messages.sql` - Main chat_messages table
+- `V00039__add-chat-indexes.sql` - Performance indexes for participant queries
+
 **Backend Components**:
 - `ChatMessageEntity` - JPA entity extending BaseUuidEntity (VARCHAR(255) UUID storage)
 - `ChatController` - REST endpoints (direct return types, no ResponseEntity wrappers)
-- `ChatService` - Business logic with order reference detection (`#123` pattern)
+- `ChatService` - Business logic with order reference detection (`#123` pattern) + embedded order details
 - `ChatNotifier` - WebSocket delivery using Auth0 externalId for channels
+- `ActiveUsersService` - Tracks WebSocket connections for online status
+- `OrderPreviewProjection` - Lightweight projection for chat order context (avoids N+1 queries)
 
 **Frontend Components**:
-- `ChatSidebar` - Main chat UI (embedded in AppShell aside)
+- `ChatSidebar` - Main chat UI with message grouping (5-min windows), margin-top spacing logic
 - `ChatIconWithNotifications` - Badge system (red for DMs, blue for global, iPhone-style)
 - `OrderTaggingTip` - Dismissable tip with 30-day cookie persistence
 - `TimeAgo` - Real-time timestamp updates (every second)
-- `OrderPreview` - Inline order context cards
+- `OrderPreview` - Accepts order object directly (no API calls)
 
 **WebSocket Channels**:
 - Global: `/topic/chat/global`
 - Direct Messages: `/topic/chat/dm/{auth0-external-id}`
+- User Status: `/topic/user-status` - Real-time online/offline notifications
 
 **Key Features**:
-- Order references: Type `#123` to auto-link orders with preview cards
-- Real-time delivery with optimistic updates
+- Order references: Type `#123` to auto-link orders with embedded preview cards (1 query vs N queries)
+- Real-time delivery with optimistic updates and race condition handling
 - Unread message notifications with badge indicators
 - Global and direct messaging tabs
+- Online status indicators with green dots on participant avatars
+- iPhone-style message bubbles with proper grouping and spacing
+- Customer monitor dashboard security (chat hidden when `isMonitor: true`)
+
+**Performance Optimizations**:
+- Order context embedded in chat responses (eliminates N+1 API calls)
+- Lightweight OrderPreviewProjection (no orderItems joins)
+- Database indexes for efficient participant ordering
+- WebSocket-based online status (no polling)
 
 ---
 
@@ -237,5 +252,16 @@ npm run test:prod                   # Playwright tests (production)
 
 ---
 
-*Last Updated: 2025-09-04*
-*Project Assessment: B+ (87/100) - Production-ready with room for testing improvements*
+## Next Session TODOs
+
+### Chat System Enhancements
+1. **Global Messages Caching** - Add caching layer for global chat messages to improve load performance
+2. **Order Preview Bug Fix** - Fix issue where order previews don't appear on sent messages due to optimistic temp message logic (temp messages don't have embedded orderDetails from server)
+
+### Technical Debt
+- Consider adding frontend state management centralization for better scaling
+
+---
+
+*Last Updated: 2025-09-05*
+*Project Assessment: B+ (87/100) - Production-ready with comprehensive chat system*

@@ -15,6 +15,7 @@ import AsideContent from "src/components/layout/aside/AsideContent.tsx";
 import UserApi from "src/services/userApi.tsx";
 import {IconArrowsMaximize, IconArrowsMinimize} from "@tabler/icons-react";
 import { SelectedOrderProvider} from "src/context/SelectedOrderContext.tsx";
+import { ChatProvider } from "src/context/ChatContext.tsx";
 import NotificationsHandler from "src/components/notifications/NotificationsHandler.tsx";
 import {DeviceLogoutButton} from "src/components/admin/devices/DeviceLogoutButton.tsx";
 import {usePageTracking} from "src/hooks/usePageTracking.tsx";
@@ -117,6 +118,7 @@ export function AppShellComponent() {
 
 
     return (
+        <ChatProvider isOpen={asideOpened}>
         <AppShell
             styles={{
                 root: { height: '100dvh' },
@@ -199,15 +201,17 @@ export function AppShellComponent() {
                 paddingBottom: 'calc(16px + env(safe-area-inset-bottom))', // better spacing + safe area
                 minHeight: 0,              // <— allow it to shrink
             }}>
-                <SelectedOrderProvider>
-                    <Routes>
-                        {mappedRoutes}
-                    </Routes>
-                </SelectedOrderProvider>
+                    <SelectedOrderProvider>
+                        <Routes>
+                            {mappedRoutes}
+                        </Routes>
+                    </SelectedOrderProvider>
             </AppShell.Main>
              { isAuthenticated && <AppShellNavBar ></AppShellNavBar> }
             { isAuthenticated && <AppShell.Aside>
                 <AsideContent/>
             </AppShell.Aside> }
-        </AppShell>);
+
+        </AppShell>
+        </ChatProvider>);
 }
