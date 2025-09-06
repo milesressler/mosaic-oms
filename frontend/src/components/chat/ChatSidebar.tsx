@@ -161,7 +161,7 @@ export default function
 
   // Filter participants based on search
   const filteredParticipants = participants.filter(participant =>
-    participant.name.toLowerCase().includes(participantSearch.toLowerCase())
+    participant.name?.toLowerCase().includes(participantSearch.toLowerCase()) ?? false
   );
 
   if (!isOpen) return null;
