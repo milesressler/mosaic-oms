@@ -19,7 +19,7 @@ import UserRoleManagement from "src/components/admin/user/UserRoleManagement.tsx
 import UserHistory from "src/components/admin/user/UserHistory.tsx";
 
 export function UserManagementPage() {
-    const PAGE_SIZE = 50;
+    const PAGE_SIZE = 75;
     const getUsersApi = useApi(AdminUserApi.getUsers);
     const getUserDetailApi = useApi(AdminUserApi.getUser);
     const createUserApi = useApi(AdminUserApi.createUser);

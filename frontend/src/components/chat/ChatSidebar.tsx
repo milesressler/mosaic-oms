@@ -9,8 +9,9 @@ import {
   ScrollArea,
   Stack,
   Text,
+  TextInput,
 } from '@mantine/core';
-import { IconMessageCircle, IconX, IconUsers } from '@tabler/icons-react';
+import { IconMessageCircle, IconX, IconUsers, IconSearch } from '@tabler/icons-react';
 import { useState, useEffect, useRef } from 'react';
 import { useAuth0 } from '@auth0/auth0-react';
 import chatApi from 'src/services/chatApi';
@@ -32,6 +33,7 @@ export default function
   const { user } = useAuth0();
   const chat = useChat();
   const [newMessage, setNewMessage] = useState('');
+  const [participantSearch, setParticipantSearch] = useState('');
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   
   // Use chat context state
@@ -157,6 +159,11 @@ export default function
     }));
   };
 
+  // Filter participants based on search
+  const filteredParticipants = participants.filter(participant =>
+    participant.name.toLowerCase().includes(participantSearch.toLowerCase())
+  );
+
   if (!isOpen) return null;
 
   const containerStyle = embedded 
@@ -223,19 +230,47 @@ export default function
 
       {/* DM Participant Selection */}
       {activeTab === 'dm' && !selectedParticipant && (
-        <Box style={{ flex: 1 }}>
-          <Text size="sm" c="dimmed" mb="md">
+        <Flex direction="column" style={{ flex: 1, minHeight: 0 }}>
+          <Text size="sm" c="dimmed" mb="sm">
             Select someone to message:
           </Text>
-          <ScrollArea style={{ height: '100%' }}>
-            <ParticipantList
-              participants={participants}
-              selectedParticipant={selectedParticipant}
-              participantUnreadCount={participantUnreadCount}
-              onSelectParticipant={handleSelectParticipant}
-            />
+          
+          {/* Search Input */}
+          <TextInput
+            placeholder="Search participants..."
+            value={participantSearch}
+            onChange={(e) => setParticipantSearch(e.target.value)}
+            leftSection={<IconSearch size={16} />}
+            mb="sm"
+            style={{ flexShrink: 0 }}
+          />
+          
+          {/* Participant List with Scroll */}
+          <ScrollArea style={{ flex: 1, minHeight: 0 }} offsetScrollbars>
+            {filteredParticipants.length > 0 ? (
+              <ParticipantList
+                participants={filteredParticipants}
+                selectedParticipant={selectedParticipant}
+                participantUnreadCount={participantUnreadCount}
+                onSelectParticipant={handleSelectParticipant}
+              />
+            ) : (
+              <Stack align="center" justify="center" p="xl" style={{ height: '200px' }}>
+                <Text size="sm" c="dimmed" ta="center">
+                  {participantSearch ? 
+                    `No participants found matching "${participantSearch}"` :
+                    "No previous conversations. Start chatting in Global to connect with others!"
+                  }
+                </Text>
+              </Stack>
+            )}
           </ScrollArea>
-        </Box>
+          
+          {/* Show count */}
+          <Text size="xs" c="dimmed" mt="xs" style={{ flexShrink: 0 }}>
+            Showing {filteredParticipants.length} of {participants.length} participants
+          </Text>
+        </Flex>
       )}
 
       {/* Messages Area */}

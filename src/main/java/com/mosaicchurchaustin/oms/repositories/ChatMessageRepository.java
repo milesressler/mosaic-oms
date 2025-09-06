@@ -50,6 +50,7 @@ public interface ChatMessageRepository extends JpaRepository<ChatMessageEntity, 
                       "(cm2.sender = :currentUser AND cm2.recipient = u)) " +
                "ORDER BY cm2.createdAt DESC LIMIT 1" +
            ") " +
+           "WHERE u != :currentUser " +
            "ORDER BY lastMsg.createdAt DESC NULLS LAST, u.name ASC")
     List<ChatParticipantProjection> findParticipantsOrderedByRecentActivity(@Param("currentUser") UserEntity currentUser);
 }
