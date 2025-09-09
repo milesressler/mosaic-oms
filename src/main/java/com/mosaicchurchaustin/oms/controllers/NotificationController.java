@@ -1,29 +1,35 @@
 package com.mosaicchurchaustin.oms.controllers;
 
-import com.mosaicchurchaustin.oms.data.sockets.OrderNotification;
-import org.springframework.messaging.handler.annotation.MessageMapping;
-import org.springframework.messaging.handler.annotation.Payload;
-import org.springframework.messaging.handler.annotation.SendTo;
-import org.springframework.stereotype.Controller;
+import com.mosaicchurchaustin.oms.data.response.NotificationSummaryResponse;
+import com.mosaicchurchaustin.oms.services.NotificationService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 
-@Controller
+@RestController
+@RequestMapping("/api")
+@RequiredArgsConstructor
 public class NotificationController {
-    @MessageMapping("/order")
-    @SendTo("/topic/orders/created")
-    public OrderNotification send(final OrderNotification notification) {
-        return notification;
+
+    final NotificationService notificationService;
+
+    @ResponseBody
+    @GetMapping(path = "/notifications", produces = MediaType.APPLICATION_JSON_VALUE)
+    public NotificationSummaryResponse getNotifications(
+            @RequestParam(required = false) Long cursor,
+            @RequestParam(required = false) Integer pageSize
+    ) {
+        return notificationService.getNotificationSummaryForCurrentUser(cursor, pageSize);
     }
 
-    @MessageMapping("/authorize")
-    @SendTo("/topic/orders/created")
-    public String send(final String notification) {
-        return "got it";
-    }
-
-    @MessageMapping("/broadcast")
-    @SendTo("/topic/reply")
-    public String broadcastMessage(@Payload String message) {
-        System.out.println("message: " + message);
-        return "You have received a message: " + message;
+    @ResponseBody
+    @PutMapping(path = "/notifications/mark-seen", produces = MediaType.APPLICATION_JSON_VALUE)
+    public void markNotificationsAsSeen() {
+        notificationService.markAllNotificationsAsSeenForCurrentUser();
     }
 }

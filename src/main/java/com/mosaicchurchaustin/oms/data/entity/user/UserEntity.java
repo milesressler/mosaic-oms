@@ -48,6 +48,9 @@ public class UserEntity extends BaseUuidEntity implements Auditable {
     @Column(name = "last_seen_changelog_id")
     private String lastSeenChangelogId;
 
+    @Column(name = "last_notification_seen_id")
+    private Long lastNotificationSeenId;
+
     @Column(name = "source")
     UserSource source;
 

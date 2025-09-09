@@ -174,7 +174,19 @@ public class OrderService {
         return orderRepository.saveAll(updatedOrders);
     }
 
+    public UserEntity findOriginalOrderTaker(final OrderEntity orderEntity) {
+        return orderHistoryRepository.findFirstByOrderEntityIdAndEventTypeOrderByTimestampAsc(
+                orderEntity.getId(),
+                OrderEventType.STATUS_CHANGE
+        ).map(OrderHistoryEntity::getUserEntity)
+                .orElse(null);
+    }
+
     private OrderEntity updateOrderStatus(final OrderEntity orderEntity, final String orderState) {
+        return updateOrderStatus(orderEntity, orderState, null);
+    }
+
+    private OrderEntity updateOrderStatus(final OrderEntity orderEntity, final String orderState, final String comment) {
         final UserEntity currentUser = userService.currentUser();
 
         final OrderStatus currentOrderStatus = orderEntity.getOrderStatus();
@@ -186,6 +198,7 @@ public class OrderService {
                 .previousOrderStatus(currentOrderStatus)
                 .userEntity(currentUser)
                 .eventType(OrderEventType.STATUS_CHANGE)
+                .comment(comment)
                 .build());
         orderEntity.getOrderHistoryEntityList().add(orderHistoryEntity);
         orderEntity.setLastStatusChange(orderHistoryEntity);
@@ -205,8 +218,13 @@ public class OrderService {
 
     @Transactional
     public OrderEntity updateOrderStatus(final String orderUuid, final String orderState) {
+        return updateOrderStatus(orderUuid, orderState, null);
+    }
+
+    @Transactional
+    public OrderEntity updateOrderStatus(final String orderUuid, final String orderState, final String comment) {
         final OrderEntity orderEntity = getOrder(orderUuid);
-        updateOrderStatus(orderEntity, orderState);
+        updateOrderStatus(orderEntity, orderState, comment);
         return orderRepository.save(orderEntity);
     }
 
@@ -273,6 +291,25 @@ public class OrderService {
                     existing.setNotes(StringUtils.isBlank(itemRequest.notes()) ? null : itemRequest.notes().trim());
                     existing.setAttributes(itemRequest.attributes());
                 });
+
+        // If order was NEEDS_INFO, change it back to PENDING_ACCEPTANCE after editing
+        if (orderEntity.getOrderStatus() == OrderStatus.NEEDS_INFO) {
+            orderEntity.setOrderStatus(OrderStatus.PENDING_ACCEPTANCE);
+            
+            // Create history entry for status change
+            final UserEntity currentUser = userService.currentUser();
+            final OrderHistoryEntity statusChangeHistory = orderHistoryRepository.save(
+                OrderHistoryEntity.builder()
+                    .orderEntity(orderEntity)
+                    .orderStatus(OrderStatus.PENDING_ACCEPTANCE)
+                    .previousOrderStatus(OrderStatus.NEEDS_INFO)
+                    .userEntity(currentUser)
+                    .eventType(OrderEventType.STATUS_CHANGE)
+                    .build()
+            );
+            orderEntity.getOrderHistoryEntityList().add(statusChangeHistory);
+            orderEntity.setLastStatusChange(statusChangeHistory);
+        }
 
         return orderRepository.save(orderEntity);
     }

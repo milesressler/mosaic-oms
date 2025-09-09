@@ -73,6 +73,7 @@ public class OrderDetailResponse extends OrderResponse {
         private OrderEventType eventType;
         private OrderExportType exportType;
         private Instant timestamp;
+        private String comment;
 
         public static History from(final OrderHistoryEntity orderHistoryEntity) {
             return History.builder()
@@ -82,6 +83,7 @@ public class OrderDetailResponse extends OrderResponse {
                     .timestamp(orderHistoryEntity.getTimestamp())
                     .eventType(orderHistoryEntity.getEventType())
                     .exportType(orderHistoryEntity.getExportType())
+                    .comment(orderHistoryEntity.getComment())
                     .build();
 
         }

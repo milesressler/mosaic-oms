@@ -6,6 +6,7 @@ import com.mosaicchurchaustin.oms.data.entity.order.OrderStatus;
 import com.mosaicchurchaustin.oms.data.request.CreateOrderRequest;
 import com.mosaicchurchaustin.oms.data.request.UpdateOrderRequest;
 import com.mosaicchurchaustin.oms.data.request.UpdateOrderStatusBulkRequest;
+import com.mosaicchurchaustin.oms.data.request.UpdateOrderStatusRequest;
 import com.mosaicchurchaustin.oms.data.response.OrderDetailResponse;
 import com.mosaicchurchaustin.oms.data.response.OrderFeedResponse;
 import com.mosaicchurchaustin.oms.data.response.OrderResponse;
@@ -143,9 +144,11 @@ public class OrderController {
     @PutMapping(path = "/order/{uuid}/state/{state}", produces = MediaType.APPLICATION_JSON_VALUE)
     public OrderDetailResponse updateOrderState(
             @PathVariable("uuid") String orderUuid,
-            @PathVariable("state") String orderState
+            @PathVariable("state") String orderState,
+            @RequestBody(required = false) UpdateOrderStatusRequest request
     ){
-        final OrderEntity orderEntity = orderService.updateOrderStatus(orderUuid, orderState);
+        final String comment = request != null ? request.comment() : null;
+        final OrderEntity orderEntity = orderService.updateOrderStatus(orderUuid, orderState, comment);
         orderNotifier.notifyOrderStatusChanged(orderEntity, orderEntity.getLastStatusChange().getUserEntity());
         return OrderDetailResponse.from(orderEntity);
     }
