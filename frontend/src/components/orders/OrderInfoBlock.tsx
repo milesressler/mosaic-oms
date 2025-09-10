@@ -7,7 +7,7 @@ import UserAvatar from 'src/components/common/userAvatar/UserAvatar.tsx';
 interface Props {
     orderDetails: OrderDetails | null;
     loading: boolean;
-    changeState: (status: OrderStatus) => void;
+    changeState: (status: OrderStatus, comment?: string) => void;
     toggleAssigned: () => void;
 }
 
