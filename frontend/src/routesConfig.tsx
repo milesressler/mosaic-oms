@@ -30,6 +30,7 @@ import DevicesPage from "src/pages/admin/DevicesPage.tsx";
 import NoAccessPage from "src/pages/NoAccess.tsx";
 import CustomerDetailPage from "src/pages/search/CustomerDetailPage.tsx";
 import ShowersDashboard from "src/pages/dashboards/ShowersDashboard.tsx";
+import OrderDetailsPageOld from "./pages/orders/OrderDetailsPageOld";
 
 
 const routes = [
@@ -166,7 +167,7 @@ const routes = [
             {
                 key: 'order-details',
                 path: '/order/:id',
-                element: OrderDetailsPage,
+                element: OrderDetailsPageOld,
                 title: 'Order Details',
                 showInNavBar: false,
             },
