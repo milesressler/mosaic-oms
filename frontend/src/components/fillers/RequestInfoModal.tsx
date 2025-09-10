@@ -59,6 +59,7 @@ export default function RequestInfoModal({ opened, onClose, onConfirm, orderNumb
             }
           }}
           autoFocus
+          size={'lg'}
         />
 
         <Group justify="flex-end">

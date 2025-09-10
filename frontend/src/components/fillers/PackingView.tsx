@@ -145,17 +145,18 @@ function PackingView() {
                                         </Group>
                                         
                                         {/* Attributes and notes */}
-                                        {(Object.keys(item.attributes).length > 0 || item.notes) && (
+                                        {(Object.keys(item.attributes).length > 0) && (
                                             <Group gap="xs" mb="xs">
                                                 {Object.keys(item.attributes).length > 0 && (
                                                     <AttributeBadges attrs={item.attributes} />
                                                 )}
-                                                {item.notes && (
-                                                    <Text size="xs" c="dimmed" style={{ fontStyle: 'italic' }}>
-                                                        Note: {item.notes}
-                                                    </Text>
-                                                )}
                                             </Group>
+                                        )}
+
+                                        {item.notes && (
+                                            <Text size="xs" c="dimmed" style={{ fontStyle: 'italic' }}>
+                                                Note: {item.notes}
+                                            </Text>
                                         )}
                                     </Box>
                                     

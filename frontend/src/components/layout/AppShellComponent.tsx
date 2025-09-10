@@ -20,7 +20,6 @@ import NotificationsHandler from "src/components/notifications/NotificationsHand
 import {DeviceLogoutButton} from "src/components/admin/devices/DeviceLogoutButton.tsx";
 import {usePageTracking} from "src/hooks/usePageTracking.tsx";
 import ChatIconWithNotifications from "src/components/chat/ChatIconWithNotifications.tsx";
-import NotificationsIconWithBadge from "src/components/notifications/NotificationsIconWithBadge.tsx";
 import NotificationDropdown from "src/components/notifications/NotificationDropdown.tsx";
 
 const mappedRoutes = routes.flatMap((route: any) => route.children || [route]).map((route) => {
@@ -181,7 +180,7 @@ export function AppShellComponent() {
                         </Group> }
                         { isAuthenticated && <>
                             <Group hiddenFrom={'md'} gap={5} style={{ minWidth: 0, flex: '0 0 auto' }}>
-                                <NotificationsIconWithBadge/>
+                                <NotificationDropdown size={18} />
                                 <ChatIconWithNotifications
                                     asideOpened={asideOpened}
                                     onToggle={() => {
