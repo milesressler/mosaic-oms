@@ -25,12 +25,14 @@ import { useFeatures } from 'src/context/FeaturesContext.tsx';
 import {useAuth0} from "@auth0/auth0-react";
 import {useOrderFulfillmentTracking} from "src/hooks/useOrderFulfillmentTracking.tsx";
 import AttributeBadges from 'src/components/common/items/AttributeBadges';
+import PlaceInWagonModal from './PlaceInWagonModal';
 
 function PackingView() {
     const { selectedOrder, doForceRefresh } = useSelectedOrder();
     const updateQuantities = useApi(ordersApi.updateOrderItems);
     const updateStatus = useApi(ordersApi.updateOrderStatus);
     const [draftItems, setDraftItems] = useState<OrderItem[]>([]);
+    const [placeInWagonModalOpened, setPlaceInWagonModalOpened] = useState(false);
     const navigate = useNavigate();
     const { printOnTransitionToStatus } = useFeatures();
     const { user } = useAuth0();
@@ -88,8 +90,18 @@ function PackingView() {
         });
     };
 
-    const moveToWagon = () => {
+    const handlePlaceInWagonClick = () => {
+        if (unfilledItems.length > 0) {
+            setPlaceInWagonModalOpened(true);
+        } else {
+            // All items filled, go directly to wagon
+            updateStatus.request(selectedOrder!.uuid, OrderStatus.PACKED);
+        }
+    };
+
+    const confirmPlaceInWagon = () => {
         updateStatus.request(selectedOrder!.uuid, OrderStatus.PACKED);
+        setPlaceInWagonModalOpened(false);
     };
 
     const hasStateChanged = draftItems.some(
@@ -114,6 +126,9 @@ function PackingView() {
     const totalItems = draftItems.length;
     const completedItems = draftItems.filter(item => item.quantityFulfilled === item.quantityRequested).length;
     const progressPercentage = totalItems > 0 ? Math.round((completedItems / totalItems) * 100) : 0;
+    
+    // Calculate unfilled items for modal
+    const unfilledItems = draftItems.filter(item => item.quantityFulfilled < item.quantityRequested);
 
     return (
         <Box style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
@@ -238,7 +253,7 @@ function PackingView() {
                     ) : (
                         <Button
                             disabled={!assignedToMe}
-                            onClick={moveToWagon}
+                            onClick={handlePlaceInWagonClick}
                             color="green"
                             p={'xs'}
                             size="sm"
@@ -250,6 +265,14 @@ function PackingView() {
                     )}
                 </Group>
             </Box>
+
+            <PlaceInWagonModal
+                opened={placeInWagonModalOpened}
+                onClose={() => setPlaceInWagonModalOpened(false)}
+                onConfirm={confirmPlaceInWagon}
+                unfilledItems={unfilledItems}
+                loading={updateStatus.loading}
+            />
         </Box>
     );
 }

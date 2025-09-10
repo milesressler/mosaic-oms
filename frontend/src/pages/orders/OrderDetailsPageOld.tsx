@@ -60,6 +60,10 @@ export default function OrderDetailsPageOld() {
         order && updateOrder.request(order.uuid, OrderStatus.CANCELLED)
     }
 
+    const returnToFiller = () => {
+        order && updateOrder.request(order.uuid, OrderStatus.ACCEPTED)
+    }
+
     const complete = () => {
         order && updateOrder.request(order.uuid, OrderStatus.COMPLETED);
     }
@@ -120,6 +124,7 @@ export default function OrderDetailsPageOld() {
                     <Menu.Dropdown>
                         <Menu.Item onClick={cancel}>Cancel</Menu.Item>
                         <Menu.Item onClick={complete}>Mark Complete</Menu.Item>
+                        <Menu.Item onClick={returnToFiller}>Return to Filler</Menu.Item>
                         <Menu.Item disabled={!canEdit} onClick={edit}>Edit</Menu.Item>
                         <Menu.Item disabled={!canPrint} onClick={reprint}>Print Completed Label</Menu.Item>
                     </Menu.Dropdown>
