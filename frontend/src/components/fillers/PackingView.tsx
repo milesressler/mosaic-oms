@@ -1,6 +1,20 @@
-import { Button, Group, Text, Paper, Divider, Box, Loader } from '@mantine/core';
-import { IconPrinter } from '@tabler/icons-react';
-import ItemQuantitySelector from 'src/components/fillers/ItemQuantitySelector.tsx';
+import { 
+    Button, 
+    Group, 
+    Text, 
+    Box, 
+    Loader, 
+    Stack,
+    Card,
+    ActionIcon,
+    useMantineTheme,
+    Progress
+} from '@mantine/core';
+import { 
+    IconPrinter, 
+    IconCheck,
+    IconX
+} from '@tabler/icons-react';
 import {OrderDetails, OrderItem, OrderStatus} from 'src/models/types.tsx';
 import { useSelectedOrder } from 'src/context/SelectedOrderContext.tsx';
 import { useEffect, useState } from 'react';
@@ -10,6 +24,7 @@ import { useNavigate } from 'react-router-dom';
 import { useFeatures } from 'src/context/FeaturesContext.tsx';
 import {useAuth0} from "@auth0/auth0-react";
 import {useOrderFulfillmentTracking} from "src/hooks/useOrderFulfillmentTracking.tsx";
+import AttributeBadges from 'src/components/common/items/AttributeBadges';
 
 function PackingView() {
     const { selectedOrder, doForceRefresh } = useSelectedOrder();
@@ -82,75 +97,159 @@ function PackingView() {
     );
 
     if (!selectedOrder) return <Loader />;
+    
     const assignedToMe = (selectedOrder as OrderDetails)?.assignee?.externalId === user?.sub;
+    const theme = useMantineTheme();
 
+    // Toggle pack/unpack for items
+    const togglePack = (itemId: number) => {
+        const item = draftItems.find(i => i.id === itemId);
+        if (!item) return;
+        
+        const newQuantity = item.quantityFulfilled > 0 ? 0 : item.quantityRequested;
+        updateDraftItemQuantityFulfilled(itemId, newQuantity);
+    };
+
+    // Calculate progress
+    const totalItems = draftItems.length;
+    const completedItems = draftItems.filter(item => item.quantityFulfilled === item.quantityRequested).length;
+    const progressPercentage = totalItems > 0 ? Math.round((completedItems / totalItems) * 100) : 0;
 
     return (
-        <Paper p="md" shadow="xs">
-            <Box>
-                {draftItems.map((item) => (
-                    <Box key={item.id} mb="sm" pr={'xl'}>
-                        <Group justify="space-between">
-                            <Text>
-                                <strong>{item.quantityRequested}</strong> {item.description}
-                            </Text>
-                            <Text c="dimmed">
-                                {item.quantityFulfilled === item.quantityRequested
-                                    ? 'Complete'
-                                    : `${item.quantityFulfilled} / ${item.quantityRequested - item.quantityFulfilled} `}
-                            </Text>
-                        </Group>
-                        <Group justify="start">
-                            <Text c="dimmed" size={'sm'}>{item.notes}</Text>
-                            {Object.entries(item.attributes).map(([key, value]) => (
-                                <Group key={key} gap={0 }>
-                                    <Text fw={600}>{key}:</Text>
-                                    <Text>{value}</Text>
+        <Box style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+            {/* Items List - Streamlined for speed */}
+            <Box style={{ flex: 1, overflow: 'auto' }}>
+                <Stack gap="xs">
+                    {draftItems.map((item) => {
+                        const isComplete = item.quantityFulfilled === item.quantityRequested;
+                        
+                        return (
+                            <Card 
+                                key={item.id} 
+                                p="xs"
+                                radius="md" 
+                                withBorder
+                                bg={isComplete ? 'green.0' : undefined}
+                                style={{ 
+                                    borderColor: isComplete ? theme.colors.green[3] : undefined,
+                                    borderWidth: isComplete ? 2 : undefined
+                                }}
+                            >
+                                <Group justify="space-between" align="flex-start" wrap="nowrap">
+                                    <Box style={{ flex: 1 }}>
+                                        {/* Item description */}
+                                        <Group gap="xs" mb="xs">
+                                            <Text fw={600} size="sm">
+                                                {item.description}
+                                            </Text>
+                                        </Group>
+                                        
+                                        {/* Attributes and notes */}
+                                        {(Object.keys(item.attributes).length > 0 || item.notes) && (
+                                            <Group gap="xs" mb="xs">
+                                                {Object.keys(item.attributes).length > 0 && (
+                                                    <AttributeBadges attrs={item.attributes} />
+                                                )}
+                                                {item.notes && (
+                                                    <Text size="xs" c="dimmed" style={{ fontStyle: 'italic' }}>
+                                                        Note: {item.notes}
+                                                    </Text>
+                                                )}
+                                            </Group>
+                                        )}
+                                    </Box>
+                                    
+                                    {/* Toggle pack/unpack button */}
+                                    {assignedToMe && (
+                                        <ActionIcon
+                                            size="lg"
+                                            color={isComplete ? 'red' : 'green'}
+                                            variant="light"
+                                            onClick={() => togglePack(item.id)}
+                                        >
+                                            {isComplete ? <IconX size={18} /> : <IconCheck size={18} />}
+                                        </ActionIcon>
+                                    )}
                                 </Group>
-                                ))
-                            }
-                        </Group>
-                        { assignedToMe &&
-
-                        <ItemQuantitySelector
-                            quantitySelected={item.quantityFulfilled}
-                            onValueChange={(value) => updateDraftItemQuantityFulfilled(item.id, value)}
-                            max={item.quantityRequested}
-                        />
-                        }
-                        <Divider mt={5}/>
-                    </Box>
-                ))}
+                            </Card>
+                        );
+                    })}
+                </Stack>
             </Box>
 
-            <Divider my="md" />
+            {/* Progress and controls */}
+            <Box 
+                style={{ 
+                    flexShrink: 0,
+                    borderTop: `1px solid ${theme.colors.gray[3]}`,
+                    paddingTop: 16,
+                    marginTop: 16
+                }}
+            >
+                {/* Progress bar */}
+                <Box mb="md">
+                    <Group justify="space-between" mb="xs">
+                        <Text size="sm" fw={500}>Packing Progress</Text>
+                        <Text size="sm" c="dimmed">
+                            {completedItems}/{totalItems} items ({progressPercentage}%)
+                        </Text>
+                    </Group>
+                    <Progress 
+                        value={progressPercentage} 
+                        color={progressPercentage === 100 ? 'green' : 'blue'}
+                        size="lg" 
+                        radius="md"
+                    />
+                </Box>
 
-            <Group justify="space-between" gap={2}>
-                <Group gap="xs">
-                    <Button variant="light"
-                            disabled={!assignedToMe}
-                            onClick={clearAll}>Clear All</Button>
-                    <Button variant="light"
-                            disabled={!assignedToMe}
-                            onClick={fillAll}>Fill All</Button>
-                </Group>
-                <Group>
+                {/* Control buttons */}
+                <Group justify="flex-start" gap="xs">
+                    <Button 
+                        variant="light"
+                        disabled={!assignedToMe}
+                        onClick={clearAll}
+                        size="sm"
+                        p={'xs'}
+                    >
+                        Clear All
+                    </Button>
+                    <Button 
+                        variant="light"
+                        disabled={!assignedToMe}
+                        onClick={fillAll}
+                        size="sm"
+                        p={'xs'}
+                    >
+                        Pack All
+                    </Button>
+                    
                     {hasStateChanged ? (
                         <Button
                             disabled={!assignedToMe}
-                            onClick={saveProgress}>Save Progress</Button>
+                            onClick={saveProgress}
+                            color="blue"
+                            size="sm"
+                            p={'xs'}
+                            style={{ marginLeft: 'auto' }}
+                        >
+                            Save Progress
+                        </Button>
                     ) : (
                         <Button
                             disabled={!assignedToMe}
                             onClick={moveToWagon}
+                            color="green"
+                            p={'xs'}
+                            size="sm"
                             leftSection={printOnTransitionToStatus === OrderStatus.PACKED && <IconPrinter />}
+                            style={{ marginLeft: 'auto' }}
                         >
-                            Placed in Wagon
+                            Place in Wagon
                         </Button>
                     )}
                 </Group>
-            </Group>
-        </Paper>
+            </Box>
+        </Box>
     );
 }
 

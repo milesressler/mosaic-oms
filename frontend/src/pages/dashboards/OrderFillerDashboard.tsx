@@ -1,13 +1,14 @@
-import {Grid, Modal} from "@mantine/core";
-import {Order, OrderStatus} from "src/models/types.tsx";
+import {Grid, Group, Modal, Text} from "@mantine/core";
+import { Order, OrderStatus } from "src/models/types.tsx";
 import OrdersTable from "src/components/orders/OrdersTable.tsx";
-import {useNavigate, useParams} from "react-router-dom";
-import {SelectedOrderProvider, useSelectedOrder} from "src/context/SelectedOrderContext.tsx";
+import { useNavigate, useParams } from "react-router-dom";
+import { SelectedOrderProvider, useSelectedOrder } from "src/context/SelectedOrderContext.tsx";
 import OrderDetailSection from "src/components/fillers/OrderDetailSection.tsx";
-import {OrdersView} from "src/components/orders/OrdersTableConfig.tsx";
-import {useState} from "react";
-import {useFeatures} from "src/context/FeaturesContext.tsx";
+import { OrdersView } from "src/components/orders/OrdersTableConfig.tsx";
+import { useState } from "react";
+import { useFeatures } from "src/context/FeaturesContext.tsx";
 import OrdersClosedAlert from "src/components/common/orders/OrdersClosedAlert.tsx";
+import StatusBadge from "src/components/StatusBadge.tsx";
 
 export function OrderFillerDashboard() {
     const navigate = useNavigate();
@@ -34,9 +35,14 @@ export function OrderFillerDashboard() {
 
     return (
         <SelectedOrderProvider>
-            <Modal size={'md'}
+            <Modal size={'lg'}
                    opened={!!selectedOrder}
-                   title={`${customerName} - ${selectedOrder?.id}`}
+                   title={
+                        <Group gap={'md'}>
+                            <Text>{`Order #${selectedOrder?.id} - ${customerName}`}</Text>
+                            {selectedOrder && <StatusBadge variant={'outline'} orderStatus={selectedOrder.orderStatus} /> }
+                        </Group>
+                    }
                    onClose={() => {
                 navigate(`/dashboard/filler/`)}}>
                 <OrderDetailSection  onUpdate={triggerTableRefresh}/>

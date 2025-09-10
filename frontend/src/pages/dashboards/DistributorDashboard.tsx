@@ -1,4 +1,4 @@
-import {Box, Modal} from "@mantine/core";
+import {Box, Group, Modal, Text} from "@mantine/core";
 import {Order, OrderStatus} from "src/models/types.tsx";
 import OrdersTable from "src/components/orders/OrdersTable.tsx";
 import {useNavigate, useParams} from "react-router-dom";
@@ -30,10 +30,18 @@ export function DistributorDashboard() {
         }
     }
     const [ forceRefreshTable, setForceRefreshTable ] = useState(false);
+    const customerName = `${selectedOrder?.customer?.firstName || ''} ${selectedOrder?.customer?.lastName || ''}`.trim()
 
     return (
         <SelectedOrderProvider>
-            <Modal size={'md'} opened={!!selectedOrder} title={`Order Detail`} onClose={() => {
+            <Modal size={'md'}
+                   opened={!!selectedOrder}
+                   title={
+                       <Group gap={'md'}>
+                           <Text>{`Order #${selectedOrder?.id} - ${customerName}`}</Text>
+                       </Group>
+                   }
+                   onClose={() => {
                 navigate(`/dashboard/distributor/`)}}>
                 <OrderDetailSection onUpdate={handleUpdateCompleted}/>            </Modal>
             <>
