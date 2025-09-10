@@ -60,6 +60,7 @@ export interface OrderDetails extends Order {
         eventType: HistoryEventType;
         exportType: ExportType;
         timestamp: string;
+        comment?: string; // Comment for status changes like NEEDS_INFO
     }[];
 }
 
@@ -319,3 +320,33 @@ export const categoryDisplayNames: Record<Category, string> = {
     [Category.ACCESSORIES]: "Accessories",
     [Category.OTHER]: "Misc",
 };
+
+// Notification types
+export enum NotificationType {
+    NEEDS_MORE_INFO = "NEEDS_MORE_INFO",
+    ORDER_ASSIGNED = "ORDER_ASSIGNED",
+    ORDER_COMPLETED = "ORDER_COMPLETED",
+    SYSTEM_ANNOUNCEMENT = "SYSTEM_ANNOUNCEMENT"
+}
+
+export interface NotificationResponse {
+    id: number;
+    uuid: string;
+    type: NotificationType;
+    relatedOrder?: Order;
+    created: string;
+    seen: boolean;
+    message?: string; // Comment from related order history
+}
+
+export interface NotificationSummaryResponse {
+    totalUnseen: number | null;
+    lastSeenId: number | null;
+    notifications: NotificationResponse[];
+    nextCursor: number | null;
+    hasMore: boolean;
+}
+
+export interface UpdateOrderStatusRequest {
+    comment?: string;
+}

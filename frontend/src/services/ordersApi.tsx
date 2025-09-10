@@ -1,5 +1,13 @@
 import client from "./client";
-import {Order, OrderDetails, OrderFeedItem, OrderRequest, OrderStatus, Page} from "src/models/types.tsx"
+import {
+    Order,
+    OrderDetails,
+    OrderFeedItem,
+    OrderRequest,
+    OrderStatus,
+    Page,
+    UpdateOrderStatusRequest
+} from "src/models/types.tsx"
 
 const createOrder = (data: OrderRequest) => client.post("/order", data);
 const getOrders = (params?: object) => client.get<Page<Order>>("/order", {params});
@@ -10,7 +18,8 @@ const getOrdersWithDetails = (params?: object) => client.get<Page<OrderDetails>>
 const getOrderById = (id: number) => client.get<OrderDetails>(`/order/${id}`);
 const getOrderByUuid = (uuid: string) => client.get(`/order/${uuid}`);
 const updateOrderStatusBulk = (uuids: string[], state: OrderStatus) => client.put<Order>(`/order/bulk/state/${state}`, {orderUuids: uuids});
-const updateOrderStatus = (uuid: string, state: OrderStatus) => client.put<Order>(`/order/${uuid}/state/${state}`);
+const updateOrderStatus = (uuid: string, state: OrderStatus, request?: UpdateOrderStatusRequest) =>
+    client.put<Order>(`/order/${uuid}/state/${state}`, request || {});
 const changeAssignee = (uuid: string, unassign: boolean) => client.put<Order>(`/order/${uuid}/assign?unassign=${unassign}`);
 const updateOrderDetails = (uuid: string, data: OrderRequest) => client.put(`/order/${uuid}`, data);
 const updateOrderItem = (id: number) => client.put(`/orderitem/${id}`);

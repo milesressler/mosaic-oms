@@ -5,7 +5,8 @@ import {useNavigate, useParams} from "react-router-dom";
 import {useEffect} from "react";
 import useApi from "src/hooks/useApi.tsx";
 import ordersApi from "src/services/ordersApi.tsx";
-import {LoadingOverlay} from "@mantine/core";
+import {LoadingOverlay, Box} from "@mantine/core";
+import NeedsInfoBanner from "src/components/notifications/NeedsInfoBanner.tsx";
 
 export function OrderTakerDashboard() {
     const {  id: orderId } = useParams<{ id?: string }>();
@@ -44,7 +45,7 @@ export function OrderTakerDashboard() {
                     } else if (def.type === 'MULTI_SELECT') {
                         attributes[key] = {
                             type:   'multi',
-                            values: raw.split(',').map(v => v.trim()),
+                            values: raw.split(',').map(v => v?.trim()),
                         };
                     }
                     // if you ever support SizeAttribute, handle it here:
@@ -74,21 +75,25 @@ export function OrderTakerDashboard() {
             deletedItemIds: [],
         },
         validate: {
-            firstName: (value) => (value.trim().length > 0 ? null : "First name is required"),
-            lastName: (value) => (value.trim().length > 0 ? null : "Last name is required"),
+            firstName: (value) => (value?.trim()?.length > 0 ? null : "First name is required"),
+            lastName: (value) => (value?.trim()?.length > 0 ? null : "Last name is required"),
             items: (value => value.length > 0 ? null : "No items selected"),
         },
     });
 
-    return (<>
+    return (
+        <Box style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
             <LoadingOverlay visible={!!orderId && fetchOrder.loading}></LoadingOverlay>
-            <OrderFormV2
-            form={form}
-            order={fetchOrder.data}
-            mode={orderId ? "edit" : "create"}
-            onUpdateComplete={() => navigate('/orders')}
-        />
-        </>
+            <Box p={'xs'} style={{ flexShrink: 0 }}><NeedsInfoBanner /></Box>
+            <Box style={{ flex: 1, minHeight: 0 }}>
+                <OrderFormV2
+                    form={form}
+                    order={fetchOrder.data}
+                    mode={orderId ? "edit" : "create"}
+                    onUpdateComplete={() => navigate('/orders')}
+                />
+            </Box>
+        </Box>
    );
 }
 export default OrderTakerDashboard;

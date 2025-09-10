@@ -1,4 +1,4 @@
-import {AppShell, Burger, DEFAULT_THEME, Group, Box} from "@mantine/core";
+import {AppShell, Box, Burger, DEFAULT_THEME, Group} from "@mantine/core";
 import AppShellNavBar from "src/components/layout/navbar/AppShellNavBar.tsx";
 import {Link, matchPath, Route, Routes, useLocation} from "react-router-dom";
 import {AuthenticationGuard} from "src/components/auth0/AuthenticationGuard.tsx";
@@ -20,6 +20,8 @@ import NotificationsHandler from "src/components/notifications/NotificationsHand
 import {DeviceLogoutButton} from "src/components/admin/devices/DeviceLogoutButton.tsx";
 import {usePageTracking} from "src/hooks/usePageTracking.tsx";
 import ChatIconWithNotifications from "src/components/chat/ChatIconWithNotifications.tsx";
+import NotificationsIconWithBadge from "src/components/notifications/NotificationsIconWithBadge.tsx";
+import NotificationDropdown from "src/components/notifications/NotificationDropdown.tsx";
 
 const mappedRoutes = routes.flatMap((route: any) => route.children || [route]).map((route) => {
     const Element = route.public
@@ -128,13 +130,12 @@ export function AppShellComponent() {
             aside={{ width: isAuthenticated ? { base: 200, md: 250, lg: 300, xl: 350 } : 0, breakpoint: 'md', collapsed: { mobile: !asideOpened, desktop: !asideOpened || activeRoute.isMonitor },  }}
         >
             { headerIsVisible &&  <AppShell.Header>
-                    <div
+                    <Box
                         style={{
                             display: 'flex',
                             justifyContent: 'space-between',
                             alignItems: 'center',
                             height: '100%',
-                            width: '100%',
                             paddingLeft: '10px',
                             paddingRight: '10px',
                         }}
@@ -165,17 +166,22 @@ export function AppShellComponent() {
                                 {!isAuthenticated && <LoginButton></LoginButton>}
                                 <DeviceLogoutButton/>
 
-                            { isAuthenticated && <ChatIconWithNotifications
+                            { isAuthenticated &&
+                                    <NotificationDropdown />}
+
+                            { isAuthenticated &&
+                                    <ChatIconWithNotifications
                                 asideOpened={asideOpened}
                                 onToggle={() => {
                                     asideHandler.toggle()
                                     close();
                                 }}
                                 size={18}
-                            /> }
+                                    /> }
                         </Group> }
-                        { isAuthenticated && 
-                            <Box hiddenFrom={'md'}>
+                        { isAuthenticated && <>
+                            <Group hiddenFrom={'md'} gap={5} style={{ minWidth: 0, flex: '0 0 auto' }}>
+                                <NotificationsIconWithBadge/>
                                 <ChatIconWithNotifications
                                     asideOpened={asideOpened}
                                     onToggle={() => {
@@ -184,22 +190,18 @@ export function AppShellComponent() {
                                     }}
                                     size={18}
                                 />
-                            </Box>
+                            </Group>
+                        </>
                         }
 
-
-
-                    </div>
+                    </Box>
             </AppShell.Header>
             }
             <AppShell.Main style={{
                 paddingTop: headerHeight,
-                display: 'flex',
-                flexDirection: 'column',
-                flex: 1,
-                height: '100%',
-                paddingBottom: 'calc(16px + env(safe-area-inset-bottom))', // better spacing + safe area
-                minHeight: 0,              // <— allow it to shrink
+                paddingBottom: 'calc(16px + env(safe-area-inset-bottom))',
+                height: `calc(100dvh - ${headerHeight}px)`,
+                overflow: 'auto',
             }}>
                     <SelectedOrderProvider>
                         <Routes>

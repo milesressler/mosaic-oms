@@ -1,13 +1,11 @@
 import { useEffect, useState} from "react";
 import {UseFormReturnType} from "@mantine/form";
 import {
-    Alert,
     Badge, Blockquote,
     Box,
     Button,
     Card, DEFAULT_THEME,
     Group,
-    Loader,
     LoadingOverlay, Pill,
     Stack,
     Stepper, Switch,
@@ -123,9 +121,8 @@ export function OrderFormV2({ form, mode, order, onUpdateComplete }: Props) {
                 customerPhone: values.customerPhone,
                 specialInstructions: values.specialInstructions || '',
                 optInNotifications: !!values.optInNotifications,
-                items: values.items.map((formItem: FormOrderItem) => {
-                    return {...formItem, 'item': formItem.item.id};
-                }),
+                items: values.items.map((formItem: FormOrderItem) =>
+                    ({...formItem, 'item': formItem.item.id})),
             };
             createOrderAPI.request(request);
         } else {
@@ -180,11 +177,9 @@ export function OrderFormV2({ form, mode, order, onUpdateComplete }: Props) {
 
         <Box p="md"
              style={{
-                 height: '100%',            // for debugging—replace with "100%" when in AppShell.Main
+                 height: '100%',
                  display: 'flex',
                  flexDirection: 'column',
-                 minHeight: 0,               // let children shrink
-                 overflow: 'hidden',      // <-- scoped here (only this page)
              }}>
             <LoadingOverlay visible={createOrderAPI.loading} />
             <Stepper
@@ -224,10 +219,9 @@ export function OrderFormV2({ form, mode, order, onUpdateComplete }: Props) {
             {/* scrollable content */}
             <Box
                 pt={'md'}
-                mih={0}
                 style={{
                     flex: 1,
-                    overflowY: 'auto',
+                    overflow: 'auto',
                 }}
             >
 
@@ -307,13 +301,13 @@ export function OrderFormV2({ form, mode, order, onUpdateComplete }: Props) {
 
             </Box>
             {/* sticky footer */}
-            {<Box
+            <Box
                 style={{
-                    flex: '0 0 60px',         // fixed height
+                    flexShrink: 0,
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'space-between',
-                    // paddingBottom: 'env(safe-area-inset-bottom)',
+                    padding: '16px 0',
                     borderTop: `1px solid ${theme.colors.gray[2]}`,
                     backgroundColor: theme.white,
                 }}
@@ -373,7 +367,6 @@ export function OrderFormV2({ form, mode, order, onUpdateComplete }: Props) {
                     </Button>}
                 </Group>
             </Box>
-            }
         </Box>
     );
 }

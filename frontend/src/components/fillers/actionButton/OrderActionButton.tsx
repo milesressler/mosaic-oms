@@ -1,19 +1,21 @@
+import { useState } from 'react';
 import {ActionIcon, Button, Group, Menu, rem, useMantineTheme} from '@mantine/core';
 import {IconCheckbox, IconChevronDown, IconNotes, IconPrinter, IconTrash} from '@tabler/icons-react';
 import classes from './filler-order-action-button.module.css';
 import {OrderDetails, OrderStatus} from "src/models/types.tsx";
 import {useAuth0} from "@auth0/auth0-react";
 import {useFeatures} from "src/context/FeaturesContext.tsx";
+import RequestInfoModal from "src/components/fillers/RequestInfoModal.tsx";
 
 interface OrderActionButtonProps {
     loading?: boolean,
     order: (OrderDetails|null),
     toggleAssigned: () => void
-    onStateChange: (orderStatus: OrderStatus) => void
+    onStateChange: (orderStatus: OrderStatus, comment?: string) => void
 }
 
 export function OrderActionButton({ loading, order, onStateChange, toggleAssigned }: OrderActionButtonProps) {
-
+    const [requestInfoModalOpened, setRequestInfoModalOpened] = useState(false);
 
     const theme = useMantineTheme();
     const {user} = useAuth0();
@@ -66,45 +68,58 @@ export function OrderActionButton({ loading, order, onStateChange, toggleAssigne
             {
                 label: "Request Info",
                 icon: IconNotes,
-                action: () => onStateChange(OrderStatus.NEEDS_INFO)
+                action: () => setRequestInfoModalOpened(true)
             });
     }
+
+    const handleRequestInfo = (comment: string) => {
+        onStateChange(OrderStatus.NEEDS_INFO, comment);
+    };
 
     if (disabled) {
         return  (<></>);
     }
 
     return (
-        <Group wrap="nowrap" gap={0}>
-            {getButton()}
-            <Menu transitionProps={{ transition: 'pop' }} position="bottom-end" withinPortal>
-                <Menu.Target >
-                    <ActionIcon
-                        variant="filled"
-                        color={theme.primaryColor}
-                        size={36}
-                        className={classes.menuControl}
-                    >
-                        <IconChevronDown style={{ width: rem(16), height: rem(16) }} stroke={1.5} />
-                    </ActionIcon>
-                </Menu.Target>
-                <Menu.Dropdown>
-                    {
-                        options.map((option) =>
-                                <Menu.Item onClick={option.action}
-                                           leftSection={
-                                    <option.icon
-                                        style={{ width: rem(16), height: rem(16) }}
-                                        stroke={1.5}
-                                        color={theme.colors.blue[5]}
-                                    />
-                                }>{option.label}
-                        </Menu.Item >
-                        )
-                    }
-                </Menu.Dropdown>
-            </Menu>
-        </Group>
+        <>
+            <Group wrap="nowrap" gap={0}>
+                {getButton()}
+                <Menu transitionProps={{ transition: 'pop' }} position="bottom-end" withinPortal>
+                    <Menu.Target >
+                        <ActionIcon
+                            variant="filled"
+                            color={theme.primaryColor}
+                            size={36}
+                            className={classes.menuControl}
+                        >
+                            <IconChevronDown style={{ width: rem(16), height: rem(16) }} stroke={1.5} />
+                        </ActionIcon>
+                    </Menu.Target>
+                    <Menu.Dropdown>
+                        {
+                            options.map((option, index) =>
+                                    <Menu.Item key={index} onClick={option.action}
+                                               leftSection={
+                                        <option.icon
+                                            style={{ width: rem(16), height: rem(16) }}
+                                            stroke={1.5}
+                                            color={theme.colors.blue[5]}
+                                        />
+                                    }>{option.label}
+                            </Menu.Item >
+                            )
+                        }
+                    </Menu.Dropdown>
+                </Menu>
+            </Group>
+
+            <RequestInfoModal
+                opened={requestInfoModalOpened}
+                onClose={() => setRequestInfoModalOpened(false)}
+                onConfirm={handleRequestInfo}
+                orderNumber={order?.id}
+            />
+        </>
     );
 }
 
