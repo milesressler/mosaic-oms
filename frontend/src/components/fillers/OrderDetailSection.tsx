@@ -29,6 +29,11 @@ export function OrderDetailSection({ unselectOrder, onUpdate }: OrderDetailsProp
             if (onUpdate) {
                 onUpdate();
             }
+            const newState = updateStateApi.data.orderStatus;
+
+            if (unselectOrder && (newState === OrderStatus.CANCELLED || newState === OrderStatus.NEEDS_INFO || newState === OrderStatus.COMPLETED)) {
+                unselectOrder();
+            }
             doForceRefresh();
         }
     }, [updateStateApi.data]);
@@ -55,15 +60,6 @@ export function OrderDetailSection({ unselectOrder, onUpdate }: OrderDetailsProp
             || orderStatus === OrderStatus.COMPLETED) {
             const request = comment ? { comment } : undefined;
             updateStateApi.request(selectedOrder!.uuid, orderStatus, request);
-        }
-        if (orderStatus === OrderStatus.CANCELLED || orderStatus === OrderStatus.NEEDS_INFO) {
-            doForceRefresh();
-            if (unselectOrder) {
-                unselectOrder();
-            }
-            if (onUpdate) {
-                onUpdate();
-            }
         }
     };
 

@@ -77,7 +77,7 @@ export function PlaceInWagonModal({
                     onClick={onConfirm}
                     loading={loading}
                 >
-                    {hasUnfilledItems ? 'Place in Wagon Anyway' : 'Place in Wagon'}
+                    {'Place in Wagon'}
                 </Button>
             </Group>
         </Modal>

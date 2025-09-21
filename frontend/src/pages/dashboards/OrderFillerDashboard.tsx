@@ -21,6 +21,10 @@ export function OrderFillerDashboard() {
         setForceRefreshTable(prev => !prev);
     }
 
+    const unselectOrder = () => {
+        navigate(`/dashboard/filler/`);
+    }
+
     const onSelectOrder = (order: Order) => {
         if (id && order.id === +id) {
             navigate(`/dashboard/filler/`)
@@ -45,7 +49,7 @@ export function OrderFillerDashboard() {
                     }
                    onClose={() => {
                 navigate(`/dashboard/filler/`)}}>
-                <OrderDetailSection  onUpdate={triggerTableRefresh}/>
+                <OrderDetailSection onUpdate={triggerTableRefresh} unselectOrder={unselectOrder}/>
             </Modal>
             <>
             {

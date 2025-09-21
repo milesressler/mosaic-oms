@@ -10,10 +10,10 @@ import {
     useMantineTheme,
     Progress
 } from '@mantine/core';
-import { 
-    IconPrinter, 
-    IconCheck,
-    IconX
+import {
+    IconPrinter,
+    IconSquare,
+    IconCheckbox
 } from '@tabler/icons-react';
 import {OrderDetails, OrderItem, OrderStatus} from 'src/models/types.tsx';
 import { useSelectedOrder } from 'src/context/SelectedOrderContext.tsx';
@@ -37,10 +37,11 @@ function PackingView() {
     const { printOnTransitionToStatus } = useFeatures();
     const { user } = useAuth0();
     const { startFilling, completeFilling } = useOrderFulfillmentTracking();
+    const theme = useMantineTheme();
 
     useEffect(() => {
         if (updateStatus.data?.orderStatus === OrderStatus.PACKED) {
-            navigate('dashboard/filler');
+            navigate('/dashboard/filler');
             completeFilling("packed");
         }
     }, [updateStatus.data]);
@@ -111,7 +112,6 @@ function PackingView() {
     if (!selectedOrder) return <Loader />;
     
     const assignedToMe = (selectedOrder as OrderDetails)?.assignee?.externalId === user?.sub;
-    const theme = useMantineTheme();
 
     // Toggle pack/unpack for items
     const togglePack = (itemId: number) => {
@@ -179,11 +179,11 @@ function PackingView() {
                                     {assignedToMe && (
                                         <ActionIcon
                                             size="lg"
-                                            color={isComplete ? 'red' : 'green'}
-                                            variant="light"
+                                            color={isComplete ? 'green' : 'gray'}
+                                            variant={ isComplete ? "light" : 'outline' }
                                             onClick={() => togglePack(item.id)}
                                         >
-                                            {isComplete ? <IconX size={18} /> : <IconCheck size={18} />}
+                                            {isComplete ? <IconCheckbox size={18} /> : <IconSquare size={18} />}
                                         </ActionIcon>
                                     )}
                                 </Group>
