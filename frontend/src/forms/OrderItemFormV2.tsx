@@ -24,8 +24,17 @@ export function OrderItemFormv2({formItem,  onSave, onCancel}: OrderItemFormProp
             if (val === null) {
                 delete newAttributes[key]; // Remove the key if val is null
             } else {
-                // Update with a SingleValueAttribute instance.
-                newAttributes[key] = { type: "string", value: val } as SingleValueAttribute;
+                // Find the attribute definition to get the display label
+                const attribute = prevItem.item.attributes.find(attr => attr.key === key);
+                const selectedOption = attribute?.options.find(option => option.value === val);
+                const displayValue = selectedOption?.label || val; // Fallback to val if no label found
+                
+                // Update with a SingleValueAttribute instance including both values
+                newAttributes[key] = { 
+                    type: "string", 
+                    value: val,
+                    displayValue: displayValue
+                } as SingleValueAttribute;
             }
             return { ...prevItem, attributes: newAttributes };
         });

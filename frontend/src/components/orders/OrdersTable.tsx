@@ -164,6 +164,31 @@ export function OrdersTable({
         );
     });
 
+
+    useSubscription("/topic/orders/status", (message) => {
+        const body: OrderNotification = JSON.parse(message.body);
+        const remove = statusFilter?.length > 0 && (statusFilter?.indexOf(body.order.orderStatus) === -1);
+        if (remove) {
+            setOrders((prevOrders) =>
+                prevOrders.filter((order) => {
+                   return `${order.id}` !== `${body.order.id}`
+                })
+            );
+            return;
+        }
+        setOrders((prevOrders) =>
+            prevOrders.map((order) => {
+                    return `${order.id}` === `${body.order.id}`
+                        ? {
+                            ...order,
+                            orderStatus: body.orderStatus, // update the assignee
+                        }
+                        : order
+                }
+            )
+        );
+    });
+
     const setSorting = (field: string) => {
         const reversed = field === sortBy ? !reverseSortDirection : false;
         setReverseSortDirection(reversed);
@@ -183,7 +208,7 @@ export function OrdersTable({
              return (
                 <Table.Td key={key} colSpan={index === visibleColumns.length - 1 ? 2 : 1}>
                     {key === 'assigned' &&
-                        <UserAvatar user={assigned ? assigned : {name: "Unassigned"}}/>
+                        <UserAvatar lastInitial user={assigned ? assigned : {name: "Unassigned"}}/>
                     }
                     {key === '#' && <>{order.id}{order.postedToGroupMe && <Image w={16} h={16} src={groupmeImage}></Image>}</>}
                     {key === 'Created' && <>

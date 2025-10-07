@@ -63,7 +63,7 @@ export function OrderActionButton({ loading, order, onStateChange, toggleAssigne
         },
     ];
 
-    if (order?.orderStatus === OrderStatus.PENDING_ACCEPTANCE) {
+    if (order?.orderStatus === OrderStatus.PENDING_ACCEPTANCE || order?.orderStatus === OrderStatus.ACCEPTED) {
         options.push(
             {
                 label: "Request Info",

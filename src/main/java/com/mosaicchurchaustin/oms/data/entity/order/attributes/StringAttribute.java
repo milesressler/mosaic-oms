@@ -12,9 +12,16 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @JsonTypeName("string")
 public class StringAttribute extends AttributeValue {
-    private String value;
+    private String value;         // Normalized value for backend processing
+    private String displayValue;  // User-friendly display value
+    
+    // Constructor for backward compatibility with single value
+    public StringAttribute(String value) {
+        this.value = value;
+        this.displayValue = value;  // Default to same value
+    }
 
     public String toString(){
-        return value;
+        return displayValue != null ? displayValue : value;
     }
 }

@@ -14,6 +14,7 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OrderBy;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
 import lombok.AllArgsConstructor;
@@ -64,6 +65,7 @@ public class OrderEntity extends BaseUuidEntity implements Auditable {
 
     @BatchSize(size = 100)
     @OneToMany(mappedBy = "orderEntity")
+    @OrderBy("timestamp DESC")
     @ToString.Exclude
     final List<OrderHistoryEntity> orderHistoryEntityList = new ArrayList<>();
 

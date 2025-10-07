@@ -10,6 +10,8 @@ export interface SingleValueAttribute {
     type: "string";
     // A single value can be a string or a number
     value: string | number;
+    // Optional display value for user-friendly display
+    displayValue?: string;
 }
 
 export interface MultiSelectAttribute {

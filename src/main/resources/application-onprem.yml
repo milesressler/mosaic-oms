@@ -1,0 +1,116 @@
+# On-Premise Profile Configuration for Mosaic OMS
+
+server:
+  port: 8080
+  servlet:
+    context-path: /
+
+spring:
+  profiles:
+    active: onprem
+  
+  datasource:
+    url: jdbc:mysql://mysql:3306/mosaicoms?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+    username: ${spring.datasource.username:mosaic-oms-api}
+    password: ${spring.datasource.password:Uwv1cTzGs0ReGO5A}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+      idle-timeout: 300000
+      max-lifetime: 1200000
+      connection-timeout: 20000
+      validation-timeout: 5000
+      leak-detection-threshold: 60000
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
+        format_sql: false
+        use_sql_comments: false
+        jdbc:
+          time_zone: UTC
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+    validate-on-migrate: true
+
+  # Hazelcast configuration for single-instance on-premise
+  cache:
+    type: simple  # Use simple in-memory cache instead of Hazelcast for single instance
+
+# Security configuration (adjust for on-premise)
+auth0:
+  domain: ${AUTH0_DOMAIN:mosaicchurch.us.auth0.com}
+  clientId: ${AUTH0_CLIENT_ID:W100Yp3Q9SMTIRczYL1YgNnLqMLAAaRj}
+  clientSecret: ${AUTH0_CLIENT_SECRET:demo-secret}
+
+# Logging configuration
+logging:
+  level:
+    com.mosaicchurchaustin.oms: INFO
+    org.springframework.security: INFO
+    org.hibernate.SQL: WARN
+    org.hibernate.type.descriptor.sql.BasicBinder: WARN
+    root: WARN
+  
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+  
+  file:
+    name: /app/logs/mosaic-oms.log
+    max-size: 10MB
+    max-history: 30
+
+# Management endpoints
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+      base-path: /api/actuator
+  endpoint:
+    health:
+      show-details: when-authorized
+  
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+
+# Application-specific configuration
+mosaic:
+  oms:
+    environment: onprem
+    features:
+      chat: true
+      showers: true
+      labels: true
+    
+    # File upload configuration
+    upload:
+      max-file-size: 10MB
+      max-request-size: 10MB
+    
+    # CORS configuration for on-premise
+    cors:
+      allowed-origins: 
+        - "http://localhost"
+        - "https://localhost"
+        - "http://localhost:80"
+        - "https://localhost:443"
+      allowed-methods: 
+        - GET
+        - POST
+        - PUT
+        - DELETE
+        - OPTIONS
+      allowed-headers: "*"
+      allow-credentials: true
