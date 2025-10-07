@@ -1,6 +1,6 @@
 import { Box, Group, Text } from '@mantine/core';
 
-type AttrObj   = Record<string, string>;
+type AttrObj   = Record<string, string | { value: string; displayValue: string }>;
 type AttrArray = { name: string; value: string }[];
 
 interface Props {
@@ -18,7 +18,10 @@ const AttributeBadges = ({ attrs }: Props) => {
 
     const pairs: { name: string; value: string }[] = Array.isArray(attrs)
         ? attrs
-        : Object.entries(attrs).map(([name, value]) => ({ name, value }));
+        : Object.entries(attrs).map(([name, value]) => ({ 
+            name, 
+            value: typeof value === 'string' ? value : value.displayValue || value.value 
+        }));
 
     return (
         <Group wrap="wrap" gap={6}>
