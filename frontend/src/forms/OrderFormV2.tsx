@@ -280,7 +280,7 @@ export function OrderFormV2({ form, mode, order, onUpdateComplete }: Props) {
                                     {i.attributes &&
                                         Object.entries(i.attributes).map(([key, value]) => (
                                             <Pill key={key}>
-                                                {key}:{value.value.toString()}
+                                                {key}:{value.displayValue || value.value.toString()}
                                             </Pill>
                                         ))}
                                     </Group>

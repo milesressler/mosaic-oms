@@ -31,21 +31,26 @@ export function OrderTakerDashboard() {
                 // build up the AttributeValue record
                 const attributes: Record<string, AttributeValue> = {};
 
-                // oi.attributes is { [key: string]: string }
+                // oi.attributes can be { [key: string]: string } or { [key: string]: {value: string, displayValue: string} }
                 Object.entries(oi.attributes).forEach(([key, raw]) => {
                     // find the matching ItemAttribute definition on the Item
                     const def = oi.item.attributes.find(a => a.key === key);
                     if (!def) return;
 
+                    // Handle both old string format and new {value, displayValue} format
+                    const rawValue = typeof raw === 'string' ? raw : raw.value;
+                    const displayValue = typeof raw === 'string' ? raw : raw.displayValue;
+
                     if (def.type === 'SINGLE_SELECT') {
                         attributes[key] = {
                             type:  'string',
-                            value: raw,
+                            value: rawValue,
+                            displayValue: displayValue,
                         };
                     } else if (def.type === 'MULTI_SELECT') {
                         attributes[key] = {
                             type:   'multi',
-                            values: raw.split(',').map(v => v?.trim()),
+                            values: rawValue.split(',').map(v => v?.trim()),
                         };
                     }
                     // if you ever support SizeAttribute, handle it here:
