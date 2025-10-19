@@ -11,6 +11,7 @@ public enum MosaicRole {
     ORDER_FILLER("Order Filler"),
     RUNNER("Runner"),
     ORDER_TAKER("Order Taker"),
+    SHOWERS("Showers"),
     ;
 
     @Getter
