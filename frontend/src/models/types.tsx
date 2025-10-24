@@ -181,6 +181,8 @@ export interface ItemAttribute {
     required: boolean
     type: 'SINGLE_SELECT'|'MULTI_SELECT'
     options: {label: string, value: string, available: boolean}[]
+    groupName?: string
+    groupOrder?: number
 }
 
 export interface Item {

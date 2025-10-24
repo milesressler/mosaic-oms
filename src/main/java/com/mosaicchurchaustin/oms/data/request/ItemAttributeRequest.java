@@ -11,6 +11,8 @@ import java.util.List;
 public record ItemAttributeRequest(
         Boolean required,
         @NotBlank String label,
-        @Size(min = 2) List<@NotBlank String> options
+        @Size(min = 2) List<@NotBlank String> options,
+        String groupName,
+        Integer groupOrder
 ) {
 }

@@ -11,6 +11,7 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OrderBy;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
 import lombok.AllArgsConstructor;
@@ -76,6 +77,7 @@ public class ItemEntity extends BaseEntity implements Auditable {
     List<OrderItemEntity> orderItems;
 
     @OneToMany(mappedBy = "itemEntity", fetch = FetchType.EAGER)
+    @OrderBy("groupName NULLS LAST, groupOrder ASC, value ASC")
     @ToString.Exclude
     List<ItemAttribute> attributes;
 

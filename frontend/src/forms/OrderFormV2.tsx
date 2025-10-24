@@ -21,6 +21,7 @@ import useApi from "src/hooks/useApi.tsx";
 import {FormOrderItem, OrderFormValues} from "src/models/forms.tsx";
 import {useFeatures} from "src/context/FeaturesContext.tsx";
 import ordersApi from "src/services/ordersApi.tsx";
+import GroupedAttributeBadges from "src/components/common/items/GroupedAttributeBadges";
 import {
     IconNote,
     IconNotes,
@@ -276,14 +277,21 @@ export function OrderFormV2({ form, mode, order, onUpdateComplete }: Props) {
                                         <Text fw={600}>{i.item.description}</Text>
                                         <Badge size="sm" color="blue">Qty: {i.quantity || 1}</Badge>
                                     </Group>
-                                    <Group>
-                                    {i.attributes &&
-                                        Object.entries(i.attributes).map(([key, value]) => (
-                                            <Pill key={key}>
-                                                {key}:{value.displayValue || value.value.toString()}
-                                            </Pill>
-                                        ))}
-                                    </Group>
+                                    {i.attributes && Object.keys(i.attributes).length > 0 && (
+                                        <GroupedAttributeBadges 
+                                            attrs={Object.entries(i.attributes).reduce((acc, [key, value]) => {
+                                                if (value.type === 'string') {
+                                                    acc[key] = value.displayValue || value.value.toString();
+                                                } else if (value.type === 'multi') {
+                                                    acc[key] = value.values.join(', ');
+                                                } else if (value.type === 'size') {
+                                                    acc[key] = `W${value.waist} L${value.length}`;
+                                                }
+                                                return acc;
+                                            }, {} as Record<string, string>)}
+                                            itemAttributes={i.item.attributes}
+                                        />
+                                    )}
                                     {i.notes && (
                                         <Text size="sm" c="dimmed" >Notes: {i.notes}</Text>
                                     )}

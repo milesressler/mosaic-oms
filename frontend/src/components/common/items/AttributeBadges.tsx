@@ -8,7 +8,6 @@ interface Props {
 }
 
 const AttributeBadges = ({ attrs }: Props) => {
-    // ── nothing to show ───────────────────────────────────
     if (
         !attrs ||
         (Array.isArray(attrs) ? attrs.length === 0 : Object.keys(attrs).length === 0)
@@ -31,28 +30,25 @@ const AttributeBadges = ({ attrs }: Props) => {
                     style={{
                         display: 'flex',
                         overflow: 'hidden',
-                        borderRadius: 9999, // pill
-                        fontSize: '0.85rem', // slightly larger than xs
+                        borderRadius: 9999,
+                        fontSize: '0.85rem',
                         lineHeight: 1.3,
                     }}
                 >
-                    {/* left half (key) */}
                     <Box
                         px={4}
                         style={{
-                            background: '#d8eaff',   // light blue
+                            background: '#d8eaff',
                             display: 'flex',
                             alignItems: 'center',
                         }}
                     >
                         {name}
                     </Box>
-
-                    {/* right half (value) */}
                     <Box
                         px={4}
                         style={{
-                            background: '#b3d5ff',   // darker blue
+                            background: '#b3d5ff',
                             display: 'flex',
                             fontWeight: 600,
                             alignItems: 'center',

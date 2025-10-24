@@ -52,7 +52,7 @@ export function DistributorDashboard() {
                 showProgressIndicator={true}
                 forceRefresh={forceRefreshTable}
                 selectedOrderIds={id ? [+id] : null}
-                maxNumberOfRecords={10}
+                maxNumberOfRecords={20}
             />
             <Box pos={'absolute'} bottom={20} right={20}>
                 <QrScannerButton label={''} onOrderScanned={(order: {id: number, uuid: string}) => {

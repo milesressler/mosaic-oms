@@ -173,6 +173,8 @@ public class ItemService {
                             .required(itemAttributeRequest.required())
                             .attributeType(ItemAttributeType.SINGLE_SELECT)
                             .itemEntity(itemEntity)
+                            .groupName(itemAttributeRequest.groupName())
+                            .groupOrder(itemAttributeRequest.groupOrder())
                             .build()
             );
 
@@ -195,10 +197,13 @@ public class ItemService {
             final ItemAttribute existingAttr = (ItemAttribute) commonPair.leftValue() ;
             final ItemAttributeRequest requestedAttr = (ItemAttributeRequest) commonPair.rightValue();
 
-            // Update mutable field: required flag
+            // Update mutable fields: required flag, groupName, groupOrder
             if (existingAttr.getRequired() != requestedAttr.required()) {
                 existingAttr.setRequired(requestedAttr.required());
             }
+            
+            existingAttr.setGroupName(requestedAttr.groupName());
+            existingAttr.setGroupOrder(requestedAttr.groupOrder());
 
             // Process options for this attribute:
             // Build map of existing options by slug (using attributeOptions())

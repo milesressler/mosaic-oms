@@ -71,6 +71,20 @@ public class ItemAttribute extends BaseEntity {
     @Setter
     Boolean required;
 
+    /**
+     * Optional group name to visually group related attributes together (e.g., "Size")
+     */
+    @Column(name = "group_name")
+    @Setter
+    String groupName;
+
+    /**
+     * Order within the group (1, 2, 3...). Only meaningful when groupName is set.
+     */
+    @Column(name = "group_order")
+    @Setter
+    Integer groupOrder;
+
     @OneToMany(mappedBy = "itemAttribute", fetch = FetchType.EAGER, cascade = CascadeType.REMOVE)
     @BatchSize(size = 100)
     @ToString.Exclude

@@ -1,4 +1,4 @@
-import { 
+import {
     Button, 
     Group, 
     Text, 
@@ -24,7 +24,7 @@ import { useNavigate } from 'react-router-dom';
 import { useFeatures } from 'src/context/FeaturesContext.tsx';
 import {useAuth0} from "@auth0/auth0-react";
 import {useOrderFulfillmentTracking} from "src/hooks/useOrderFulfillmentTracking.tsx";
-import AttributeBadges from 'src/components/common/items/AttributeBadges';
+import GroupedAttributeBadges from 'src/components/common/items/GroupedAttributeBadges';
 import PlaceInWagonModal from './PlaceInWagonModal';
 
 function PackingView() {
@@ -163,7 +163,10 @@ function PackingView() {
                                         {(Object.keys(item.attributes).length > 0) && (
                                             <Group gap="xs" mb="xs">
                                                 {Object.keys(item.attributes).length > 0 && (
-                                                    <AttributeBadges attrs={item.attributes} />
+                                                    <GroupedAttributeBadges 
+                                                    attrs={item.attributes} 
+                                                    itemAttributes={item.item.attributes}
+                                                />
                                                 )}
                                             </Group>
                                         )}

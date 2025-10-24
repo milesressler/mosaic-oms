@@ -15,4 +15,6 @@ public class SelectableItemAttribute implements Serializable {
     private Boolean required;
     private ItemAttributeType type;
     private List<ItemAttributeOption> options;
+    private String groupName;
+    private Integer groupOrder;
 }

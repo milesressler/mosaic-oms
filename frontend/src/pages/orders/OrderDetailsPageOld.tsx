@@ -25,7 +25,7 @@ import UserAvatar from 'src/components/common/userAvatar/UserAvatar';
 import {IconArrowRight, IconCalendar, IconChevronDown, IconNotes, IconPackage, IconTrash, IconCheck, IconArrowLeft, IconEdit, IconPrinter} from '@tabler/icons-react';
 import React from 'react';
 import {statusDisplay} from "src/utils/StatusUtils.tsx";
-import AttributeBadges from 'src/components/common/items/AttributeBadges';
+import GroupedAttributeBadges from 'src/components/common/items/GroupedAttributeBadges';
 import classes from "src/styles/LinkStyles.module.css";
 
 // Basic status label and color mappings
@@ -240,7 +240,10 @@ export default function OrderDetailsPageOld() {
                                         <Table.Td>{item.quantityRequested}</Table.Td>
                                         <Table.Td>{item.quantityFulfilled}</Table.Td>
                                         <Table.Td>
-                                            <AttributeBadges attrs={item.attributes}/>
+                                            <GroupedAttributeBadges 
+                                                attrs={item.attributes}
+                                                itemAttributes={item.item.attributes}
+                                            />
                                         </Table.Td>
                                         <Table.Td>{item.notes || '-'}</Table.Td>
                                     </Table.Tr>

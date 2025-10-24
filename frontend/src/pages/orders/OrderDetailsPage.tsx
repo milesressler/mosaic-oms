@@ -29,7 +29,7 @@ import UserAvatar from 'src/components/common/userAvatar/UserAvatar';
 import {IconArrowRight, IconChevronDown, IconCalendar, IconUser, IconNotes, IconPackage, IconClock, IconCheck} from '@tabler/icons-react';
 import React from 'react';
 import {statusDisplay} from "src/utils/StatusUtils.tsx";
-import AttributeBadges from 'src/components/common/items/AttributeBadges';
+import GroupedAttributeBadges from 'src/components/common/items/GroupedAttributeBadges';
 import classes from "src/styles/LinkStyles.module.css";
 
 // Enhanced status colors
@@ -287,7 +287,10 @@ export default function OrderDetailsPage() {
                                                     </Badge>
                                                 </Table.Td>
                                                 <Table.Td>
-                                                    <AttributeBadges attrs={item.attributes}/>
+                                                    <GroupedAttributeBadges 
+                                                        attrs={item.attributes}
+                                                        itemAttributes={item.item.attributes}
+                                                    />
                                                 </Table.Td>
                                                 <Table.Td>
                                                     <Text size="sm" c={item.notes ? 'dark' : 'dimmed'}>
@@ -336,7 +339,10 @@ export default function OrderDetailsPage() {
                                             </Group>
                                             {Object.keys(item.attributes).length > 0 && (
                                                 <Box mb="xs">
-                                                    <AttributeBadges attrs={item.attributes}/>
+                                                    <GroupedAttributeBadges 
+                                                        attrs={item.attributes}
+                                                        itemAttributes={item.item.attributes}
+                                                    />
                                                 </Box>
                                             )}
                                             {item.notes && (

@@ -63,7 +63,7 @@ export function OrderFillerDashboard() {
                     showProgressIndicator={true}
                     forceRefresh={forceRefreshTable}
                     selectedOrderIds={id ? [+id] : null}
-                    maxNumberOfRecords={10}
+                    maxNumberOfRecords={20}
                     disableSorting={true}
                 ></OrdersTable>
             </Grid>

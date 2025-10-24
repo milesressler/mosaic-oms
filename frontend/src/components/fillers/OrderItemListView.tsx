@@ -6,7 +6,7 @@ import {
     Divider
 } from '@mantine/core';
 import { useSelectedOrder } from 'src/context/SelectedOrderContext.tsx';
-import AttributeBadges from 'src/components/common/items/AttributeBadges';
+import GroupedAttributeBadges from 'src/components/common/items/GroupedAttributeBadges';
 import {Category, categoryDisplayNames} from "src/models/types.tsx";
 
 function OrderItemListView() {
@@ -72,7 +72,10 @@ function OrderItemListView() {
                                     {(Object.keys(item.attributes).length > 0 || item.notes) && (
                                         <Group gap="xs" ml="md" wrap="wrap" style={{ marginTop: 2 }}>
                                             {Object.keys(item.attributes).length > 0 && (
-                                                <AttributeBadges attrs={item.attributes} />
+                                                <GroupedAttributeBadges 
+                                                    attrs={item.attributes} 
+                                                    itemAttributes={item.item.attributes}
+                                                />
                                             )}
                                             {item.notes && (
                                                 <Text size="xs" c="dimmed" style={{ fontStyle: 'italic' }}>

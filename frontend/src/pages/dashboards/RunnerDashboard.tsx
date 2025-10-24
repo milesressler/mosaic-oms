@@ -61,7 +61,7 @@ export function RunnerDashboard() {
                 showProgressIndicator={true}
                 forceRefresh={forceRefreshTable}
                 selectedOrderIds={selectedOrders}
-                maxNumberOfRecords={10}
+                maxNumberOfRecords={20}
             />
             <Box pos={'absolute'} bottom={20} right={20}>
                 <QrScannerButton

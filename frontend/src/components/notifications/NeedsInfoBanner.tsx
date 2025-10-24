@@ -21,13 +21,24 @@ export default function NeedsInfoBanner() {
   const needsInfoOrders = useApi(ordersApi.getOrders);
 
   useEffect(() => {
-    // Fetch all orders with NEEDS_INFO status to group by order taker
-    needsInfoOrders.request({
-      page: 0,
-      size: 100, // Get enough to cover all NEEDS_INFO orders
-      status: OrderStatus.NEEDS_INFO,
-      detailed: true,
-    });
+    // Function to fetch NEEDS_INFO orders
+    const fetchNeedsInfoOrders = () => {
+      needsInfoOrders.request({
+        page: 0,
+        size: 100, // Get enough to cover all NEEDS_INFO orders
+        status: OrderStatus.NEEDS_INFO,
+        detailed: true,
+      });
+    };
+
+    // Initial fetch
+    fetchNeedsInfoOrders();
+
+    // Set up interval to refresh every 60 seconds
+    const interval = setInterval(fetchNeedsInfoOrders, 60000);
+
+    // Cleanup interval on unmount
+    return () => clearInterval(interval);
   }, []);
 
   useEffect(() => {

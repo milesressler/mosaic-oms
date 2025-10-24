@@ -26,6 +26,8 @@ public class SuggestedItemResponse implements Serializable {
                         .key(attribute.getValue())
                         .required(attribute.getRequired())
                         .label(attribute.getLabel())
+                        .groupName(attribute.getGroupName())
+                        .groupOrder(attribute.getGroupOrder())
                         .options(
                                 attribute.getAttributeOptions().stream().map(option -> ItemAttributeOption.builder()
                                         .label(option.getLabel()).value(option.getValue()).available(ItemAvailability.AVAILABLE == option.getAvailability())
