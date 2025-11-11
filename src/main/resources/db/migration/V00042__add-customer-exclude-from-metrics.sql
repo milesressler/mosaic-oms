@@ -1,0 +1,1 @@
+ALTER TABLE customers ADD COLUMN exclude_from_metrics BOOLEAN DEFAULT FALSE NOT NULL;
