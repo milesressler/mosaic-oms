@@ -22,6 +22,7 @@ public class CustomerResponse {
     private String uuid;
     private boolean flagged;
     private boolean obfuscatedName;
+    private boolean excludeFromMetrics;
 
     public static CustomerResponse from(final CustomerEntity customerEntity) {
         return CustomerResponse.builder()
@@ -29,6 +30,7 @@ public class CustomerResponse {
                 .lastName(customerEntity.getLastName())
                 .flagged(customerEntity.isFlagged())
                 .obfuscatedName(customerEntity.isObfuscateName())
+                .excludeFromMetrics(customerEntity.isExcludeFromMetrics())
                 .displayName(Stream.of(customerEntity.getFirstName(), customerEntity.getLastName())
                         .filter(StringUtils::isNotBlank)
                         .collect(Collectors.joining(" ")))

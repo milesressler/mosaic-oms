@@ -73,6 +73,7 @@ export interface Customer {
     showerWaiverCompleted: number
     flagged: boolean
     obfuscatedName: boolean
+    excludeFromMetrics: boolean
 }
 
 export interface CustomerSearchResult {

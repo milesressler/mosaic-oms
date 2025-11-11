@@ -49,6 +49,7 @@ public class CustomerService {
         Optional.ofNullable(request.lastName()).ifPresent(customer::setLastName);
         Optional.ofNullable(request.flagged()).ifPresent(customer::setFlagged);
         Optional.ofNullable(request.obfuscateName()).ifPresent(customer::setObfuscateName);
+        Optional.ofNullable(request.excludeFromMetrics()).ifPresent(customer::setExcludeFromMetrics);
         Optional.ofNullable(request.showerWaiverSigned()).map(OffsetDateTime::toInstant).ifPresent(customer::setShowerWaiverCompleted);
         return customerRepository.save(customer);
     }

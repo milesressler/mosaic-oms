@@ -47,6 +47,7 @@ public class CustomerResolver {
                 .firstName(firstName.trim())
                 .lastName(lastName.trim())
                 .flagged(false)
+                .excludeFromMetrics(false)
                 .build();
 
         return customerRepository.save(customerEntity);

@@ -212,7 +212,7 @@ public class PdfGenerator {
         byte[] qrCodeBytes = Files.readAllBytes(Path.of("/Users/milesressler/workspace/mosaic/mosaic-oms/qr_code_sample.png")); // Load an example QR code image
         byte[] pdfBytes = generator.generateAcceptedOrderPDF(qrCodeBytes,
                 OrderEntity.builder()
-                        .customer(new CustomerEntity("Fred", "Flintstone", "", "", false, false, null))
+                        .customer(new CustomerEntity("Fred", "Flintstone", "", "", false, false, null, false))
                         .build()
         );
 

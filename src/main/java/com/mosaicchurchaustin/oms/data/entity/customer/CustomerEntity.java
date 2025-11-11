@@ -55,6 +55,9 @@ public class CustomerEntity extends BaseUuidEntity {
     @Column(name = "shower_waiver_completed")
     Instant showerWaiverCompleted;
 
+    @Column(name = "exclude_from_metrics")
+    boolean excludeFromMetrics;
+
     public boolean isWaiverValid() {
         return this.showerWaiverCompleted != null &&
                 this.showerWaiverCompleted.isAfter(Instant.now().minus(365, ChronoUnit.DAYS));
