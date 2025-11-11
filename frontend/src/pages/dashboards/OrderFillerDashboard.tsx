@@ -9,12 +9,15 @@ import { useState } from "react";
 import { useFeatures } from "src/context/FeaturesContext.tsx";
 import OrdersClosedAlert from "src/components/common/orders/OrdersClosedAlert.tsx";
 import StatusBadge from "src/components/StatusBadge.tsx";
+import {usePullToRefreshDisabled} from "src/hooks/usePullToRefreshDisabled.tsx";
 
 export function OrderFillerDashboard() {
     const navigate = useNavigate();
     const { id } = useParams();
     const [ forceRefreshTable, setForceRefreshTable ] = useState(false);
     const { selectedOrder } = useSelectedOrder();
+
+    usePullToRefreshDisabled();
 
 
     const triggerTableRefresh = () => {

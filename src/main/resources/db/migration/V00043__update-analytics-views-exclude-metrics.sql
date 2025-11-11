@@ -19,7 +19,7 @@ FROM date_range dr
          LEFT JOIN (
     SELECT DATE(o.created) AS dt, COUNT(*) AS cnt
     FROM orders o
-    JOIN customers c ON o.customer_entity_id = c.id
+    JOIN customers c ON o.customer_id = c.id
     WHERE c.exclude_from_metrics = FALSE
     GROUP BY DATE(o.created)
 ) o ON dr.dt = o.dt;
@@ -35,7 +35,7 @@ SELECT
     i.description                         AS item_name,
     COUNT(*)                       AS request_count
 FROM orders o
-         JOIN customers c ON o.customer_entity_id = c.id
+         JOIN customers c ON o.customer_id = c.id
          JOIN order_items oi ON oi.order_entity_id = o.id
          JOIN items i        ON i.id      = oi.item_entity_id
 WHERE c.exclude_from_metrics = FALSE

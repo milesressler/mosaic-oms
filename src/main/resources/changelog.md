@@ -1,5 +1,60 @@
 # Changelog
 
+## [2025-11-11]
+
+### Improvements
+- Disable pull-to-refresh on filler and order taker views
+- Added exclude from metrics to customers to exclude test orders
+
+## [2025-11-04]
+
+### Added
+- Chat system for real-time messaging between team members
+- Search participants feature in chat for easier communication
+- Grouped item attributes with improved dashboard display (20 items per view)
+- New showers role for managing shower reservations
+
+### Changed
+- Improved order assignment and status displays across dashboards
+- Better organization of header layout and navigation
+
+### Fixed
+- Various attribute display bugs resolved
+- Enhanced notification system performance
+
+## [2025-10-28]
+
+### Added
+- Confirmation dialog when packing incomplete orders to prevent mistakes
+- Revert functionality for order changes
+- Icons added to order details menu for better visual navigation
+- Reprint button for labels and receipts
+- Customer name editing from customer details page
+
+### Changed
+- Redesigned order filler view with improved user experience
+- Updated icons throughout the application for better clarity
+- Enhanced notifications UI and layout
+
+### Fixed
+- Fixed scrolling problems on certain pages
+
+## [2025-10-21]
+
+### Added
+- Added Showers
+- Better assignment controls (users can only modify their own assignments)
+- Added order ID to modal
+- Added notifications 
+
+### Changed
+- Improved user page styling and layout
+- Added "orders closed" banner to filler dashboard for better visibility
+
+### Fixed
+- Better error handling for user ID encoding
+- Various small UI/UX improvements based on user feedback
+
 ## [2025-06-19]
 
 ### Added

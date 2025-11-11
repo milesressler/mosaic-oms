@@ -7,11 +7,14 @@ import useApi from "src/hooks/useApi.tsx";
 import ordersApi from "src/services/ordersApi.tsx";
 import {LoadingOverlay, Box} from "@mantine/core";
 import NeedsInfoBanner from "src/components/notifications/NeedsInfoBanner.tsx";
+import {usePullToRefreshDisabled} from "src/hooks/usePullToRefreshDisabled.tsx";
 
 export function OrderTakerDashboard() {
     const {  id: orderId } = useParams<{ id?: string }>();
     const fetchOrder = useApi(ordersApi.getOrderById);
     const navigate = useNavigate();
+
+    usePullToRefreshDisabled();
 
     useEffect(() => {
         if (!orderId) return;
@@ -87,7 +90,13 @@ export function OrderTakerDashboard() {
     });
 
     return (
-        <Box style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+        <Box style={{ 
+            height: '100%', 
+            display: 'flex', 
+            flexDirection: 'column',
+            overscrollBehavior: 'none',
+            touchAction: 'manipulation'
+        }}>
             <LoadingOverlay visible={!!orderId && fetchOrder.loading}></LoadingOverlay>
             <Box p={'xs'} style={{ flexShrink: 0 }}><NeedsInfoBanner /></Box>
             <Box style={{ flex: 1, minHeight: 0 }}>

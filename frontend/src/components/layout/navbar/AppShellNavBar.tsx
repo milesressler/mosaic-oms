@@ -94,7 +94,7 @@ export function NavbarNested() {
                         link: "",
                         onClick: open,
                         key: 'changelog',
-                        rightSection: <Badge size="sm" color="red">NEW</Badge>,
+                        // rightSection: <Badge size="sm" color="red">NEW</Badge>,
                     }
                 ]
             }
