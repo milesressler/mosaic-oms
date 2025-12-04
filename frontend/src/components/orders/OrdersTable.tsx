@@ -9,7 +9,6 @@ import {
     Image,
     Pagination,
     rem,
-    RingProgress,
     Table,
     Text,
     UnstyledButton
@@ -23,6 +22,7 @@ import groupmeImage from "src/assets/groupme_icon.png";
 import UserAvatar from "src/components/common/userAvatar/UserAvatar.tsx";
 import {useSubscription} from "react-stomp-hooks";
 import {AssigneeAvatar} from "src/components/orders/AssigneeAvatar.tsx";
+import {RefreshIndicator} from "src/components/common/RefreshIndicator.tsx";
 
 interface ThProps {
     children: React.ReactNode;
@@ -39,6 +39,7 @@ interface OrdersTable {
     refreshInterval?: number,
     allowPagination?: boolean,
     showProgressIndicator?: boolean,
+    showSecondsRemaining?: boolean,
     autoRefresh?: boolean,
     showFilters?: boolean,
     forceRefresh?: boolean,
@@ -76,6 +77,7 @@ export function OrdersTable({
         allowPagination = false,
         maxNumberOfRecords,
         showProgressIndicator = false,
+        showSecondsRemaining = true,
         autoRefresh = true,
         statusFilter = [],
         forceRefresh,
@@ -106,6 +108,13 @@ export function OrdersTable({
         }
 
         getOrdersApi.request(params);
+    }
+
+    const handleManualRefresh = () => {
+        if (!getOrdersApi.loading) {
+            refreshOrders();
+            setCounter(0);
+        }
     }
 
 
@@ -246,17 +255,12 @@ export function OrdersTable({
                         ))}
                         { showProgressIndicator && autoRefresh &&
                             <Table.Th>
-                                <Group justify={"flex-end"}>
-                                <RingProgress
-                                    size={25}
-                                    thickness={2}
-                                    sections={[
-                                        {
-                                            value: Math.min(100, progress),
-                                            color: 'rgba(' + (255 - Math.min(100, progress) / 100 * 254) + ',255, ' + (255 - Math.min(100, progress) / 100 * 254) + ',  1)'
-                                        }]}>
-                                </RingProgress>
-                                </Group>
+                                <RefreshIndicator 
+                                    progress={progress}
+                                    onRefresh={handleManualRefresh}
+                                    showSecondsRemaining={showSecondsRemaining}
+                                    refreshInterval={refreshInterval}
+                                />
                             </Table.Th>
                         }
                     </Table.Tr>
