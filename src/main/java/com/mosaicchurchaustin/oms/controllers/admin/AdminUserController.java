@@ -38,8 +38,9 @@ public class AdminUserController {
     @ResponseBody
     @GetMapping(path = "/user", produces = MediaType.APPLICATION_JSON_VALUE)
     public Page<AdminUserResponse> getUsers(final Pageable pageable,
-                                            @RequestParam(name = "role", required = false) final String roleFilter) throws Auth0Exception {
-        return adminUserService.getUsers(pageable, roleFilter);
+                                            @RequestParam(name = "role", required = false) final String roleFilter,
+                                            @RequestParam(name = "search", required = false) final String searchQuery) throws Auth0Exception {
+        return adminUserService.getUsers(pageable, roleFilter, searchQuery);
     }
 
     @ResponseBody

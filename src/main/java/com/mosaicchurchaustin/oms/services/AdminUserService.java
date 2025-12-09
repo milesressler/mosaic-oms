@@ -80,10 +80,28 @@ public class AdminUserService {
         return AdminUserResponse.from(auth0Client.getUserById(createdUser.getId()));
     }
 
-    public Page<AdminUserResponse> getUsers(final Pageable pageable, final String roleFilter) throws Auth0Exception {
-        final UsersPage usersPage = StringUtils.isBlank(roleFilter) ?
-                auth0Client.getUserPage(pageable.getPageNumber(), pageable.getPageSize())
-                : auth0Client.getUserPageWithRole(roleFilter, pageable.getPageNumber(), pageable.getPageSize());
+    public Page<AdminUserResponse> getUsers(final Pageable pageable, final String roleFilter, final String searchQuery) throws Auth0Exception {
+        final UsersPage usersPage;
+
+        // Auth0 limitation: Can't combine search queries with role filtering in single API call
+        // Priority: search query > role filter > all users
+        if (!StringUtils.isBlank(searchQuery)) {
+            // Search takes priority - show all users matching search regardless of role
+            usersPage = auth0Client.getUserPageWithSearch(pageable.getPageNumber(), pageable.getPageSize(), searchQuery);
+        } else if (!StringUtils.isBlank(roleFilter)) {
+            // Role filter when no search query - use hybrid approach for full user details
+            final var paginatedUsers = auth0Client.getUserPageWithRoleAndFullDetails(roleFilter, pageable.getPageNumber(), pageable.getPageSize());
+            
+            final var content = paginatedUsers.getUsers()
+                    .stream()
+                    .map(AdminUserResponse::from).toList();
+            final var total = Optional.ofNullable(paginatedUsers.getTotal())
+                    .orElse(paginatedUsers.getUsers().size());
+            return new PageImpl<>(content, pageable, total);
+        } else {
+            // No filters - show all users
+            usersPage = auth0Client.getUserPage(pageable.getPageNumber(), pageable.getPageSize());
+        }
 
         final var content = usersPage.getItems()
                 .stream()

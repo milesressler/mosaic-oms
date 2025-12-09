@@ -38,7 +38,19 @@ public class Auth0Client {
 
     public UsersPage getUserPage(final int page, final int size) throws Auth0Exception {
         final UserFilter userFilter = new UserFilter().withPage(page, size)
-                .withFields(USER_FIELDS, true);
+                .withFields(USER_FIELDS, true)
+                .withTotals(true);
+        return managementAPI.users().list(userFilter)
+                .execute()
+                .getBody();
+    }
+
+    public UsersPage getUserPageWithSearch(final int page, final int size, final String searchQuery) throws Auth0Exception {
+        final String luceneQuery = "(name:" + searchQuery + "* OR email:" + searchQuery + "*)";
+        final UserFilter userFilter = new UserFilter().withPage(page, size)
+                .withFields(USER_FIELDS, true)
+                .withTotals(true)
+                .withQuery(luceneQuery);
         return managementAPI.users().list(userFilter)
                 .execute()
                 .getBody();
@@ -47,9 +59,50 @@ public class Auth0Client {
     public UsersPage getUserPageWithRole(final String roleName, final int page, final int size) throws Auth0Exception {
         final var role = getRole(roleName);
         return managementAPI.roles()
-                .listUsers(role.getId(), new PageFilter().withPage(page, size))
+                .listUsers(role.getId(), new PageFilter().withPage(page, size).withTotals(true))
                 .execute()
                 .getBody();
+    }
+    
+    public com.mosaicchurchaustin.oms.data.response.PaginatedUsersResponse getUserPageWithRoleAndFullDetails(final String roleName, final int page, final int size) throws Auth0Exception {
+        // Get basic user list with pagination from role query
+        final UsersPage roleUsersPage = getUserPageWithRole(roleName, page, size);
+        
+        // Extract user IDs and fetch full details using batch query
+        final List<String> userIds = roleUsersPage.getItems().stream()
+                .map(User::getId)
+                .toList();
+        
+        final List<User> fullUsers = getBatchUsersByIds(userIds);
+        
+        return com.mosaicchurchaustin.oms.data.response.PaginatedUsersResponse.from(
+                fullUsers,
+                roleUsersPage.getTotal(),
+                roleUsersPage.getStart(),
+                roleUsersPage.getLength(),
+                roleUsersPage.getLimit()
+        );
+    }
+    
+    private List<User> getBatchUsersByIds(final List<String> userIds) throws Auth0Exception {
+        if (userIds.isEmpty()) {
+            return List.of();
+        }
+        
+        // Build a Lucene query to search for multiple user IDs: user_id:"id1" OR user_id:"id2" OR ...
+        final String luceneQuery = userIds.stream()
+                .map(id -> "user_id:\"" + id + "\"")
+                .collect(java.util.stream.Collectors.joining(" OR "));
+        
+        final UserFilter userFilter = new UserFilter()
+                .withFields(USER_FIELDS, true)
+                .withQuery(luceneQuery)
+                .withPage(0, userIds.size()); // Get all users in one page
+        
+        return managementAPI.users().list(userFilter)
+                .execute()
+                .getBody()
+                .getItems();
     }
 
     private Role getRole(final String roleName) throws Auth0Exception {

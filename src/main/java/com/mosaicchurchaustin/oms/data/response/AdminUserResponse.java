@@ -27,7 +27,8 @@ public class AdminUserResponse {
     private List<UserSource> sources;
 
     public static AdminUserResponse from(final User user) {
-        final List<UserSource> identities = user.getIdentities()
+        final List<UserSource> identities = Optional.ofNullable(user.getIdentities())
+                .orElse(List.of())
                 .stream()
                 .map(Identity::getProvider)
                 .map(provider -> provider.equalsIgnoreCase("google-oauth2") ? UserSource.GOOGLE : UserSource.AUTH0)
