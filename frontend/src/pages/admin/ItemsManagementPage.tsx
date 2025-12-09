@@ -141,6 +141,7 @@ export function ItemsManagementPage() {
             <Group m="xs" align="end" justify="space-between" wrap="wrap">
                 <Group gap="sm">
                     <TextInput
+                        size={'lg'}
                         label={"Description"}
                         placeholder="Search by description"
                         leftSection={<IconSearch size={16} stroke={1.5} />}
@@ -148,6 +149,7 @@ export function ItemsManagementPage() {
                         onChange={(e) => setSearchDescription(e.currentTarget.value)}
                     />
                     <Select
+                        size={'lg'}
                         label="Category"
                         data={Object.values(Category).map(category => {
                             return { label: categoryDisplayNames[category], value: category.toString() }

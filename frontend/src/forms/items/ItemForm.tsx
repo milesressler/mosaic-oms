@@ -1,4 +1,4 @@
-import { ActionIcon, Button, Group, Pill, PillsInput, Select, Stack, Switch, Text, TextInput, Card, Divider } from "@mantine/core";
+import { ActionIcon, Button, Group, Pill, PillsInput, Select, Stack, Switch, Text, TextInput, Card, Divider, rem } from "@mantine/core";
 import { IconPlus, IconX, IconFolder, IconGripVertical } from "@tabler/icons-react";
 import useApi from "src/hooks/useApi.tsx";
 import itemsApi from "src/services/itemsApi.tsx";
@@ -167,6 +167,7 @@ export function ItemForm({ onItemSave, item }: Props) {
             <Stack gap="md">
                 <Stack gap={2}>
                     <TextInput
+                        size={'lg'}
                         label="Description"
                         placeholder={item?.description ? item.description : "Enter description"}
                         {...form.getInputProps("description")}
@@ -178,6 +179,7 @@ export function ItemForm({ onItemSave, item }: Props) {
                     )}
                 </Stack>
                 <Select
+                    size={'lg'}
                     label="Category"
                     data={Object.values(Category).map((category) => ({
                         label: categoryDisplayNames[category],
@@ -187,6 +189,7 @@ export function ItemForm({ onItemSave, item }: Props) {
                     {...form.getInputProps("category")}
                 />
                 <TextInput
+                    size={'lg'}
                     label="Placeholder (Optional)"
                     placeholder="Enter placeholder"
                     {...form.getInputProps("placeholder")}
@@ -194,12 +197,13 @@ export function ItemForm({ onItemSave, item }: Props) {
 
                 {/* Attributes Section */}
                 <Stack gap="xs">
-                    <Group pos="apart" align="center">
+                    <Stack gap="xs">
                         <Text fw={500}>Attributes</Text>
-                        <Group gap="xs">
+                        <Group gap="xs" style={{ flexWrap: 'wrap' }}>
                             <Button
                                 variant="outline"
-                                size="xs"
+                                size="sm"
+                                style={{ flex: '1 1 auto', minWidth: rem(120) }}
                                 onClick={() =>
                                     form.insertListItem("attributesAndGroups", { 
                                         type: 'attribute', 
@@ -211,8 +215,9 @@ export function ItemForm({ onItemSave, item }: Props) {
                             </Button>
                             <Button
                                 variant="outline"
-                                size="xs"
+                                size="sm"
                                 leftSection={<IconFolder size={16} />}
+                                style={{ flex: '1 1 auto', minWidth: rem(150) }}
                                 onClick={() =>
                                     form.insertListItem("attributesAndGroups", { 
                                         type: 'group', 
@@ -227,7 +232,7 @@ export function ItemForm({ onItemSave, item }: Props) {
                                 Add Attribute Group
                             </Button>
                         </Group>
-                    </Group>
+                    </Stack>
                     
                     {form.values.attributesAndGroups.map((item, index) => {
                         if (item.type === 'attribute') {
@@ -235,41 +240,47 @@ export function ItemForm({ onItemSave, item }: Props) {
                                 <div
                                     key={index}
                                     style={{
-                                        position: "relative",
                                         border: "1px solid #ccc",
                                         borderRadius: "4px",
                                         padding: "16px",
                                         marginBottom: "8px",
                                     }}
                                 >
-                                    {/* Floating Remove Button */}
-                                    <ActionIcon
-                                        color="red"
-                                        onClick={() => form.removeListItem("attributesAndGroups", index)}
-                                        title="Remove Attribute"
-                                        style={{ position: "absolute", top: -8, right: -8 }}
-                                    >
-                                        <IconX size={16} />
-                                    </ActionIcon>
-
                                     {/* Attribute Fields */}
-                                    <Group align="center">
+                                    <Stack gap="sm">
+                                        <Group justify="space-between" align="center">
+                                            <Text size="sm" fw={500} c="dimmed">Attribute</Text>
+                                            <ActionIcon
+                                                color="red"
+                                                variant="light"
+                                                size="sm"
+                                                onClick={() => form.removeListItem("attributesAndGroups", index)}
+                                                title="Remove Attribute"
+                                            >
+                                                <IconX size={14} />
+                                            </ActionIcon>
+                                        </Group>
                                         <TextInput
+                                            size={'lg'}
                                             placeholder="Attribute label"
                                             {...form.getInputProps(`attributesAndGroups.${index}.attribute.label`)}
-                                            style={{ flex: 1 }}
                                         />
                                         <Switch
                                             label="Required"
                                             {...form.getInputProps(`attributesAndGroups.${index}.attribute.required`, { type: "checkbox" })}
-                                            ml="md"
                                         />
-                                    </Group>
+                                    </Stack>
 
                                     {/* Options Section */}
                                     <Stack gap="xs" mt="sm">
-                                        <Text size="sm" fw={500}>Options</Text>
-                                        <PillsInput>
+                                        <Group gap="xs" align="baseline">
+                                            <Text size="sm" fw={500}>Options</Text>
+                                            <Text size="xs" c="dimmed" style={{ fontStyle: 'italic' }}>
+                                                Press Enter to add option
+                                            </Text>
+                                        </Group>
+                                        <PillsInput
+                                            size={'lg'}>
                                             <Pill.Group>
                                                 {item.attribute.options.map((option, optIndex) => (
                                                     <Pill
@@ -281,7 +292,7 @@ export function ItemForm({ onItemSave, item }: Props) {
                                                     </Pill>
                                                 ))}
                                                 <PillsInput.Field
-                                                    placeholder="Add option"
+                                                    placeholder="Type option and press Enter"
                                                     onKeyDown={(event) => {
                                                         if (event.key === "Enter") {
                                                             event.preventDefault();
@@ -305,31 +316,34 @@ export function ItemForm({ onItemSave, item }: Props) {
                                     key={index}
                                     withBorder
                                     style={{
-                                        position: "relative",
                                         marginBottom: "8px",
                                         backgroundColor: "#f8f9fa"
                                     }}
                                 >
-                                    {/* Remove Group Button */}
-                                    <ActionIcon
-                                        color="red"
-                                        onClick={() => form.removeListItem("attributesAndGroups", index)}
-                                        title="Remove Group"
-                                        style={{ position: "absolute", top: -8, right: -8, zIndex: 10 }}
-                                    >
-                                        <IconX size={16} />
-                                    </ActionIcon>
-
                                     {/* Group Header */}
-                                    <Group align="center" mb="md">
-                                        <IconFolder size={20} color="#6c757d" />
+                                    <Stack gap="sm" mb="md">
+                                        <Group justify="space-between" align="center">
+                                            <Group align="center">
+                                                <IconFolder size={20} color="#6c757d" />
+                                                <Text size="sm" fw={500} c="dimmed">Attribute Group</Text>
+                                            </Group>
+                                            <ActionIcon
+                                                color="red"
+                                                variant="light"
+                                                size="sm"
+                                                onClick={() => form.removeListItem("attributesAndGroups", index)}
+                                                title="Remove Group"
+                                            >
+                                                <IconX size={14} />
+                                            </ActionIcon>
+                                        </Group>
                                         <TextInput
+                                            size={'lg'}
                                             placeholder="Group name (e.g., Size)"
                                             {...form.getInputProps(`attributesAndGroups.${index}.group.name`)}
-                                            style={{ flex: 1 }}
                                             styles={{ input: { fontWeight: 600 } }}
                                         />
-                                    </Group>
+                                    </Stack>
 
                                     <Divider mb="md" />
 
@@ -339,38 +353,44 @@ export function ItemForm({ onItemSave, item }: Props) {
                                             <div
                                                 key={attrIndex}
                                                 style={{
-                                                    position: "relative",
                                                     border: "1px solid #dee2e6",
                                                     borderRadius: "4px",
                                                     padding: "12px",
                                                     backgroundColor: "white"
                                                 }}
                                             >
-                                                <ActionIcon
-                                                    color="red"
-                                                    size="sm"
-                                                    onClick={() => form.removeListItem(`attributesAndGroups.${index}.group.attributes`, attrIndex)}
-                                                    title="Remove Attribute"
-                                                    style={{ position: "absolute", top: -6, right: -6 }}
-                                                >
-                                                    <IconX size={12} />
-                                                </ActionIcon>
-
-                                                <Group align="center" mb="sm">
+                                                <Stack gap="sm">
+                                                    <Group justify="space-between" align="center">
+                                                        <Text size="xs" fw={500} c="dimmed">Group Attribute</Text>
+                                                        <ActionIcon
+                                                            color="red"
+                                                            variant="light"
+                                                            size="xs"
+                                                            onClick={() => form.removeListItem(`attributesAndGroups.${index}.group.attributes`, attrIndex)}
+                                                            title="Remove Attribute"
+                                                        >
+                                                            <IconX size={12} />
+                                                        </ActionIcon>
+                                                    </Group>
                                                     <TextInput
+                                                        size={'lg'}
                                                         placeholder="Attribute label"
                                                         {...form.getInputProps(`attributesAndGroups.${index}.group.attributes.${attrIndex}.label`)}
-                                                        style={{ flex: 1 }}
                                                     />
                                                     <Switch
                                                         label="Required"
                                                         {...form.getInputProps(`attributesAndGroups.${index}.group.attributes.${attrIndex}.required`, { type: "checkbox" })}
                                                     />
-                                                </Group>
+                                                </Stack>
 
                                                 <Stack gap="xs">
-                                                    <Text size="sm" fw={500}>Options</Text>
-                                                    <PillsInput>
+                                                    <Group gap="xs" align="baseline">
+                                                        <Text size="sm" fw={500}>Options</Text>
+                                                        <Text size="xs" c="dimmed" style={{ fontStyle: 'italic' }}>
+                                                            Press Enter to add option
+                                                        </Text>
+                                                    </Group>
+                                                    <PillsInput size={'lg'}>
                                                         <Pill.Group>
                                                             {attr.options.map((option, optIndex) => (
                                                                 <Pill
@@ -382,7 +402,7 @@ export function ItemForm({ onItemSave, item }: Props) {
                                                                 </Pill>
                                                             ))}
                                                             <PillsInput.Field
-                                                                placeholder="Add option"
+                                                                placeholder="Type option and press Enter"
                                                                 onKeyDown={(event) => {
                                                                     if (event.key === "Enter") {
                                                                         event.preventDefault();
@@ -404,6 +424,7 @@ export function ItemForm({ onItemSave, item }: Props) {
                                         <Button
                                             variant="light"
                                             size="sm"
+                                            fullWidth
                                             onClick={() =>
                                                 form.insertListItem(`attributesAndGroups.${index}.group.attributes`, {
                                                     label: "",
@@ -422,7 +443,12 @@ export function ItemForm({ onItemSave, item }: Props) {
                     })}
                 </Stack>
 
-                <Button type="submit" loading={createApi.loading || updateApi.loading}>
+                <Button 
+                    type="submit" 
+                    loading={createApi.loading || updateApi.loading}
+                    size="md"
+                    fullWidth
+                >
                     {item ? "Update" : "Create"} Item
                 </Button>
             </Stack>
