@@ -91,6 +91,20 @@ export default function OrderDetailsPage() {
         }
     }
 
+    const previewLabel = () => {
+        if (order) {
+            ordersApi.getLabel(order.uuid, OrderStatus.PACKED).then(
+                (result) => {
+                    if (result?.data) {
+                        const blob = new Blob([result.data], { type: 'application/pdf' });
+                        const url = URL.createObjectURL(blob);
+                        window.open(url, '_blank');
+                    }
+                }
+            );
+        }
+    }
+
     useEffect(() => {
         if (updateOrder.data) {
             getOrder.request(order!.id);
@@ -147,6 +161,7 @@ export default function OrderDetailsPage() {
                                 <Menu.Item onClick={complete}>Mark Complete</Menu.Item>
                                 <Menu.Item disabled={!canEdit} onClick={edit}>Edit</Menu.Item>
                                 <Menu.Item disabled={!canPrint} onClick={reprint}>Print Label</Menu.Item>
+                                <Menu.Item disabled={!canPrint} onClick={previewLabel}>Preview completed label</Menu.Item>
                             </Menu.Dropdown>
                         </Menu>
                     </Group>

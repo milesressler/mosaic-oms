@@ -25,6 +25,7 @@ const updateOrderDetails = (uuid: string, data: OrderRequest) => client.put(`/or
 const updateOrderItem = (id: number) => client.put(`/orderitem/${id}`);
 const updateOrderItems = (data: object) => client.put(`/orderitem/quantity/bulk`, data);
 const print = (uuid: string, state: OrderStatus) => client.post(`/order/${uuid}/print/${state}`, {});
+const getLabel = (uuid: string, state: OrderStatus) => client.get(`/order/${uuid}/label/${state}`, { responseType: 'blob' });
 
 const getOrderHistory = (orderId: number) => client.get<OrderFeedItem[]>(`/order/history?orderId=${orderId}`);
 const getFeed = () => client.get<OrderFeedItem[]>(`/order/history`);
@@ -45,4 +46,5 @@ export default {
     getOrdersDashboardView,
     getOrdersDashboardViewKiosk,
     print,
+    getLabel,
 };

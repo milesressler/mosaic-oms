@@ -143,7 +143,7 @@ public class PdfGenerator {
                              final int totalPages,
                              final PDPageContentStream contentStream) throws IOException {
 
-        float textY = LABEL_HEIGHT - 20;
+        float textY = LABEL_HEIGHT - 24;
 
         contentStream.beginText();
         contentStream.newLineAtOffset(PADDING, textY);
@@ -152,12 +152,18 @@ public class PdfGenerator {
 
         contentStream.setFont(new PDType1Font(Standard14Fonts.FontName.HELVETICA_BOLD), 8);
         contentStream.showText("# ");
-        contentStream.setFont(new PDType1Font(Standard14Fonts.FontName.HELVETICA_BOLD), 12);
+        contentStream.setFont(new PDType1Font(Standard14Fonts.FontName.HELVETICA_BOLD), 28);
         contentStream.showText(Optional.ofNullable(orderEntity.getId()).orElse(0L).toString());
 
         contentStream.newLine();
-        contentStream.setFont(new PDType1Font(Standard14Fonts.FontName.HELVETICA_BOLD), 8);
-        contentStream.showText(orderEntity.getCustomer().fullName());
+        contentStream.setFont(new PDType1Font(Standard14Fonts.FontName.HELVETICA_BOLD), 12);
+        contentStream.showText(orderEntity.getCustomer().getFirstName());
+        contentStream.newLine();
+        contentStream.showText(orderEntity.getCustomer().getLastName());
+
+        contentStream.setLeading(LINE_HEIGHT/2); // Line spacing
+        contentStream.newLine();
+        contentStream.setLeading(LINE_HEIGHT); // Line spacing
         contentStream.newLine();
         if (totalPages > 1) {
             contentStream.showText(String.format("%s of %s", page + 1, totalPages));

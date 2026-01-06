@@ -89,6 +89,22 @@ export default function OrderDetailsPageOld() {
         }
     }
 
+
+    const previewLabel = () => {
+        if (order) {
+            ordersApi.getLabel(order.uuid, OrderStatus.PACKED).then(
+                (result) => {
+                    if (result?.data) {
+                        const blob = new Blob([result.data], { type: 'application/pdf' });
+                        const url = URL.createObjectURL(blob);
+                        window.open(url, '_blank');
+                    }
+                }
+            );
+        }
+    }
+
+
     useEffect(() => {
         if (updateOrder.data) {
             getOrder.request(order!.id);
@@ -128,6 +144,7 @@ export default function OrderDetailsPageOld() {
                         <Menu.Item leftSection={<IconArrowLeft size={16} />}  disabled={!canReturn} onClick={returnToFiller}>Return to Filler</Menu.Item>
                         <Menu.Item leftSection={<IconEdit size={16} />} disabled={!canEdit} onClick={edit}>Edit</Menu.Item>
                         <Menu.Item leftSection={<IconPrinter size={16} />} disabled={!canPrint} onClick={reprint}>Print Completed Label</Menu.Item>
+                        <Menu.Item leftSection={<IconPrinter size={16} />} onClick={previewLabel}>Preview Completed Label</Menu.Item>
                     </Menu.Dropdown>
                 </Menu>
             </Group>

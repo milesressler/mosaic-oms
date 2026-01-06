@@ -11,6 +11,7 @@ import com.mosaicchurchaustin.oms.data.response.OrderDetailResponse;
 import com.mosaicchurchaustin.oms.data.response.OrderFeedResponse;
 import com.mosaicchurchaustin.oms.data.response.OrderResponse;
 import com.mosaicchurchaustin.oms.services.OrderService;
+import com.mosaicchurchaustin.oms.services.labels.LabelService;
 import com.mosaicchurchaustin.oms.services.sockets.OrderNotifier;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -39,6 +40,7 @@ import java.util.UUID;
 public class OrderController {
 
     final OrderService orderService;
+    final LabelService labelService;
     final OrderNotifier orderNotifier;
 
     @ResponseBody
@@ -66,6 +68,15 @@ public class OrderController {
         final OrderEntity orderEntity = orderService.getOrder(uuid);
         orderNotifier.printOrder(orderEntity, OrderStatus.from(orderState));
         return OrderDetailResponse.from(orderEntity);
+    }
+
+    @GetMapping(path = "/order/{uuid}/label/{state}", produces = MediaType.APPLICATION_PDF_VALUE)
+    public byte[] getOrderLabel(
+            @PathVariable("uuid") String uuid,
+            @PathVariable("state") String orderState
+    ) {
+        final OrderEntity orderEntity = orderService.getOrder(uuid);
+        return labelService.generateOrderLabelPdf(orderEntity, OrderStatus.from(orderState));
     }
 
 
