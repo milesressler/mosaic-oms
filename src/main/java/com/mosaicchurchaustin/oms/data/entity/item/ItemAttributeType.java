@@ -8,6 +8,7 @@ import lombok.Getter;
 public enum ItemAttributeType {
     SINGLE_SELECT,
     MULTI_SELECT,
-    NUMERIC_RANGE
+    NUMERIC_RANGE,
+    TEXT
 
 }

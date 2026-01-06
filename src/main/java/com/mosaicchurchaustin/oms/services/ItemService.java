@@ -146,6 +146,17 @@ public class ItemService {
         if (CollectionUtils.isEmpty(request)) {
             itemAttributeRepository.deleteAllInBatch(itemEntity.getAttributes());
             itemEntity.getAttributes().clear();
+            return;
+        }
+        
+        // Validate that non-TEXT attributes have options
+        for (ItemAttributeRequest attr : request) {
+            if (attr.attributeType() != ItemAttributeType.TEXT && (attr.options() == null || attr.options().isEmpty())) {
+                throw new InvalidRequestException(String.format("Attribute '%s' of type %s must have options", attr.label(), attr.attributeType()));
+            }
+            if (attr.attributeType() == ItemAttributeType.TEXT && attr.options() != null && !attr.options().isEmpty()) {
+                throw new InvalidRequestException(String.format("Attribute '%s' of type TEXT cannot have options", attr.label()));
+            }
         }
         final Map<String, ItemAttribute> existingAttributes = itemEntity.getAttributes().stream().collect(Collectors.toMap(
                 ItemAttribute::getValue,
@@ -171,22 +182,24 @@ public class ItemService {
                             .label(itemAttributeRequest.label())
                             .value(slug)
                             .required(itemAttributeRequest.required())
-                            .attributeType(ItemAttributeType.SINGLE_SELECT)
+                            .attributeType(itemAttributeRequest.attributeType())
                             .itemEntity(itemEntity)
                             .groupName(itemAttributeRequest.groupName())
                             .groupOrder(itemAttributeRequest.groupOrder())
                             .build()
             );
 
-
-            itemAttributeRequest.options().stream().map(option -> ItemAttributeOption.builder()
-                            .label(option)
-                            .value(SlugUtils.generateSlug(option))
-                            .availability(ItemAvailability.AVAILABLE)
-                            .itemAttribute(newAttribute)
-                            .build())
-                    .map(itemAttributeOptionRepository::save)
-                    .forEach(saved -> newAttribute.getAttributeOptions().add(saved));
+            // Only create options for non-TEXT types
+            if (itemAttributeRequest.attributeType() != ItemAttributeType.TEXT && itemAttributeRequest.options() != null) {
+                itemAttributeRequest.options().stream().map(option -> ItemAttributeOption.builder()
+                                .label(option)
+                                .value(SlugUtils.generateSlug(option))
+                                .availability(ItemAvailability.AVAILABLE)
+                                .itemAttribute(newAttribute)
+                                .build())
+                        .map(itemAttributeOptionRepository::save)
+                        .forEach(saved -> newAttribute.getAttributeOptions().add(saved));
+            }
         });
 
         // handle entries in both (but different types)
@@ -197,6 +210,12 @@ public class ItemService {
             final ItemAttribute existingAttr = (ItemAttribute) commonPair.leftValue() ;
             final ItemAttributeRequest requestedAttr = (ItemAttributeRequest) commonPair.rightValue();
 
+            // Validate that attributeType is immutable
+            if (existingAttr.getAttributeType() != requestedAttr.attributeType()) {
+                throw new InvalidRequestException(String.format("Cannot change attribute type for '%s' from %s to %s. Attribute type is immutable.", 
+                    existingAttr.getLabel(), existingAttr.getAttributeType(), requestedAttr.attributeType()));
+            }
+
             // Update mutable fields: required flag, groupName, groupOrder
             if (existingAttr.getRequired() != requestedAttr.required()) {
                 existingAttr.setRequired(requestedAttr.required());
@@ -205,43 +224,52 @@ public class ItemService {
             existingAttr.setGroupName(requestedAttr.groupName());
             existingAttr.setGroupOrder(requestedAttr.groupOrder());
 
-            // Process options for this attribute:
-            // Build map of existing options by slug (using attributeOptions())
-            final Map<String, ItemAttributeOption> existingOptions = existingAttr.getAttributeOptions().stream()
-                    .collect(Collectors.toMap(
-                            opt -> opt.getValue().toLowerCase(),
-                            opt -> opt,
-                            (a, b) -> a
-                    ));
+            // Only process options for non-TEXT types
+            if (requestedAttr.attributeType() != ItemAttributeType.TEXT) {
+                // Process options for this attribute:
+                // Build map of existing options by slug (using attributeOptions())
+                final Map<String, ItemAttributeOption> existingOptions = existingAttr.getAttributeOptions().stream()
+                        .collect(Collectors.toMap(
+                                opt -> opt.getValue().toLowerCase(),
+                                opt -> opt,
+                                (a, b) -> a
+                        ));
 
-            // Build map of requested options from the request (keyed by generated slug)
-            final Map<String, String> requestedOptions = requestedAttr.options().stream()
-                    .collect(Collectors.toMap(
-                            option -> SlugUtils.generateSlug(option).toLowerCase(),
-                            option -> option,
-                            (a, b) -> a
-                    ));
+                // Build map of requested options from the request (keyed by generated slug)
+                final Map<String, String> requestedOptions = requestedAttr.options().stream()
+                        .collect(Collectors.toMap(
+                                option -> SlugUtils.generateSlug(option).toLowerCase(),
+                                option -> option,
+                                (a, b) -> a
+                        ));
 
-            // Compare options using Maps.difference
-            final var optionsComparison = Maps.difference(existingOptions, requestedOptions);
+                // Compare options using Maps.difference
+                final var optionsComparison = Maps.difference(existingOptions, requestedOptions);
 
-            // Remove options that are in existing but not requested
-            optionsComparison.entriesOnlyOnLeft().forEach((optSlug, optEntity) -> {
-                existingAttr.getAttributeOptions().remove(optEntity);
-                itemAttributeOptionRepository.delete((ItemAttributeOption) optEntity);
-            });
+                // Remove options that are in existing but not requested
+                optionsComparison.entriesOnlyOnLeft().forEach((optSlug, optEntity) -> {
+                    existingAttr.getAttributeOptions().remove(optEntity);
+                    itemAttributeOptionRepository.delete((ItemAttributeOption) optEntity);
+                });
 
-            // Add new options that are in the request but not existing
-            optionsComparison.entriesOnlyOnRight().forEach((optSlug, optionStr) -> {
-                final ItemAttributeOption newOption = ItemAttributeOption.builder()
-                        .label((String) optionStr)
-                        .value(optSlug)
-                        .availability(ItemAvailability.AVAILABLE)
-                        .itemAttribute(existingAttr)
-                        .build();
-                final ItemAttributeOption persistedOption = itemAttributeOptionRepository.save(newOption);
-                existingAttr.getAttributeOptions().add(persistedOption);
-            });
+                // Add new options that are in the request but not existing
+                optionsComparison.entriesOnlyOnRight().forEach((optSlug, optionStr) -> {
+                    final ItemAttributeOption newOption = ItemAttributeOption.builder()
+                            .label((String) optionStr)
+                            .value(optSlug)
+                            .availability(ItemAvailability.AVAILABLE)
+                            .itemAttribute(existingAttr)
+                            .build();
+                    final ItemAttributeOption persistedOption = itemAttributeOptionRepository.save(newOption);
+                    existingAttr.getAttributeOptions().add(persistedOption);
+                });
+            } else {
+                // For TEXT types, remove any existing options since TEXT shouldn't have any
+                if (!existingAttr.getAttributeOptions().isEmpty()) {
+                    itemAttributeOptionRepository.deleteAllInBatch(existingAttr.getAttributeOptions());
+                    existingAttr.getAttributeOptions().clear();
+                }
+            }
 
             // For common options, labels are immutable so no update is required.
             itemAttributeRepository.save(existingAttr);

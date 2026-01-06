@@ -1,9 +1,10 @@
 package com.mosaicchurchaustin.oms.data.request;
 
 
+import com.mosaicchurchaustin.oms.data.entity.item.ItemAttributeType;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.NotNull;
 
 import java.util.List;
 
@@ -11,7 +12,8 @@ import java.util.List;
 public record ItemAttributeRequest(
         Boolean required,
         @NotBlank String label,
-        @Size(min = 2) List<@NotBlank String> options,
+        @NotNull ItemAttributeType attributeType,
+        List<@NotBlank String> options,
         String groupName,
         Integer groupOrder
 ) {

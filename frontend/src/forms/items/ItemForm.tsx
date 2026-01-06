@@ -10,7 +10,7 @@ interface AttributeForm {
     label: string;
     options: string[];
     required: boolean;
-    multiSelect: boolean;
+    attributeType: 'SINGLE_SELECT'|'MULTI_SELECT'|'NUMERIC_RANGE'|'TEXT';
 }
 
 interface AttributeGroup {
@@ -66,7 +66,7 @@ export function ItemForm({ onItemSave, item }: Props) {
                         attribute: {
                             label: attr.label,
                             required: attr.required,
-                            multiSelect: false,
+                            attributeType: attr.type,
                             options: attr.options.map(i => i.label)
                         }
                     });
@@ -83,7 +83,7 @@ export function ItemForm({ onItemSave, item }: Props) {
                             .map(attr => ({
                                 label: attr.label,
                                 required: attr.required,
-                                multiSelect: false,
+                                attributeType: attr.type,
                                 options: attr.options.map(i => i.label)
                             }))
                     }
@@ -118,7 +118,8 @@ export function ItemForm({ onItemSave, item }: Props) {
                 attributes.push({
                     label: item.attribute.label,
                     required: item.attribute.required,
-                    options: item.attribute.options
+                    attributeType: item.attribute.attributeType,
+                    options: item.attribute.attributeType === 'TEXT' ? [] : item.attribute.options
                 });
             } else {
                 // Group - convert each attribute with groupName and groupOrder
@@ -126,7 +127,8 @@ export function ItemForm({ onItemSave, item }: Props) {
                     attributes.push({
                         label: attr.label,
                         required: attr.required,
-                        options: attr.options,
+                        attributeType: attr.attributeType,
+                        options: attr.attributeType === 'TEXT' ? [] : attr.options,
                         groupName: item.group.name,
                         groupOrder: index + 1
                     });
@@ -207,7 +209,7 @@ export function ItemForm({ onItemSave, item }: Props) {
                                 onClick={() =>
                                     form.insertListItem("attributesAndGroups", { 
                                         type: 'attribute', 
-                                        attribute: { label: "", options: [], required: false, multiSelect: false }
+                                        attribute: { label: "", options: [], required: false, attributeType: 'SINGLE_SELECT' }
                                     })
                                 }
                             >
@@ -265,48 +267,78 @@ export function ItemForm({ onItemSave, item }: Props) {
                                             placeholder="Attribute label"
                                             {...form.getInputProps(`attributesAndGroups.${index}.attribute.label`)}
                                         />
-                                        <Switch
-                                            label="Required"
-                                            {...form.getInputProps(`attributesAndGroups.${index}.attribute.required`, { type: "checkbox" })}
-                                        />
+                                        <Group grow>
+                                            <Select
+                                                size={'sm'}
+                                                label="Attribute Type"
+                                                data={[
+                                                    { label: "Single Select", value: "SINGLE_SELECT" },
+                                                    { label: "Multi Select", value: "MULTI_SELECT" },
+                                                    { label: "Numeric Range", value: "NUMERIC_RANGE" },
+                                                    { label: "Text", value: "TEXT" }
+                                                ]}
+                                                {...form.getInputProps(`attributesAndGroups.${index}.attribute.attributeType`)}
+                                                onChange={(value) => {
+                                                    form.setFieldValue(`attributesAndGroups.${index}.attribute.attributeType`, value);
+                                                    // Clear options if switching to TEXT
+                                                    if (value === 'TEXT') {
+                                                        form.setFieldValue(`attributesAndGroups.${index}.attribute.options`, []);
+                                                    }
+                                                }}
+                                            />
+                                            <div style={{ display: 'flex', alignItems: 'flex-end', paddingBottom: '8px' }}>
+                                                <Switch
+                                                    label="Required"
+                                                    {...form.getInputProps(`attributesAndGroups.${index}.attribute.required`, { type: "checkbox" })}
+                                                />
+                                            </div>
+                                        </Group>
                                     </Stack>
 
-                                    {/* Options Section */}
-                                    <Stack gap="xs" mt="sm">
-                                        <Group gap="xs" align="baseline">
-                                            <Text size="sm" fw={500}>Options</Text>
-                                            <Text size="xs" c="dimmed" style={{ fontStyle: 'italic' }}>
-                                                Press Enter to add option
-                                            </Text>
-                                        </Group>
-                                        <PillsInput
-                                            size={'lg'}>
-                                            <Pill.Group>
-                                                {item.attribute.options.map((option, optIndex) => (
-                                                    <Pill
-                                                        key={optIndex}
-                                                        withRemoveButton
-                                                        onRemove={() => form.removeListItem(`attributesAndGroups.${index}.attribute.options`, optIndex)}
-                                                    >
-                                                        {option}
-                                                    </Pill>
-                                                ))}
-                                                <PillsInput.Field
-                                                    placeholder="Type option and press Enter"
-                                                    onKeyDown={(event) => {
-                                                        if (event.key === "Enter") {
-                                                            event.preventDefault();
-                                                            const value = event.currentTarget.value.trim();
-                                                            if (value) {
-                                                                form.insertListItem(`attributesAndGroups.${index}.attribute.options`, value);
-                                                                event.currentTarget.value = "";
+                                    {/* Options Section - Only show for non-TEXT types */}
+                                    {item.attribute.attributeType !== 'TEXT' && (
+                                        <Stack gap="xs" mt="sm">
+                                            <Group gap="xs" align="baseline">
+                                                <Text size="sm" fw={500}>Options</Text>
+                                                <Text size="xs" c="dimmed" style={{ fontStyle: 'italic' }}>
+                                                    Press Enter to add option
+                                                </Text>
+                                            </Group>
+                                            <PillsInput size={'lg'}>
+                                                <Pill.Group>
+                                                    {item.attribute.options.map((option, optIndex) => (
+                                                        <Pill
+                                                            key={optIndex}
+                                                            withRemoveButton
+                                                            onRemove={() => form.removeListItem(`attributesAndGroups.${index}.attribute.options`, optIndex)}
+                                                        >
+                                                            {option}
+                                                        </Pill>
+                                                    ))}
+                                                    <PillsInput.Field
+                                                        placeholder="Type option and press Enter"
+                                                        onKeyDown={(event) => {
+                                                            if (event.key === "Enter") {
+                                                                event.preventDefault();
+                                                                const value = event.currentTarget.value.trim();
+                                                                if (value) {
+                                                                    form.insertListItem(`attributesAndGroups.${index}.attribute.options`, value);
+                                                                    event.currentTarget.value = "";
+                                                                }
                                                             }
-                                                        }
-                                                    }}
-                                                />
-                                            </Pill.Group>
-                                        </PillsInput>
-                                    </Stack>
+                                                        }}
+                                                    />
+                                                </Pill.Group>
+                                            </PillsInput>
+                                        </Stack>
+                                    )}
+                                    
+                                    {/* Text hint for TEXT type */}
+                                    {item.attribute.attributeType === 'TEXT' && (
+                                        <Text size="xs" c="dimmed" style={{ fontStyle: 'italic', marginTop: '8px' }}>
+                                            Text attributes allow freeform input
+                                        </Text>
+                                    )}
                                 </div>
                             );
                         } else {
@@ -377,46 +409,78 @@ export function ItemForm({ onItemSave, item }: Props) {
                                                         placeholder="Attribute label"
                                                         {...form.getInputProps(`attributesAndGroups.${index}.group.attributes.${attrIndex}.label`)}
                                                     />
-                                                    <Switch
-                                                        label="Required"
-                                                        {...form.getInputProps(`attributesAndGroups.${index}.group.attributes.${attrIndex}.required`, { type: "checkbox" })}
-                                                    />
+                                                    <Group grow>
+                                                        <Select
+                                                            size={'sm'}
+                                                            label="Attribute Type"
+                                                            data={[
+                                                                { label: "Single Select", value: "SINGLE_SELECT" },
+                                                                { label: "Multi Select", value: "MULTI_SELECT" },
+                                                                { label: "Numeric Range", value: "NUMERIC_RANGE" },
+                                                                { label: "Text", value: "TEXT" }
+                                                            ]}
+                                                            {...form.getInputProps(`attributesAndGroups.${index}.group.attributes.${attrIndex}.attributeType`)}
+                                                            onChange={(value) => {
+                                                                form.setFieldValue(`attributesAndGroups.${index}.group.attributes.${attrIndex}.attributeType`, value);
+                                                                // Clear options if switching to TEXT
+                                                                if (value === 'TEXT') {
+                                                                    form.setFieldValue(`attributesAndGroups.${index}.group.attributes.${attrIndex}.options`, []);
+                                                                }
+                                                            }}
+                                                        />
+                                                        <div style={{ display: 'flex', alignItems: 'flex-end', paddingBottom: '8px' }}>
+                                                            <Switch
+                                                                label="Required"
+                                                                {...form.getInputProps(`attributesAndGroups.${index}.group.attributes.${attrIndex}.required`, { type: "checkbox" })}
+                                                            />
+                                                        </div>
+                                                    </Group>
                                                 </Stack>
 
-                                                <Stack gap="xs">
-                                                    <Group gap="xs" align="baseline">
-                                                        <Text size="sm" fw={500}>Options</Text>
-                                                        <Text size="xs" c="dimmed" style={{ fontStyle: 'italic' }}>
-                                                            Press Enter to add option
-                                                        </Text>
-                                                    </Group>
-                                                    <PillsInput size={'lg'}>
-                                                        <Pill.Group>
-                                                            {attr.options.map((option, optIndex) => (
-                                                                <Pill
-                                                                    key={optIndex}
-                                                                    withRemoveButton
-                                                                    onRemove={() => form.removeListItem(`attributesAndGroups.${index}.group.attributes.${attrIndex}.options`, optIndex)}
-                                                                >
-                                                                    {option}
-                                                                </Pill>
-                                                            ))}
-                                                            <PillsInput.Field
-                                                                placeholder="Type option and press Enter"
-                                                                onKeyDown={(event) => {
-                                                                    if (event.key === "Enter") {
-                                                                        event.preventDefault();
-                                                                        const value = event.currentTarget.value.trim();
-                                                                        if (value) {
-                                                                            form.insertListItem(`attributesAndGroups.${index}.group.attributes.${attrIndex}.options`, value);
-                                                                            event.currentTarget.value = "";
+                                                {/* Options Section - Only show for non-TEXT types */}
+                                                {attr.attributeType !== 'TEXT' && (
+                                                    <Stack gap="xs">
+                                                        <Group gap="xs" align="baseline">
+                                                            <Text size="sm" fw={500}>Options</Text>
+                                                            <Text size="xs" c="dimmed" style={{ fontStyle: 'italic' }}>
+                                                                Press Enter to add option
+                                                            </Text>
+                                                        </Group>
+                                                        <PillsInput size={'lg'}>
+                                                            <Pill.Group>
+                                                                {attr.options.map((option, optIndex) => (
+                                                                    <Pill
+                                                                        key={optIndex}
+                                                                        withRemoveButton
+                                                                        onRemove={() => form.removeListItem(`attributesAndGroups.${index}.group.attributes.${attrIndex}.options`, optIndex)}
+                                                                    >
+                                                                        {option}
+                                                                    </Pill>
+                                                                ))}
+                                                                <PillsInput.Field
+                                                                    placeholder="Type option and press Enter"
+                                                                    onKeyDown={(event) => {
+                                                                        if (event.key === "Enter") {
+                                                                            event.preventDefault();
+                                                                            const value = event.currentTarget.value.trim();
+                                                                            if (value) {
+                                                                                form.insertListItem(`attributesAndGroups.${index}.group.attributes.${attrIndex}.options`, value);
+                                                                                event.currentTarget.value = "";
+                                                                            }
                                                                         }
-                                                                    }
-                                                                }}
-                                                            />
-                                                        </Pill.Group>
-                                                    </PillsInput>
-                                                </Stack>
+                                                                    }}
+                                                                />
+                                                            </Pill.Group>
+                                                        </PillsInput>
+                                                    </Stack>
+                                                )}
+                                                
+                                                {/* Text hint for TEXT type */}
+                                                {attr.attributeType === 'TEXT' && (
+                                                    <Text size="xs" c="dimmed" style={{ fontStyle: 'italic', marginTop: '8px' }}>
+                                                        Text attributes allow freeform input - no options needed
+                                                    </Text>
+                                                )}
                                             </div>
                                         ))}
 
@@ -430,7 +494,7 @@ export function ItemForm({ onItemSave, item }: Props) {
                                                     label: "",
                                                     options: [],
                                                     required: false,
-                                                    multiSelect: false
+                                                    attributeType: 'SINGLE_SELECT'
                                                 })
                                             }
                                         >

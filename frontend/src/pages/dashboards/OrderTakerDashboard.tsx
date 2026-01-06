@@ -55,6 +55,12 @@ export function OrderTakerDashboard() {
                             type:   'multi',
                             values: rawValue.split(',').map(v => v?.trim()),
                         };
+                    } else if (def.type === 'TEXT') {
+                        attributes[key] = {
+                            type:  'string',
+                            value: rawValue,
+                            displayValue: displayValue,
+                        };
                     }
                     // if you ever support SizeAttribute, handle it here:
                     // else if (def.type === 'SIZE') { … }

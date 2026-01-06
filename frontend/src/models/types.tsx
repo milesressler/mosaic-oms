@@ -180,7 +180,7 @@ export interface ItemAttribute {
     key: string
     label: string
     required: boolean
-    type: 'SINGLE_SELECT'|'MULTI_SELECT'
+    type: 'SINGLE_SELECT'|'MULTI_SELECT'|'NUMERIC_RANGE'|'TEXT'
     options: {label: string, value: string, available: boolean}[]
     groupName?: string
     groupOrder?: number

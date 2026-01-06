@@ -1,4 +1,4 @@
-import {Button, Group, Stack, Textarea, Text, Select, MultiSelect, Box, Card} from "@mantine/core";
+import {Button, Group, Stack, Textarea, Text, Select, MultiSelect, Box, Card, TextInput} from "@mantine/core";
 import React, {useState} from "react";
 import {AttributeValue, FormOrderItem, SingleValueAttribute} from "src/models/forms.tsx";
 
@@ -86,6 +86,16 @@ export function OrderItemFormv2({formItem,  onSave, onCancel}: OrderItemFormProp
                     label: o.label,
                     disabled: !o.available
                 }))}
+            />;
+        } else if (attribute.type === 'TEXT') {
+            return <TextInput
+                key={attribute.key}
+                label={attribute.label}
+                required={attribute.required}
+                size={'lg'}
+                value={draftItem?.attributes?.[attribute.key]?.value ?? ''}
+                onChange={(event) => handleAttributeSelect(attribute.key, event.target.value)}
+                placeholder={`Enter ${attribute.label.toLowerCase()}`}
             />;
         } else {
             return <MultiSelect
