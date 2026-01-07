@@ -17,6 +17,7 @@ public class SuggestedItemResponse implements Serializable {
     private String description;
     private String placeholder;
     private ItemCategory category;
+    private ItemAvailability availability;
     private List<SelectableItemAttribute> attributes;
     private Long id;
 
@@ -39,6 +40,7 @@ public class SuggestedItemResponse implements Serializable {
                 .description(itemEntity.getDescription())
                 .placeholder(itemEntity.getPlaceholder())
                 .category(itemEntity.getCategory())
+                .availability(itemEntity.getAvailability())
                 .id(itemEntity.getId())
                 .attributes(attributes)
                 .build();

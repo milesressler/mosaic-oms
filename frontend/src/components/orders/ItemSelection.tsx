@@ -13,6 +13,7 @@ import {
     Text,
     useMantineTheme
 } from '@mantine/core';
+import { IconAlertTriangle } from '@tabler/icons-react';
 import {useCallback, useEffect, useState} from "react";
 import itemsApi from "src/services/itemsApi.tsx";
 import {Category, categoryDisplayNames, Item} from "src/models/types.tsx";
@@ -161,7 +162,16 @@ export function ItemSelection ({currentSelection, onItemSelectionChange}: props)
                                                     : "white",
                                             }}
                                         >
-                                            <Text>{item.description}</Text>
+                                            <Group justify="space-between" gap="xs">
+                                                <Text style={{ flex: 1 }}>{item.description}</Text>
+                                                {(item.availability === 'UNAVAILABLE' || item.availability === 'DISCONTINUED') && (
+                                                    <IconAlertTriangle 
+                                                        size={16} 
+                                                        color={theme.colors.orange[6]}
+                                                        style={{ flexShrink: 0 }}
+                                                    />
+                                                )}
+                                            </Group>
                                         </Card>
                                     </Grid.Col>
                                 ))}
