@@ -18,6 +18,12 @@ import OrderTakerDashboard from "src/pages/dashboards/OrderTakerDashboard.tsx";
 import OrderFillerDashboard from "src/pages/dashboards/OrderFillerDashboard.tsx";
 import AdminOrdersPage from "src/pages/admin/AdminOrdersPage.tsx";
 import ReportPlaceholder from "src/pages/reports/ReportPlaceholder.tsx";
+import ReportingPOC from "src/pages/ReportingPOC.tsx";
+import ReportingPOC2 from "src/pages/ReportingPOC2.tsx";
+import ReportingPOC3 from "src/pages/ReportingPOC3.tsx";
+import ReportingPOC4 from "src/pages/ReportingPOC4.tsx";
+import ReportingPOC5 from "src/pages/ReportingPOC5.tsx";
+import ReportsNext from "src/pages/reports/ReportsNext.tsx";
 import UserManagementPage from "src/pages/admin/UserManagementPage.tsx";
 import PackingView from "src/components/fillers/PackingView.tsx";
 import OrderItemListView from "src/components/fillers/OrderItemListView.tsx";
@@ -232,6 +238,60 @@ const routes = [
         title: "Reports",
         errorElement: ErrorPage,
         icon: IconReport,
+    },
+    {
+        key: 'reports-next',
+        path: '/reports-next',
+        element: ReportsNext,
+        public: false,
+        showInNavBar: false,
+        title: "Reports POC - All Versions",
+        errorElement: ErrorPage,
+    },
+    {
+        key: 'reports-poc',
+        path: '/reports-poc',
+        element: ReportingPOC,
+        public: false,
+        showInNavBar: false,
+        title: "Reports POC",
+        errorElement: ErrorPage,
+    },
+    {
+        key: 'reports-poc2',
+        path: '/reports-poc2',
+        element: ReportingPOC2,
+        public: false,
+        showInNavBar: false,
+        title: "Reports POC v2 - Datadog Style",
+        errorElement: ErrorPage,
+    },
+    {
+        key: 'reports-poc3',
+        path: '/reports-poc3',
+        element: ReportingPOC3,
+        public: false,
+        showInNavBar: false,
+        title: "Reports POC v3 - Time Series",
+        errorElement: ErrorPage,
+    },
+    {
+        key: 'reports-poc4',
+        path: '/reports-poc4',
+        element: ReportingPOC4,
+        public: false,
+        showInNavBar: false,
+        title: "Reports POC v4 - System Operations",
+        errorElement: ErrorPage,
+    },
+    {
+        key: 'reports-poc5',
+        path: '/reports-poc5',
+        element: ReportingPOC5,
+        public: false,
+        showInNavBar: false,
+        title: "Reports POC v5 - Advanced Analytics",
+        errorElement: ErrorPage,
     },
     {
         key: 'callback',
