@@ -25,4 +25,3 @@ public interface OrderHistoryRepository extends JpaRepository<OrderHistoryEntity
 """)
     Long countDistinctByUserEntity(@Param("startDate") Instant startDate, @Param("endDate") Instant endDate);
 }
-

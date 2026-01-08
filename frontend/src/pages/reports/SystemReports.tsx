@@ -5,14 +5,18 @@ import {
     Container,
     Group,
     LoadingOverlay,
+    Paper,
     Select,
     SimpleGrid,
+    Tabs,
+    Text,
     Title,
 } from '@mantine/core';
 import {DatePickerInput} from '@mantine/dates';
+import {AreaChart} from '@mantine/charts';
 import {IconUsers, IconTruck, IconPackage, IconTrendingUp} from '@tabler/icons-react';
 import useApi from 'src/hooks/useApi';
-import reportsApi from 'src/services/reportsApi';
+import reportsApi, {WeeklyCustomerCount} from 'src/services/reportsApi';
 import SystemOverviewWidget from 'src/components/reports/widgets/SystemOverviewWidget';
 
 const SystemReports: React.FC = () => {
@@ -21,6 +25,7 @@ const SystemReports: React.FC = () => {
     const [customDateRange, setCustomDateRange] = useState<[Date | null, Date | null]>([null, null]);
     
     const systemMetricsApi = useApi(reportsApi.getSystemMetrics);
+    const weeklyCustomersApi = useApi(reportsApi.getWeeklyCustomersServed);
 
     useEffect(() => {
         // Load initial data
@@ -32,7 +37,10 @@ const SystemReports: React.FC = () => {
         }
         
         systemMetricsApi.request(params);
-    }, [dateRange, customDateRange]);
+        if (viewMode === 'overview') {
+            weeklyCustomersApi.request(params);
+        }
+    }, [dateRange, customDateRange, viewMode]);
 
     const thisYear = (new Date()).getFullYear();
     // Get available date range options
@@ -40,7 +48,7 @@ const SystemReports: React.FC = () => {
         { value: '6weeks', label: '6 Weeks' },
         { value: '3months', label: '3 Months' },
         { value: '6months', label: '6 Months' },
-        { value: '1year', label: '1 Year (365 days)' },
+        { value: '1year', label: '1 Year (12 months)' },
         { value: `thisyear`, label: `This year (${thisYear})` },
         { value: `lastyear`, label: `Last Year (${thisYear-1})` },
         { value: 'custom', label: 'Custom Range' },
@@ -55,6 +63,9 @@ const SystemReports: React.FC = () => {
         }
         
         systemMetricsApi.request(params);
+        if (viewMode === 'overview') {
+            weeklyCustomersApi.request(params);
+        }
     };
 
     const handleReset = () => {
@@ -112,6 +123,7 @@ const SystemReports: React.FC = () => {
                 </Button>
             </Group>
 
+            {/* Key Performance Indicators - Always visible */}
             {data && (
                 <SimpleGrid cols={{ base: 2, md: 4, lg: 6 }} mb="xl">
                     <SystemOverviewWidget
@@ -163,6 +175,76 @@ const SystemReports: React.FC = () => {
                     />
                 </SimpleGrid>
             )}
+
+            {/* Detailed Reports Tabs */}
+            <Tabs value={viewMode} onChange={setViewMode}>
+                <Tabs.List>
+                    <Tabs.Tab value="overview">System Overview</Tabs.Tab>
+                </Tabs.List>
+
+                <Tabs.Panel value="overview" pt="md">
+                    {weeklyCustomersApi.data && (
+                        <Paper p="md" mb="lg">
+                            <Title order={3} mb="md">{(weeklyCustomersApi.data || []).length > 20 ? 'Monthly' : 'Weekly'} Customers Served</Title>
+                            <AreaChart
+                                h={300}
+                                data={(() : Array<{period: string, totalCustomers: number, newCustomers: number}> => {
+                                    const rawData = weeklyCustomersApi.data.map((item: WeeklyCustomerCount) => ({
+                                        weekStart: item.weekStart,
+                                        totalCustomers: item.totalCustomers,
+                                        newCustomers: item.newCustomers,
+                                    }));
+
+                                    // If more than 20 data points, aggregate by month
+                                    if (rawData.length > 20) {
+                                        const monthlyAgg = rawData.reduce((acc: Record<string, {totalCustomers: number, newCustomers: number}>, item) => {
+                                            const monthKey = new Date(item.weekStart + 'T00:00:00').toLocaleDateString('en-US', {
+                                                year: 'numeric',
+                                                month: 'short'
+                                            });
+                                            
+                                            if (!acc[monthKey]) {
+                                                acc[monthKey] = { totalCustomers: 0, newCustomers: 0 };
+                                            }
+                                            
+                                            acc[monthKey].totalCustomers += item.totalCustomers;
+                                            acc[monthKey].newCustomers += item.newCustomers;
+                                            
+                                            return acc;
+                                        }, {});
+
+                                        return Object.entries(monthlyAgg).map(([month, data]) => ({
+                                            period: month,
+                                            totalCustomers: data.totalCustomers,
+                                            newCustomers: data.newCustomers,
+                                        }));
+                                    } else {
+                                        // Weekly data
+                                        return rawData.map((item) => ({
+                                            period: new Date(item.weekStart + 'T00:00:00').toLocaleDateString('en-US', {
+                                                month: 'short', 
+                                                day: 'numeric' 
+                                            }),
+                                            totalCustomers: item.totalCustomers,
+                                            newCustomers: item.newCustomers,
+                                        }));
+                                    }
+                                })()}
+                                dataKey="period"
+                                series={[
+                                    { name: 'totalCustomers', label: 'Total Customers', color: 'blue.6' },
+                                    { name: 'newCustomers', label: 'New Customers', color: 'orange.6' }
+                                ]}
+                                withLegend
+                                withTooltip
+                            />
+                            <Text size="xs" c="dimmed" mt="xs">
+                                Each customer counted only once per week and is considered new for only the week of their very first order.
+                            </Text>
+                        </Paper>
+                    )}
+                </Tabs.Panel>
+            </Tabs>
         </Container>
     );
 };

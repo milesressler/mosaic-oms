@@ -2,6 +2,7 @@ package com.mosaicchurchaustin.oms.services;
 
 import com.mosaicchurchaustin.oms.data.projections.SystemOverviewProjection;
 import com.mosaicchurchaustin.oms.data.response.SystemMetricsResponse;
+import com.mosaicchurchaustin.oms.repositories.AnalyticsRepository;
 import com.mosaicchurchaustin.oms.repositories.OrderHistoryRepository;
 import com.mosaicchurchaustin.oms.repositories.OrderRepository;
 import lombok.RequiredArgsConstructor;
@@ -10,6 +11,7 @@ import org.springframework.stereotype.Service;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -18,43 +20,94 @@ public class ReportsService {
 
     final OrderRepository orderRepository;
     final OrderHistoryRepository orderHistoryRepository;
+    final AnalyticsRepository analyticsRepository;
 
-    public SystemMetricsResponse getSystemMetrics(Optional<LocalDate> startDate, Optional<LocalDate> endDate, String range) {
-        // Determine date range based on parameters
-        Instant startInstant = null;
-        Instant endInstant = null;
+    public static class DateRange {
+        public final LocalDate start;
+        public final LocalDate end;
+        public final Instant startInstant;
+        public final Instant endInstant;
+
+        public DateRange(LocalDate start, LocalDate end) {
+            this.start = start;
+            this.end = end;
+            this.startInstant = start != null ? start.atStartOfDay(ZoneOffset.UTC).toInstant() : null;
+            this.endInstant = end != null ? end.plusDays(1).atStartOfDay(ZoneOffset.UTC).toInstant() : null;
+        }
+    }
+
+    private DateRange parseDateRange(Optional<LocalDate> startDate, Optional<LocalDate> endDate, String range) {
+        LocalDate startLocalDate = null;
+        LocalDate endLocalDate = null;
+        LocalDate today = LocalDate.now();
+        final var minimumDate = LocalDate.of(2025, 1, 1);
 
         if (startDate.isPresent() && endDate.isPresent()) {
             // Custom date range provided
-            startInstant = startDate.get().atStartOfDay(ZoneOffset.UTC).toInstant();
-            endInstant = endDate.get().plusDays(1).atStartOfDay(ZoneOffset.UTC).toInstant();
+            startLocalDate = startDate.get();
+            endLocalDate = endDate.get();
         } else if (range != null) {
             // Use preset range
-            LocalDate today = LocalDate.now();
+
             LocalDate rangeStart = switch (range) {
-                case "6weeks" -> today.minusWeeks(6);
+                case "6weeks" -> {
+                    LocalDate sixWeeksAgo = today.minusWeeks(6);
+                    // Adjust to start of week (Sunday) - DAYOFWEEK: Sunday=1, Monday=2, etc.
+                    int dayOfWeek = sixWeeksAgo.getDayOfWeek().getValue(); // Monday=1, Sunday=7
+                    int daysToAdd = dayOfWeek == 7 ? 0 : 7 -dayOfWeek; // If Sunday, no change; else go up to next Sunday
+                    yield sixWeeksAgo.plusDays(daysToAdd);
+                }
                 case "3months" -> today.minusMonths(3);
-                case "6months" -> today.minusMonths(6);
-                case "1year" -> today.minusYears(1);
+                case "6months" -> {
+                    var sixmonthsago = today.minusMonths(6);
+                    yield sixmonthsago.withDayOfMonth(1);
+                }
+                case "1year" -> today.minusYears(1).withDayOfMonth(1);
+
                 case "thisyear" -> LocalDate.now().withMonth(1).withDayOfMonth(1);
                 case "lastyear" -> LocalDate.now().withMonth(1).withDayOfMonth(1).minusYears(1);
+                case "custom" -> minimumDate; // Default for custom range without dates
                 default -> null; // No filter - all time
             };
-            
+
             if (rangeStart != null) {
-                startInstant = rangeStart.atStartOfDay(ZoneOffset.UTC).toInstant();
+                startLocalDate = rangeStart;
                 if ("thisyear".equals(range)) {
-                    endInstant = LocalDate.now().withMonth(12).withDayOfMonth(31).plusDays(1).atStartOfDay(ZoneOffset.UTC).toInstant();
+                    endLocalDate = LocalDate.now().withMonth(12).withDayOfMonth(31);
                 } else if ("lastyear".equals(range)) {
-                    endInstant = LocalDate.now().withMonth(1).withDayOfMonth(1).atStartOfDay(ZoneOffset.UTC).toInstant();;
+                    endLocalDate = LocalDate.now().withMonth(1).withDayOfMonth(1).minusDays(1);
+                } else if ("6weeks".equals(range)) {
+                    endLocalDate = rangeStart.plusWeeks(6).minusDays(1);
+                } else if ("3months".equals(range)) {
+                    endLocalDate = rangeStart.plusMonths(3).minusDays(1);
+                } else if ("6months".equals(range)) {
+                    endLocalDate = rangeStart.plusMonths(6).minusDays(1);
+                } else if ("1year".equals(range)) {
+                    endLocalDate = rangeStart.plusYears(1).minusDays(1);
                 } else {
-                    endInstant = today.plusDays(1).atStartOfDay(ZoneOffset.UTC).toInstant();
+                    endLocalDate = today;
                 }
             }
         }
-        // If no dates and no range, query all time (both nulls)
-        final SystemOverviewProjection result = orderRepository.findSystemOverview(startInstant, endInstant);
-        final Long activeVolunteers = orderHistoryRepository.countDistinctByUserEntity(startInstant, endInstant);
+
+
+        // Validation: end date cannot be farther ahead than today + 1 day
+        if (endLocalDate == null || endLocalDate.isAfter(today.plusDays(1))) {
+            endLocalDate = today.plusDays(1);
+        }
+        // Validation: start date cannot be farther back than 2025
+        if (startLocalDate == null || startLocalDate.isBefore(minimumDate)) {
+            startLocalDate = minimumDate;
+        }
+
+        return new DateRange(startLocalDate, endLocalDate);
+    }
+
+    public SystemMetricsResponse getSystemMetrics(Optional<LocalDate> startDate, Optional<LocalDate> endDate, String range) {
+        final DateRange dateRange = parseDateRange(startDate, endDate, range);
+        
+        final SystemOverviewProjection result = orderRepository.findSystemOverview(dateRange.startInstant, dateRange.endInstant);
+        final Long activeVolunteers = orderHistoryRepository.countDistinctByUserEntity(dateRange.startInstant, dateRange.endInstant);
 
         final Long totalOrders = result.getCompletedOrders();
         final Long totalCustomers = result.getUniqueCustomers();
@@ -77,5 +130,10 @@ public class ReportsService {
         return SystemMetricsResponse.builder()
                 .overview(overview)
                 .build();
+    }
+
+    public List<AnalyticsRepository.WeeklyCustomerCount> getWeeklyCustomersServed(Optional<LocalDate> startDate, Optional<LocalDate> endDate, String range) {
+        final DateRange dateRange = parseDateRange(startDate, endDate, range);
+        return analyticsRepository.findWeeklyCustomersServed(dateRange.start, dateRange.end);
     }
 }

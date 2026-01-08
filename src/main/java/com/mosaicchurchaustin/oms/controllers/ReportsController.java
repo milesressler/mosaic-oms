@@ -1,6 +1,7 @@
 package com.mosaicchurchaustin.oms.controllers;
 
 import com.mosaicchurchaustin.oms.data.response.SystemMetricsResponse;
+import com.mosaicchurchaustin.oms.repositories.AnalyticsRepository;
 import com.mosaicchurchaustin.oms.services.ReportsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 
 @RestController
@@ -20,6 +22,7 @@ import java.util.Optional;
 public class ReportsController {
 
     final ReportsService reportsService;
+    final AnalyticsRepository analyticsRepository;
 
     @ResponseBody
     @GetMapping(path = "/system-metrics", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -31,6 +34,20 @@ public class ReportsController {
         return reportsService.getSystemMetrics(
             Optional.ofNullable(startDate), 
             Optional.ofNullable(endDate), 
+            range
+        );
+    }
+
+    @ResponseBody
+    @GetMapping(path = "/weekly-customers-served", produces = MediaType.APPLICATION_JSON_VALUE)
+    public List<AnalyticsRepository.WeeklyCustomerCount> getWeeklyCustomersServed(
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+            @RequestParam(defaultValue = "6weeks") String range) {
+
+        return reportsService.getWeeklyCustomersServed(
+            Optional.ofNullable(startDate),
+            Optional.ofNullable(endDate),
             range
         );
     }

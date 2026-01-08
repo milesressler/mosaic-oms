@@ -24,6 +24,12 @@ public interface AnalyticsRepository extends JpaRepository<OrderEntity, Long> {
         Long   getRequestCount();
     }
 
+    interface WeeklyCustomerCount {
+        LocalDate getWeekStart();
+        Long getTotalCustomers();
+        Long getNewCustomers();
+    }
+
     // Always returns the top‐10 items from last week (Sunday-to-Saturday)
     @Query(value = """
         SELECT
@@ -49,6 +55,56 @@ public interface AnalyticsRepository extends JpaRepository<OrderEntity, Long> {
     ORDER BY label
     """, nativeQuery = true)
     List<PeriodCount> findOrdersCreatedByWeek(
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate
+    );
+
+    @Query(value = """
+    WITH RECURSIVE week_series AS (
+        -- Generate series of weeks from start to end date
+        SELECT DATE_SUB(:startDate, INTERVAL (DAYOFWEEK(:startDate) - 1) DAY) AS week_start
+        UNION ALL
+        SELECT DATE_ADD(week_start, INTERVAL 7 DAY)
+        FROM week_series
+        WHERE DATE_ADD(week_start, INTERVAL 7 DAY) <= DATE_SUB(:endDate, INTERVAL (DAYOFWEEK(:endDate) - 1) DAY)
+    ),
+    completed_orders_in_range AS (
+        SELECT
+            o.id,
+            o.customer_id,
+            DATE_SUB(DATE(o.created), INTERVAL (DAYOFWEEK(o.created) - 1) DAY) AS week_start
+        FROM orders o
+        WHERE o.order_status = 'COMPLETED'
+            AND o.created BETWEEN :startDate AND :endDate
+    ),
+    first_completed_orders AS (
+        SELECT
+            o.customer_id,
+            MIN(o.id) as first_order_id
+        FROM orders o
+        WHERE o.order_status = 'COMPLETED'
+        GROUP BY o.customer_id
+    ),
+    weekly_stats AS (
+        SELECT
+            ws.week_start,
+            COUNT(DISTINCT cor.customer_id) as total_customers,
+            COUNT(DISTINCT CASE
+                WHEN fco.first_order_id = cor.id THEN cor.customer_id
+            END) as new_customers
+        FROM week_series ws
+        LEFT JOIN completed_orders_in_range cor ON cor.week_start = ws.week_start
+        LEFT JOIN first_completed_orders fco ON fco.customer_id = cor.customer_id
+        GROUP BY ws.week_start
+    )
+    SELECT
+        ws.week_start AS weekStart,
+        ws.total_customers AS totalCustomers,
+        ws.new_customers AS newCustomers
+    FROM weekly_stats ws
+    ORDER BY ws.week_start
+    """, nativeQuery = true)
+    List<WeeklyCustomerCount> findWeeklyCustomersServed(
             @Param("startDate") LocalDate startDate,
             @Param("endDate") LocalDate endDate
     );

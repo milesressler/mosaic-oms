@@ -19,9 +19,19 @@ interface SystemMetricsParams {
     range?: string;
 }
 
+export interface WeeklyCustomerCount {
+    weekStart: string; // LocalDate as ISO string
+    totalCustomers: number;
+    newCustomers: number;
+}
+
 const getSystemMetrics = (params?: SystemMetricsParams) => 
     client.get<SystemMetricsResponse>("/reports/system-metrics", { params });
 
+const getWeeklyCustomersServed = (params?: SystemMetricsParams) =>
+    client.get<WeeklyCustomerCount[]>("/reports/weekly-customers-served", { params });
+
 export default {
-    getSystemMetrics
+    getSystemMetrics,
+    getWeeklyCustomersServed
 };
