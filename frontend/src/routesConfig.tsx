@@ -1,7 +1,6 @@
 import LandingPage from "src/pages/LandingPage.tsx";
 import ErrorPage from "src/pages/ErrorPage.tsx";
 import CustomerDashboard from "src/pages/dashboards/CustomerDashboard.tsx";
-import OrderDetailsPage from "src/pages/orders/OrderDetailsPage.tsx";
 import {Navigate} from "react-router-dom";
 import AuthCallbackPage from "src/pages/AuthCallback.tsx";
 import {
@@ -37,6 +36,7 @@ import NoAccessPage from "src/pages/NoAccess.tsx";
 import CustomerDetailPage from "src/pages/search/CustomerDetailPage.tsx";
 import ShowersDashboard from "src/pages/dashboards/ShowersDashboard.tsx";
 import OrderDetailsPageOld from "./pages/orders/OrderDetailsPageOld";
+import SystemReports from "src/pages/reports/SystemReports.tsx";
 
 
 const routes = [
@@ -231,13 +231,24 @@ const routes = [
     },
     {
         key: 'reports',
-        path: '/reports',
-        element: ReportPlaceholder,
-        public: false,
-        showInNavBar: true,
-        title: "Reports",
-        errorElement: ErrorPage,
         icon: IconReport,
+        group: 'Reports',
+        children: [
+            {
+                key: 'reports-overview',
+                path: '/reports/overview',
+                element: SystemReports,
+                title: 'Overview',
+                showInNavBar: true,
+            },
+            {
+                key: 'reports-old',
+                path: '/reports/old',
+                element: ReportPlaceholder,
+                title: 'Reports [Old]',
+                showInNavBar: true,
+            },
+         ]
     },
     {
         key: 'reports-next',

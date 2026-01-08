@@ -3,11 +3,13 @@ package com.mosaicchurchaustin.oms.repositories;
 import com.mosaicchurchaustin.oms.data.entity.order.OrderEntity;
 import com.mosaicchurchaustin.oms.data.entity.order.OrderStatus;
 import com.mosaicchurchaustin.oms.data.projections.OrderPreviewProjection;
+import com.mosaicchurchaustin.oms.data.projections.SystemOverviewProjection;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.Instant;
@@ -47,4 +49,14 @@ public interface OrderRepository extends JpaRepository<OrderEntity, Long>, JpaSp
            "LEFT JOIN o.assignee u " +
            "WHERE o.id IN :orderIds")
     List<OrderPreviewProjection> findOrderPreviewsByIds(List<Long> orderIds);
+
+    @Query("SELECT COUNT(distinct o.id) as completedOrders, " +
+            "count(distinct o.customer) as uniqueCustomers," +
+            " COALESCE(SUM(oi.quantity), 0) as totalItems," +
+            " COALESCE(SUM(oi.quantityFulfilled), 0) as fulfilledItems " +
+            "FROM OrderItemEntity oi JOIN oi.orderEntity o  WHERE o.orderStatus = 'COMPLETED' " +
+            "AND (:startDate IS NULL OR o.created >= :startDate) " +
+            "AND (:endDate IS NULL OR o.created <= :endDate)")
+    SystemOverviewProjection findSystemOverview(@Param("startDate") Instant startDate, @Param("endDate") Instant endDate);
+
 }
