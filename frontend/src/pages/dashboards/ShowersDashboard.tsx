@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { DateTime } from "luxon";
 import { ReservationStatus, StallStatus } from "src/models/types";
 import AddToShowerQueueModal from "src/components/showers/AddToShowerQueueModal";
-import {IconChevronDown, IconUserPlus} from "@tabler/icons-react";
+import {IconChevronDown, IconChevronUp, IconUserPlus} from "@tabler/icons-react";
 
 export function ShowersDashboard() {
     const getShowersApi = useApi(showersApi.getShowerQueue);
@@ -30,8 +30,6 @@ export function ShowersDashboard() {
 
     const stalls = data?.stalls || [];
     const queue = data?.queue || [];
-    const firstAvailableStall = stalls.find((s) => !s.reservation)?.stallNumber;
-
 
     const renderStallCard = (stall: StallStatus) => {
         const { stallNumber, status, reservation, availableAt } = stall;
@@ -164,7 +162,7 @@ export function ShowersDashboard() {
                             </Table.Td>
                         </Table.Tr>
                     ) : (
-                        queue.map((entry) => (
+                        queue.map((entry, index) => (
                             <Table.Tr key={entry.uuid}>
                                 <Table.Td>{entry.customer.displayName}</Table.Td>
                                 <Table.Td>{entry.readyNow ? 'Now' : DateTime.fromISO(entry.estimatedStart).toRelative({ base: now })}</Table.Td>
@@ -243,6 +241,30 @@ export function ShowersDashboard() {
                                             return null;
                                         })()}
 
+                                        <Group gap={4}>
+                                            <Button
+                                                size="xs"
+                                                variant="subtle"
+                                                disabled={index === 0}
+                                                onClick={async () => {
+                                                    await showersApi.moveUp(entry.uuid);
+                                                    await getShowersApi.request();
+                                                }}
+                                            >
+                                                <IconChevronUp size={14} />
+                                            </Button>
+                                            <Button
+                                                size="xs"
+                                                variant="subtle"
+                                                disabled={index === queue.length - 1}
+                                                onClick={async () => {
+                                                    await showersApi.moveDown(entry.uuid);
+                                                    await getShowersApi.request();
+                                                }}
+                                            >
+                                                <IconChevronDown size={14} />
+                                            </Button>
+                                        </Group>
 
                                         <Button
                                             size="xs"

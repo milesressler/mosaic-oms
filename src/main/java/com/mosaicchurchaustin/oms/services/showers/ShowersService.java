@@ -398,7 +398,7 @@ public class ShowersService {
     }
 
 
-    public ShowerReservationEntity updateQueuePosition(final UUID id, final Long newPosition) {
+    public ShowerReservationEntity updateQueuePosition(final UUID id, final Long newQueueIndex) {
         final ShowerReservationEntity reservation = showerReservationRepository.findByUuid(id.toString())
                 .orElseThrow(() -> new EntityNotFoundException("ShowerReservation", id.toString()));
 
@@ -406,7 +406,134 @@ public class ShowersService {
             throw new InvalidRequestException("Only WAITING reservations can be reordered.");
         }
 
-        reservation.setQueuePosition(newPosition);
-        return showerReservationRepository.save(reservation);
+        // Get all waiting reservations ordered by position
+        final List<ShowerReservationEntity> allWaiting = showerReservationRepository
+                .findByReservationStatusOrderByQueuePositionAsc(ReservationStatus.WAITING, Pageable.unpaged())
+                .getContent();
+
+        // Find current index in the ordered list
+        int currentIndex = -1;
+        for (int i = 0; i < allWaiting.size(); i++) {
+            if (allWaiting.get(i).getUuid().equals(reservation.getUuid())) {
+                currentIndex = i;
+                break;
+            }
+        }
+
+        if (currentIndex == -1) {
+            throw new IllegalStateException("Reservation not found in waiting queue");
+        }
+
+        // Convert 1-based frontend index to 0-based
+        int newIndex = (int) (newQueueIndex - 1);
+        
+        // Validate new index
+        if (newIndex < 0 || newIndex >= allWaiting.size()) {
+            throw new InvalidRequestException("Invalid queue position");
+        }
+
+        if (currentIndex == newIndex) {
+            return reservation;
+        }
+
+        // Remove from current position and insert at new position
+        ShowerReservationEntity moving = allWaiting.remove(currentIndex);
+        allWaiting.add(newIndex, moving);
+
+        // Reassign all position values based on the new order
+        for (int i = 0; i < allWaiting.size(); i++) {
+            allWaiting.get(i).setQueuePosition((long) i * DEFAULT_QUEUE_INCREMENT);
+        }
+
+        // Save all affected reservations
+        showerReservationRepository.saveAll(allWaiting);
+        
+        return reservation;
+    }
+
+    public ShowerReservationEntity moveUp(final UUID id) {
+        final ShowerReservationEntity reservation = showerReservationRepository.findByUuid(id.toString())
+                .orElseThrow(() -> new EntityNotFoundException("ShowerReservation", id.toString()));
+
+        if (reservation.getReservationStatus() != ReservationStatus.WAITING) {
+            throw new InvalidRequestException("Only WAITING reservations can be reordered.");
+        }
+
+        // Get all waiting reservations ordered by position
+        final List<ShowerReservationEntity> allWaiting = showerReservationRepository
+                .findByReservationStatusOrderByQueuePositionAsc(ReservationStatus.WAITING, Pageable.unpaged())
+                .getContent();
+
+        // Find current index in the ordered list
+        int currentIndex = -1;
+        for (int i = 0; i < allWaiting.size(); i++) {
+            if (allWaiting.get(i).getUuid().equals(reservation.getUuid())) {
+                currentIndex = i;
+                break;
+            }
+        }
+
+        if (currentIndex == -1) {
+            throw new IllegalStateException("Reservation not found in waiting queue");
+        }
+
+        // Can't move up if already first
+        if (currentIndex == 0) {
+            return reservation;
+        }
+
+        // Swap with the person above (lower index)
+        ShowerReservationEntity current = allWaiting.get(currentIndex);
+        ShowerReservationEntity above = allWaiting.get(currentIndex - 1);
+        
+        Long tempPosition = current.getQueuePosition();
+        current.setQueuePosition(above.getQueuePosition());
+        above.setQueuePosition(tempPosition);
+
+        showerReservationRepository.saveAll(List.of(current, above));
+        return current;
+    }
+
+    public ShowerReservationEntity moveDown(final UUID id) {
+        final ShowerReservationEntity reservation = showerReservationRepository.findByUuid(id.toString())
+                .orElseThrow(() -> new EntityNotFoundException("ShowerReservation", id.toString()));
+
+        if (reservation.getReservationStatus() != ReservationStatus.WAITING) {
+            throw new InvalidRequestException("Only WAITING reservations can be reordered.");
+        }
+
+        // Get all waiting reservations ordered by position
+        final List<ShowerReservationEntity> allWaiting = showerReservationRepository
+                .findByReservationStatusOrderByQueuePositionAsc(ReservationStatus.WAITING, Pageable.unpaged())
+                .getContent();
+
+        // Find current index in the ordered list
+        int currentIndex = -1;
+        for (int i = 0; i < allWaiting.size(); i++) {
+            if (allWaiting.get(i).getUuid().equals(reservation.getUuid())) {
+                currentIndex = i;
+                break;
+            }
+        }
+
+        if (currentIndex == -1) {
+            throw new IllegalStateException("Reservation not found in waiting queue");
+        }
+
+        // Can't move down if already last
+        if (currentIndex == allWaiting.size() - 1) {
+            return reservation;
+        }
+
+        // Swap with the person below (higher index)
+        ShowerReservationEntity current = allWaiting.get(currentIndex);
+        ShowerReservationEntity below = allWaiting.get(currentIndex + 1);
+        
+        Long tempPosition = current.getQueuePosition();
+        current.setQueuePosition(below.getQueuePosition());
+        below.setQueuePosition(tempPosition);
+
+        showerReservationRepository.saveAll(List.of(current, below));
+        return current;
     }
 }

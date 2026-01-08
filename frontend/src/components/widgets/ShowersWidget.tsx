@@ -40,7 +40,7 @@ export const ShowersWidget = () => {
         return (
             <Card key={stallNumber} shadow="sm" padding="xs" radius="md" withBorder w="100%">
                 <Title order={4}>Shower Stall #{stallNumber}</Title>
-                <Text size="md" mt="xs">
+                <Text size="lg" mt="xs">
                     {getStallStatusLabel(reservation?.status)} {reservation && reservation.status == ReservationStatus.READY && <Text size={'xl'}>
                     {getShortName(reservation.customer)}
                     </Text>}
@@ -81,11 +81,15 @@ export const ShowersWidget = () => {
                         queue.map((entry) => (
                             <Table.Tr key={entry.uuid}>
                                 <Table.Td>
-                                    <Text size={'xl'}>
+                                    <Text size={'36px'}>
                                     {getShortName(entry.customer)}
                                     </Text>
                                 </Table.Td>
-                                <Table.Td>{entry.readyNow ? 'Now' : DateTime.fromISO(entry.estimatedStart).toRelative({ base: now })}</Table.Td>
+                                <Table.Td>
+                                    <Text size={'36px'}>
+                                        {entry.readyNow ? 'Now' : DateTime.fromISO(entry.estimatedStart).toRelative({ base: now })}
+                                    </Text>
+                                </Table.Td>
                             </Table.Tr>
                         ))
                     )}

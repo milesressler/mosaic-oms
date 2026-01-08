@@ -28,6 +28,14 @@ const createReservation = (data: {
 const updatePosition = (id: string, newPosition: number) =>
     client.put<ShowerReservationResponse>(`/reservations/${id}/position`, { newPosition });
 
+// PUT /reservations/{id}/move-up
+const moveUp = (id: string) =>
+    client.put<ShowerReservationResponse>(`/reservations/${id}/move-up`);
+
+// PUT /reservations/{id}/move-down
+const moveDown = (id: string) =>
+    client.put<ShowerReservationResponse>(`/reservations/${id}/move-down`);
+
 // PUT /reservations/{id}/start
 const startShower = (id: string) =>
     client.put<ShowerReservationResponse>(`/reservations/${id}/start`);
@@ -48,6 +56,8 @@ export default {
     getAllReservations,
     createReservation,
     updatePosition,
+    moveUp,
+    moveDown,
     startShower,
     showerReady,
     endShower,

@@ -66,6 +66,18 @@ public class ShowerController {
         return ShowerReservationResponse.from(entity);
     }
 
+    @PutMapping("/reservations/{id}/move-up")
+    public ShowerReservationResponse moveUp(@PathVariable UUID id) {
+        final ShowerReservationEntity entity = showerService.moveUp(id);
+        return ShowerReservationResponse.from(entity);
+    }
+
+    @PutMapping("/reservations/{id}/move-down")
+    public ShowerReservationResponse moveDown(@PathVariable UUID id) {
+        final ShowerReservationEntity entity = showerService.moveDown(id);
+        return ShowerReservationResponse.from(entity);
+    }
+
     @PutMapping("/reservations/{id}/start")
     public ShowerReservationResponse startShower(
             @PathVariable UUID id) {
