@@ -50,7 +50,7 @@ public class MaintenanceService {
         final Instant cutoff = Instant.now().minus(8, ChronoUnit.HOURS);
         
         final Stream<ShowerReservationEntity> expiredReservations = showerReservationRepository
-                .findByReservationStatusIn(List.of(ReservationStatus.IN_USE, ReservationStatus.READY))
+                .findByReservationStatusIn(List.of(ReservationStatus.IN_USE, ReservationStatus.READY, ReservationStatus.WAITING))
                 .stream()
                 .filter(reservation -> {
                     if (reservation.getReservationStatus() == ReservationStatus.IN_USE && reservation.getStartedAt() != null) {
