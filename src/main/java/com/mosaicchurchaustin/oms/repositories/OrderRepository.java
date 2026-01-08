@@ -54,7 +54,7 @@ public interface OrderRepository extends JpaRepository<OrderEntity, Long>, JpaSp
             "count(distinct o.customer) as uniqueCustomers," +
             " COALESCE(SUM(oi.quantity), 0) as totalItems," +
             " COALESCE(SUM(oi.quantityFulfilled), 0) as fulfilledItems " +
-            "FROM OrderItemEntity oi JOIN oi.orderEntity o  WHERE o.orderStatus = 'COMPLETED' " +
+            "FROM OrderItemEntity oi JOIN oi.orderEntity o  WHERE o.customer.excludeFromMetrics = false and o.orderStatus = 'COMPLETED' " +
             "AND (:startDate IS NULL OR o.created >= :startDate) " +
             "AND (:endDate IS NULL OR o.created <= :endDate)")
     SystemOverviewProjection findSystemOverview(@Param("startDate") Instant startDate, @Param("endDate") Instant endDate);

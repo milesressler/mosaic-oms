@@ -21,7 +21,8 @@ public interface OrderHistoryRepository extends JpaRepository<OrderHistoryEntity
     @Query("""
    select count(distinct oh.userEntity)
            from OrderHistoryEntity oh
-           where (:startDate is null or oh.timestamp >= :startDate) and (:endDate is null or oh.timestamp <= :endDate)
+           where (:startDate is null or oh.timestamp >= :startDate) and (:endDate is null or oh.timestamp <= :endDate) and oh.orderEntity.customer.excludeFromMetrics = false
 """)
     Long countDistinctByUserEntity(@Param("startDate") Instant startDate, @Param("endDate") Instant endDate);
 }
+
