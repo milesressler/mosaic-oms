@@ -32,6 +32,11 @@ export interface WeeklyItemFulfillment {
     unfilledItems: number;
 }
 
+export interface OrderCreationPattern {
+    timeSlot: string; // e.g. "9:00-9:10"
+    orderCount: number;
+}
+
 const getSystemMetrics = (params?: SystemMetricsParams) => 
     client.get<SystemMetricsResponse>("/reports/system-metrics", { params });
 
@@ -41,8 +46,12 @@ const getWeeklyCustomersServed = (params?: SystemMetricsParams) =>
 const getWeeklyItemFulfillment = (params?: SystemMetricsParams) =>
     client.get<WeeklyItemFulfillment[]>("/reports/weekly-item-fulfillment", { params });
 
+const getOrderCreationPatterns = (params?: SystemMetricsParams) =>
+    client.get<OrderCreationPattern[]>("/reports/order-creation-patterns", { params });
+
 export default {
     getSystemMetrics,
     getWeeklyCustomersServed,
-    getWeeklyItemFulfillment
+    getWeeklyItemFulfillment,
+    getOrderCreationPatterns
 };

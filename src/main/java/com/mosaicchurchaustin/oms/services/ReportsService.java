@@ -137,4 +137,51 @@ public class ReportsService {
         final DateRange dateRange = parseDateRange(startDate, endDate, range);
         return analyticsRepository.findWeeklyItemFulfillment(dateRange.start, dateRange.end);
     }
+
+    public List<java.util.Map<String, Object>> getOrderCreationPatterns(Optional<LocalDate> startDate, Optional<LocalDate> endDate, String range) {
+        final DateRange dateRange = parseDateRange(startDate, endDate, range);
+        final List<AnalyticsRepository.OrderCreationPatternByWeek> results = analyticsRepository.findOrderCreationPatternsByWeek(dateRange.start, dateRange.end);
+        
+        // Generate all possible time slots from 9:00-11:00 AM in 10-minute intervals
+        final String[] allTimeSlots = {
+            "9:00-9:10", "9:10-9:20", "9:20-9:30", "9:30-9:40", "9:40-9:50", "9:50-10:00",
+            "10:00-10:10", "10:10-10:20", "10:20-10:30", "10:30-10:40", "10:40-10:50", "10:50-11:00"
+        };
+        
+        // Get all unique weeks in the data
+        final List<LocalDate> weeks = results.stream()
+            .map(AnalyticsRepository.OrderCreationPatternByWeek::getWeekStart)
+            .distinct()
+            .sorted()
+            .toList();
+        
+        // Group results by timeSlot and weekStart
+        final var dataByTimeSlotAndWeek = results.stream()
+            .collect(java.util.stream.Collectors.groupingBy(
+                AnalyticsRepository.OrderCreationPatternByWeek::getTimeSlot,
+                java.util.stream.Collectors.toMap(
+                    r -> r.getWeekStart().toString(),
+                    AnalyticsRepository.OrderCreationPatternByWeek::getOrderCount
+                )
+            ));
+        
+        // Generate complete list with all time slots and weeks
+        return java.util.Arrays.stream(allTimeSlots)
+            .map(timeSlot -> {
+                final var row = new java.util.HashMap<String, Object>();
+                row.put("timeSlot", timeSlot);
+                
+                // Add data for each week (or 0 if no data) with actual week dates as column names
+                for (int i = 0; i < weeks.size(); i++) {
+                    final String weekKey = weeks.get(i).toString();
+                    final String columnName = "week_" + weekKey; // Use actual date as column name
+                    final Long count = dataByTimeSlotAndWeek.getOrDefault(timeSlot, new java.util.HashMap<>())
+                        .getOrDefault(weekKey, 0L);
+                    row.put(columnName, count);
+                }
+                
+                return row;
+            })
+            .collect(java.util.stream.Collectors.toList());
+    }
 }

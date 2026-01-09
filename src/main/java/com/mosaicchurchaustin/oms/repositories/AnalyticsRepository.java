@@ -37,6 +37,17 @@ public interface AnalyticsRepository extends JpaRepository<OrderEntity, Long> {
         Long getUnfilledItems();
     }
 
+    interface OrderCreationPattern {
+        String getTimeSlot();
+        Long getOrderCount();
+    }
+
+    interface OrderCreationPatternByWeek {
+        String getTimeSlot();
+        LocalDate getWeekStart();
+        Long getOrderCount();
+    }
+
     // Always returns the top‐10 items from last week (Sunday-to-Saturday)
     @Query(value = """
         SELECT
@@ -156,6 +167,38 @@ public interface AnalyticsRepository extends JpaRepository<OrderEntity, Long> {
     ORDER BY wis.week_start
     """, nativeQuery = true)
     List<WeeklyItemFulfillment> findWeeklyItemFulfillment(
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate
+    );
+
+    @Query(value = """
+    SELECT 
+        CASE 
+            WHEN MINUTE(CONVERT_TZ(o.created, 'UTC', 'America/Chicago')) < 10 
+                THEN CONCAT(HOUR(CONVERT_TZ(o.created, 'UTC', 'America/Chicago')), ':00-', HOUR(CONVERT_TZ(o.created, 'UTC', 'America/Chicago')), ':10')
+            WHEN MINUTE(CONVERT_TZ(o.created, 'UTC', 'America/Chicago')) < 20 
+                THEN CONCAT(HOUR(CONVERT_TZ(o.created, 'UTC', 'America/Chicago')), ':10-', HOUR(CONVERT_TZ(o.created, 'UTC', 'America/Chicago')), ':20')
+            WHEN MINUTE(CONVERT_TZ(o.created, 'UTC', 'America/Chicago')) < 30 
+                THEN CONCAT(HOUR(CONVERT_TZ(o.created, 'UTC', 'America/Chicago')), ':20-', HOUR(CONVERT_TZ(o.created, 'UTC', 'America/Chicago')), ':30')
+            WHEN MINUTE(CONVERT_TZ(o.created, 'UTC', 'America/Chicago')) < 40 
+                THEN CONCAT(HOUR(CONVERT_TZ(o.created, 'UTC', 'America/Chicago')), ':30-', HOUR(CONVERT_TZ(o.created, 'UTC', 'America/Chicago')), ':40')
+            WHEN MINUTE(CONVERT_TZ(o.created, 'UTC', 'America/Chicago')) < 50 
+                THEN CONCAT(HOUR(CONVERT_TZ(o.created, 'UTC', 'America/Chicago')), ':40-', HOUR(CONVERT_TZ(o.created, 'UTC', 'America/Chicago')), ':50')
+            ELSE CONCAT(HOUR(CONVERT_TZ(o.created, 'UTC', 'America/Chicago')), ':50-', (HOUR(CONVERT_TZ(o.created, 'UTC', 'America/Chicago')) + 1), ':00')
+        END AS timeSlot,
+        DATE_SUB(DATE(CONVERT_TZ(o.created, 'UTC', 'America/Chicago')), INTERVAL (DAYOFWEEK(CONVERT_TZ(o.created, 'UTC', 'America/Chicago')) - 1) DAY) AS weekStart,
+        COUNT(*) AS orderCount
+    FROM orders o
+    INNER JOIN customers c ON o.customer_id = c.id
+    WHERE o.order_status = 'COMPLETED'
+        AND o.created BETWEEN :startDate AND :endDate
+        AND c.exclude_from_metrics = 0
+        AND DAYOFWEEK(CONVERT_TZ(o.created, 'UTC', 'America/Chicago')) = 1
+        AND HOUR(CONVERT_TZ(o.created, 'UTC', 'America/Chicago')) BETWEEN 9 AND 10
+    GROUP BY timeSlot, weekStart
+    ORDER BY weekStart, timeSlot
+    """, nativeQuery = true)
+    List<OrderCreationPatternByWeek> findOrderCreationPatternsByWeek(
             @Param("startDate") LocalDate startDate,
             @Param("endDate") LocalDate endDate
     );
