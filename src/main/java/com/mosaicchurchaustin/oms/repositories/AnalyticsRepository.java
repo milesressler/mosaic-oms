@@ -48,6 +48,11 @@ public interface AnalyticsRepository extends JpaRepository<OrderEntity, Long> {
         Long getOrderCount();
     }
 
+    interface WeeklyItemRequestCount {
+        String getItemName();
+        Long getRequestCount();
+    }
+
     // Always returns the top‐10 items from last week (Sunday-to-Saturday)
     @Query(value = """
         SELECT
@@ -199,6 +204,25 @@ public interface AnalyticsRepository extends JpaRepository<OrderEntity, Long> {
     ORDER BY weekStart, timeSlot
     """, nativeQuery = true)
     List<OrderCreationPatternByWeek> findOrderCreationPatternsByWeek(
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate
+    );
+
+    @Query(value = """
+    SELECT 
+        i.description AS itemName,
+        SUM(oi.quantity) AS requestCount
+    FROM orders o
+    INNER JOIN customers c ON o.customer_id = c.id
+    INNER JOIN order_items oi ON oi.order_entity_id = o.id
+    INNER JOIN items i ON i.id = oi.item_entity_id
+    WHERE (o.order_status = 'COMPLETED' OR o.order_status = 'CANCELLED')
+        AND o.created BETWEEN :startDate AND :endDate
+        AND (c.exclude_from_metrics IS NULL OR c.exclude_from_metrics = 0)
+    GROUP BY i.description
+    ORDER BY requestCount DESC
+    """, nativeQuery = true)
+    List<WeeklyItemRequestCount> findWeeklyItemRequestCounts(
             @Param("startDate") LocalDate startDate,
             @Param("endDate") LocalDate endDate
     );

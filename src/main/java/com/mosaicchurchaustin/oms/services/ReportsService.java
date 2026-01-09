@@ -1,6 +1,7 @@
 package com.mosaicchurchaustin.oms.services;
 
 import com.mosaicchurchaustin.oms.data.projections.SystemOverviewProjection;
+import com.mosaicchurchaustin.oms.data.response.BiggestMoversResponse;
 import com.mosaicchurchaustin.oms.data.response.SystemMetricsResponse;
 import com.mosaicchurchaustin.oms.repositories.AnalyticsRepository;
 import com.mosaicchurchaustin.oms.repositories.OrderHistoryRepository;
@@ -138,7 +139,7 @@ public class ReportsService {
         return analyticsRepository.findWeeklyItemFulfillment(dateRange.start, dateRange.end);
     }
 
-    public List<java.util.Map<String, Object>> getOrderCreationPatterns(Optional<LocalDate> startDate, Optional<LocalDate> endDate, String range) {
+    public java.util.Map<String, java.util.Map<String, Long>> getOrderCreationPatterns(Optional<LocalDate> startDate, Optional<LocalDate> endDate, String range) {
         final DateRange dateRange = parseDateRange(startDate, endDate, range);
         final List<AnalyticsRepository.OrderCreationPatternByWeek> results = analyticsRepository.findOrderCreationPatternsByWeek(dateRange.start, dateRange.end);
         
@@ -165,23 +166,97 @@ public class ReportsService {
                 )
             ));
         
-        // Generate complete list with all time slots and weeks
-        return java.util.Arrays.stream(allTimeSlots)
-            .map(timeSlot -> {
-                final var row = new java.util.HashMap<String, Object>();
-                row.put("timeSlot", timeSlot);
+        // Return timeSlot-keyed structure: { "9:00-9:10": { "2024-01-07": 5, "2024-01-14": 3 }, ... }
+        final var result = new java.util.HashMap<String, java.util.Map<String, Long>>();
+        for (String timeSlot : allTimeSlots) {
+            final var weekData = new java.util.HashMap<String, Long>();
+            for (LocalDate week : weeks) {
+                final Long count = dataByTimeSlotAndWeek.getOrDefault(timeSlot, new java.util.HashMap<>())
+                    .getOrDefault(week.toString(), 0L);
+                weekData.put(week.toString(), count);
+            }
+            result.put(timeSlot, weekData);
+        }
+        
+        return result;
+    }
+
+    public List<BiggestMoversResponse.ItemMover> getBiggestMovers(String range) {
+        LocalDate today = LocalDate.now();
+        
+        // Calculate this week date range
+        // Find the most recent Sunday as start of "this week"
+        LocalDate thisWeekStart = today;
+        while (thisWeekStart.getDayOfWeek().getValue() != 7) { // 7 = Sunday
+            thisWeekStart = thisWeekStart.minusDays(1);
+        }
+        LocalDate thisWeekEnd = thisWeekStart.plusWeeks(1).minusDays(1);
+        
+        // Calculate 4-week average period (excluding current week)
+        LocalDate fourWeekPeriodStart = thisWeekStart.minusWeeks(4);
+        LocalDate fourWeekPeriodEnd = thisWeekStart.minusDays(1);
+        
+        // Get item counts for this week and the 4-week period
+        List<AnalyticsRepository.WeeklyItemRequestCount> thisWeekCounts = 
+            analyticsRepository.findWeeklyItemRequestCounts(thisWeekStart, thisWeekEnd);
+        List<AnalyticsRepository.WeeklyItemRequestCount> fourWeekCounts = 
+            analyticsRepository.findWeeklyItemRequestCounts(fourWeekPeriodStart, fourWeekPeriodEnd);
+        
+        // Convert this week to map for easier lookup
+        var thisWeekMap = thisWeekCounts.stream()
+            .collect(java.util.stream.Collectors.toMap(
+                AnalyticsRepository.WeeklyItemRequestCount::getItemName, 
+                AnalyticsRepository.WeeklyItemRequestCount::getRequestCount));
+        
+        // Calculate 4-week average for each item
+        var averageMap = new java.util.HashMap<String, Double>();
+        fourWeekCounts.stream()
+            .collect(java.util.stream.Collectors.groupingBy(
+                AnalyticsRepository.WeeklyItemRequestCount::getItemName,
+                java.util.stream.Collectors.summingLong(AnalyticsRepository.WeeklyItemRequestCount::getRequestCount)))
+            .forEach((itemName, totalCount) -> 
+                averageMap.put(itemName, totalCount / 4.0)); // 4-week average
+        
+        // Find all items that appeared in either this week or the 4-week period
+        var allItems = new java.util.HashSet<String>();
+        allItems.addAll(thisWeekMap.keySet());
+        allItems.addAll(averageMap.keySet());
+        
+        // Calculate changes vs average and create movers
+        List<BiggestMoversResponse.ItemMover> movers = allItems.stream()
+            .map(itemName -> {
+                Long thisWeekCount = thisWeekMap.getOrDefault(itemName, 0L);
+                Double weeklyAverage = averageMap.getOrDefault(itemName, 0.0);
+                Long averageAsLong = Math.round(weeklyAverage);
+                Long absoluteChange = thisWeekCount - averageAsLong;
                 
-                // Add data for each week (or 0 if no data) with actual week dates as column names
-                for (int i = 0; i < weeks.size(); i++) {
-                    final String weekKey = weeks.get(i).toString();
-                    final String columnName = "week_" + weekKey; // Use actual date as column name
-                    final Long count = dataByTimeSlotAndWeek.getOrDefault(timeSlot, new java.util.HashMap<>())
-                        .getOrDefault(weekKey, 0L);
-                    row.put(columnName, count);
-                }
+                Double percentageChange = weeklyAverage > 0 
+                    ? ((double) absoluteChange / weeklyAverage) * 100 
+                    : (thisWeekCount > 0 ? 100.0 : 0.0);
                 
-                return row;
+                BiggestMoversResponse.MovementDirection direction;
+                if (absoluteChange > 0) direction = BiggestMoversResponse.MovementDirection.UP;
+                else if (absoluteChange < 0) direction = BiggestMoversResponse.MovementDirection.DOWN;
+                else direction = BiggestMoversResponse.MovementDirection.FLAT;
+                
+                return BiggestMoversResponse.ItemMover.builder()
+                    .itemName(itemName)
+                    .itemId(itemName) // Using name as ID for now
+                    .thisWeekCount(thisWeekCount)
+                    .lastWeekCount(averageAsLong) // Using average in place of lastWeekCount for consistency
+                    .absoluteChange(absoluteChange)
+                    .percentageChange(percentageChange)
+                    .direction(direction)
+                    .build();
             })
-            .collect(java.util.stream.Collectors.toList());
+            // Filter out items with very low volume to reduce noise
+            .filter(mover -> Math.max(mover.getThisWeekCount().intValue(), mover.getLastWeekCount().intValue()) >= 2)
+            // Sort by absolute change (biggest movers first)
+            .sorted((a, b) -> Math.toIntExact(Math.abs(b.getAbsoluteChange()) - Math.abs(a.getAbsoluteChange())))
+            // Take top 10
+            .limit(10)
+            .toList();
+        
+        return movers;
     }
 }

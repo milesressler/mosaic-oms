@@ -32,9 +32,16 @@ export interface WeeklyItemFulfillment {
     unfilledItems: number;
 }
 
-export interface OrderCreationPattern {
-    timeSlot: string; // e.g. "9:00-9:10"
-    orderCount: number;
+export type OrderCreationPatterns = Record<string, Record<string, number>>; // { "9:00-9:10": { "2024-01-07": 5, ... }, ... }
+
+export interface ItemMover {
+    itemName: string;
+    itemId: string;
+    thisWeekCount: number;
+    lastWeekCount: number;
+    absoluteChange: number;
+    percentageChange: number;
+    direction: 'UP' | 'DOWN' | 'FLAT';
 }
 
 const getSystemMetrics = (params?: SystemMetricsParams) => 
@@ -47,11 +54,15 @@ const getWeeklyItemFulfillment = (params?: SystemMetricsParams) =>
     client.get<WeeklyItemFulfillment[]>("/reports/weekly-item-fulfillment", { params });
 
 const getOrderCreationPatterns = (params?: SystemMetricsParams) =>
-    client.get<OrderCreationPattern[]>("/reports/order-creation-patterns", { params });
+    client.get<OrderCreationPatterns>("/reports/order-creation-patterns", { params });
+
+const getBiggestMovers = () =>
+    client.get<ItemMover[]>("/reports/biggest-movers");
 
 export default {
     getSystemMetrics,
     getWeeklyCustomersServed,
     getWeeklyItemFulfillment,
-    getOrderCreationPatterns
+    getOrderCreationPatterns,
+    getBiggestMovers
 };

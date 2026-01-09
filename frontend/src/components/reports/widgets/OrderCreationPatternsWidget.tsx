@@ -1,76 +1,118 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Paper, Title, Text } from '@mantine/core';
 import { LineChart } from '@mantine/charts';
-import { OrderCreationPattern } from 'src/services/reportsApi';
+import { OrderCreationPatterns } from 'src/services/reportsApi';
 
 interface OrderCreationPatternsWidgetProps {
-    data: OrderCreationPattern[];
+    data: OrderCreationPatterns;
     loading?: boolean;
 }
 
 const OrderCreationPatternsWidget: React.FC<OrderCreationPatternsWidgetProps> = ({ data, loading }) => {
-    if (!data || data.length === 0) {
+    if (!data || Object.keys(data).length === 0) {
         return null;
     }
 
-    const chartData = (() => {
-        const firstRow = data[0];
-        const weekColumns = Object.keys(firstRow).filter(key => key.startsWith('week_'));
-        
-        // Calculate average orders per time slot across all weeks (as decimal)
-        const dataWithAverages = data.map(row => {
-            const weekValues = weekColumns.map(weekCol => Number(row[weekCol]) || 0);
-            const average = weekValues.length > 0 ? 
-                Number((weekValues.reduce((sum, val) => sum + val, 0) / weekValues.length).toFixed(1)) : 0;
+    const { chartData, chartSeries, isMonthlyView } = useMemo(() => {
+        const timeSlots = Object.keys(data).sort((a, b) => {
+            // Parse time strings like "9:00-9:10" and sort by start time
+            const timeA = a.split('-')[0];
+            const timeB = b.split('-')[0];
+            const [hoursA, minutesA] = timeA.split(':').map(Number);
+            const [hoursB, minutesB] = timeB.split(':').map(Number);
             
-            return {
-                ...row,
-                averageOrders: average
-            };
+            if (hoursA !== hoursB) {
+                return hoursA - hoursB;
+            }
+            return minutesA - minutesB;
+        });
+        const allDates = new Set<string>();
+        
+        // Collect all dates across all time slots
+        Object.values(data).forEach(timeSlotData => {
+            Object.keys(timeSlotData).forEach(date => allDates.add(date));
         });
         
-        return dataWithAverages;
-    })();
+        const sortedDates = Array.from(allDates).sort();
+        const isMonthlyView = sortedDates.length > 20;
+        
+        // For monthly view: group by month and sum counts
+        const processedData = isMonthlyView ? 
+            groupByMonth(data, timeSlots, sortedDates) :
+            formatWeeklyData(data, timeSlots, sortedDates);
 
-    const chartSeries = (() => {
-        // Generate average line (prominent) plus individual week lines (light)
-        const firstRow = data[0];
-        const weekColumns = Object.keys(firstRow).filter(key => key.startsWith('week_'));
+        // Create chart data: each time slot becomes a row with date columns + average
+        const chartData = timeSlots.map(timeSlot => {
+            const row: any = { timeSlot };
+            const values: number[] = [];
+            
+            Object.keys(processedData[timeSlot] || {}).forEach(period => {
+                const value = processedData[timeSlot][period] || 0;
+                row[period] = value;
+                values.push(value);
+            });
+            
+            // Calculate average
+            row.averageOrders = values.length > 0 ? 
+                Number((values.reduce((sum, val) => sum + val, 0) / values.length).toFixed(1)) : 0;
+            
+            return row;
+        });
+
+        // Create chart series
+        const periods = Object.keys(processedData[timeSlots[0]] || {});
         const lightColors = ['gray.4', 'blue.3', 'green.3', 'orange.3', 'purple.3', 'red.3', 'teal.3', 'yellow.3', 'pink.3', 'indigo.3'];
         
-        const isMonthlyView = weekColumns.length > 20;
-        
-        // Start with the average line as the primary series (thick and filled)
-        const series = [
-            { name: 'averageOrders', label: 'Average Orders', color: 'blue.6', strokeWidth: 4 }
+        const chartSeries = [
+            { name: 'averageOrders', label: 'Average Orders', color: 'blue.6', strokeWidth: 4 },
+            ...periods.map((period, index) => {
+                const date = new Date(period + 'T00:00:00');
+                const label = isMonthlyView ? 
+                    date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) :
+                    date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                
+                return {
+                    name: period,
+                    label,
+                    color: lightColors[index % lightColors.length],
+                    strokeWidth: 1,
+                    strokeDasharray: '2 2'
+                };
+            })
         ];
+
+        return { chartData, chartSeries, isMonthlyView };
+    }, [data]);
+
+    // Helper function to group weekly data by month
+    function groupByMonth(data: OrderCreationPatterns, timeSlots: string[], dates: string[]) {
+        const result: Record<string, Record<string, number>> = {};
         
-        // Add individual week series as thin lines
-        weekColumns.forEach((weekKey, index) => {
-            const dateStr = weekKey.replace('week_', '');
-            const date = new Date(dateStr + 'T00:00:00');
+        timeSlots.forEach(timeSlot => {
+            const monthGroups: Record<string, number> = {};
             
-            let label;
-            if (isMonthlyView) {
-                label = date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
-            } else {
-                label = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-            }
-            
-            series.push({
-                name: weekKey,
-                label,
-                color: lightColors[index % lightColors.length],
-                strokeWidth: 1,
-                strokeDasharray: '2 2'
+            dates.forEach(date => {
+                const monthKey = date.substring(0, 7); // "2024-01"
+                const count = data[timeSlot]?.[date] || 0;
+                monthGroups[monthKey] = (monthGroups[monthKey] || 0) + count;
             });
+            
+            result[timeSlot] = monthGroups;
         });
         
-        return series;
-    })();
+        return result;
+    }
 
-    const weekColumns = Object.keys(data[0]).filter(key => key.startsWith('week'));
-    const isMonthlyView = weekColumns.length > 20;
+    // Helper function to format weekly data as-is
+    function formatWeeklyData(data: OrderCreationPatterns, timeSlots: string[], dates: string[]) {
+        const result: Record<string, Record<string, number>> = {};
+        
+        timeSlots.forEach(timeSlot => {
+            result[timeSlot] = data[timeSlot] || {};
+        });
+        
+        return result;
+    }
 
     return (
         <Paper p="md" mb="lg" withBorder>

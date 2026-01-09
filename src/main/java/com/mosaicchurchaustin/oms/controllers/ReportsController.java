@@ -1,5 +1,6 @@
 package com.mosaicchurchaustin.oms.controllers;
 
+import com.mosaicchurchaustin.oms.data.response.BiggestMoversResponse;
 import com.mosaicchurchaustin.oms.data.response.SystemMetricsResponse;
 import com.mosaicchurchaustin.oms.repositories.AnalyticsRepository;
 import com.mosaicchurchaustin.oms.services.ReportsService;
@@ -68,7 +69,7 @@ public class ReportsController {
 
     @ResponseBody
     @GetMapping(path = "/order-creation-patterns", produces = MediaType.APPLICATION_JSON_VALUE)
-    public List<java.util.Map<String, Object>> getOrderCreationPatterns(
+    public java.util.Map<String, java.util.Map<String, Long>> getOrderCreationPatterns(
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
             @RequestParam(defaultValue = "6weeks") String range) {
@@ -78,5 +79,13 @@ public class ReportsController {
             Optional.ofNullable(endDate),
             range
         );
+    }
+
+    @ResponseBody
+    @GetMapping(path = "/biggest-movers", produces = MediaType.APPLICATION_JSON_VALUE)
+    public List<BiggestMoversResponse.ItemMover> getBiggestMovers(
+            @RequestParam(defaultValue = "week") String range) {
+        
+        return reportsService.getBiggestMovers(range);
     }
 }
