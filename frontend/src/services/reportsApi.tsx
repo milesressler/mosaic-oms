@@ -25,13 +25,24 @@ export interface WeeklyCustomerCount {
     newCustomers: number;
 }
 
+export interface WeeklyItemFulfillment {
+    weekStart: string; // LocalDate as ISO string
+    totalItems: number;
+    filledItems: number;
+    unfilledItems: number;
+}
+
 const getSystemMetrics = (params?: SystemMetricsParams) => 
     client.get<SystemMetricsResponse>("/reports/system-metrics", { params });
 
 const getWeeklyCustomersServed = (params?: SystemMetricsParams) =>
     client.get<WeeklyCustomerCount[]>("/reports/weekly-customers-served", { params });
 
+const getWeeklyItemFulfillment = (params?: SystemMetricsParams) =>
+    client.get<WeeklyItemFulfillment[]>("/reports/weekly-item-fulfillment", { params });
+
 export default {
     getSystemMetrics,
-    getWeeklyCustomersServed
+    getWeeklyCustomersServed,
+    getWeeklyItemFulfillment
 };

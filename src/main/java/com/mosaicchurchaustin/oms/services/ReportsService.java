@@ -48,20 +48,10 @@ public class ReportsService {
             endLocalDate = endDate.get();
         } else if (range != null) {
             // Use preset range
-
             LocalDate rangeStart = switch (range) {
-                case "6weeks" -> {
-                    LocalDate sixWeeksAgo = today.minusWeeks(6);
-                    // Adjust to start of week (Sunday) - DAYOFWEEK: Sunday=1, Monday=2, etc.
-                    int dayOfWeek = sixWeeksAgo.getDayOfWeek().getValue(); // Monday=1, Sunday=7
-                    int daysToAdd = dayOfWeek == 7 ? 0 : 7 -dayOfWeek; // If Sunday, no change; else go up to next Sunday
-                    yield sixWeeksAgo.plusDays(daysToAdd);
-                }
+                case "6weeks" -> today.minusWeeks(6);
                 case "3months" -> today.minusMonths(3);
-                case "6months" -> {
-                    var sixmonthsago = today.minusMonths(6);
-                    yield sixmonthsago.withDayOfMonth(1);
-                }
+                case "6months" -> today.minusMonths(6).withDayOfMonth(1);
                 case "1year" -> today.minusYears(1).withDayOfMonth(1);
 
                 case "thisyear" -> LocalDate.now().withMonth(1).withDayOfMonth(1);
@@ -69,6 +59,12 @@ public class ReportsService {
                 case "custom" -> minimumDate; // Default for custom range without dates
                 default -> null; // No filter - all time
             };
+
+            // Adjust so we always query starting from the first sunday in the range
+            int dayOfWeek = rangeStart.getDayOfWeek().getValue(); // Monday=1, Sunday=7
+            int daysToAdd = dayOfWeek == 7 ? 0 : 7 -dayOfWeek;
+            rangeStart = rangeStart.plusDays(daysToAdd);
+
 
             if (rangeStart != null) {
                 startLocalDate = rangeStart;
@@ -135,5 +131,10 @@ public class ReportsService {
     public List<AnalyticsRepository.WeeklyCustomerCount> getWeeklyCustomersServed(Optional<LocalDate> startDate, Optional<LocalDate> endDate, String range) {
         final DateRange dateRange = parseDateRange(startDate, endDate, range);
         return analyticsRepository.findWeeklyCustomersServed(dateRange.start, dateRange.end);
+    }
+
+    public List<AnalyticsRepository.WeeklyItemFulfillment> getWeeklyItemFulfillment(Optional<LocalDate> startDate, Optional<LocalDate> endDate, String range) {
+        final DateRange dateRange = parseDateRange(startDate, endDate, range);
+        return analyticsRepository.findWeeklyItemFulfillment(dateRange.start, dateRange.end);
     }
 }

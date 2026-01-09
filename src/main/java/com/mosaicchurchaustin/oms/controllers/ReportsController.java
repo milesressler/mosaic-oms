@@ -51,4 +51,18 @@ public class ReportsController {
             range
         );
     }
+
+    @ResponseBody
+    @GetMapping(path = "/weekly-item-fulfillment", produces = MediaType.APPLICATION_JSON_VALUE)
+    public List<AnalyticsRepository.WeeklyItemFulfillment> getWeeklyItemFulfillment(
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+            @RequestParam(defaultValue = "6weeks") String range) {
+
+        return reportsService.getWeeklyItemFulfillment(
+            Optional.ofNullable(startDate),
+            Optional.ofNullable(endDate),
+            range
+        );
+    }
 }

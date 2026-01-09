@@ -3,6 +3,7 @@ import {
     Alert,
     Button,
     Container,
+    Grid,
     Group,
     LoadingOverlay,
     Paper,
@@ -13,10 +14,10 @@ import {
     Title,
 } from '@mantine/core';
 import {DatePickerInput} from '@mantine/dates';
-import {AreaChart} from '@mantine/charts';
+import {AreaChart, LineChart} from '@mantine/charts';
 import {IconUsers, IconTruck, IconPackage, IconTrendingUp} from '@tabler/icons-react';
 import useApi from 'src/hooks/useApi';
-import reportsApi, {WeeklyCustomerCount} from 'src/services/reportsApi';
+import reportsApi, {WeeklyCustomerCount, WeeklyItemFulfillment} from 'src/services/reportsApi';
 import SystemOverviewWidget from 'src/components/reports/widgets/SystemOverviewWidget';
 
 const SystemReports: React.FC = () => {
@@ -26,6 +27,7 @@ const SystemReports: React.FC = () => {
     
     const systemMetricsApi = useApi(reportsApi.getSystemMetrics);
     const weeklyCustomersApi = useApi(reportsApi.getWeeklyCustomersServed);
+    const weeklyItemFulfillmentApi = useApi(reportsApi.getWeeklyItemFulfillment);
 
     useEffect(() => {
         // Load initial data
@@ -39,6 +41,7 @@ const SystemReports: React.FC = () => {
         systemMetricsApi.request(params);
         if (viewMode === 'overview') {
             weeklyCustomersApi.request(params);
+            weeklyItemFulfillmentApi.request(params);
         }
     }, [dateRange, customDateRange, viewMode]);
 
@@ -65,6 +68,7 @@ const SystemReports: React.FC = () => {
         systemMetricsApi.request(params);
         if (viewMode === 'overview') {
             weeklyCustomersApi.request(params);
+            weeklyItemFulfillmentApi.request(params);
         }
     };
 
@@ -183,66 +187,189 @@ const SystemReports: React.FC = () => {
                 </Tabs.List>
 
                 <Tabs.Panel value="overview" pt="md">
-                    {weeklyCustomersApi.data && (
-                        <Paper p="md" mb="lg">
-                            <Title order={3} mb="md">{(weeklyCustomersApi.data || []).length > 20 ? 'Monthly' : 'Weekly'} Customers Served</Title>
-                            <AreaChart
-                                h={300}
-                                data={(() : Array<{period: string, totalCustomers: number, newCustomers: number}> => {
-                                    const rawData = weeklyCustomersApi.data.map((item: WeeklyCustomerCount) => ({
-                                        weekStart: item.weekStart,
-                                        totalCustomers: item.totalCustomers,
-                                        newCustomers: item.newCustomers,
-                                    }));
+                    <Grid>
+                        <Grid.Col span={{ base: 12, lg: 6 }}>
+                            {weeklyCustomersApi.data && (
+                                <Paper p="md" mb="lg" withBorder>
+                                    <Title order={3} mb="md">{(weeklyCustomersApi.data || []).length > 20 ? 'Monthly' : 'Weekly'} Customers Served</Title>
+                                    <AreaChart
+                                        h={280}
+                                        data={(() : Array<{period: string, totalCustomers: number, newCustomers: number}> => {
+                                            const rawData = weeklyCustomersApi.data.map((item: WeeklyCustomerCount) => ({
+                                                weekStart: item.weekStart,
+                                                totalCustomers: item.totalCustomers,
+                                                newCustomers: item.newCustomers,
+                                            }));
 
-                                    // If more than 20 data points, aggregate by month
-                                    if (rawData.length > 20) {
-                                        const monthlyAgg = rawData.reduce((acc: Record<string, {totalCustomers: number, newCustomers: number}>, item) => {
-                                            const monthKey = new Date(item.weekStart + 'T00:00:00').toLocaleDateString('en-US', {
-                                                year: 'numeric',
-                                                month: 'short'
-                                            });
-                                            
-                                            if (!acc[monthKey]) {
-                                                acc[monthKey] = { totalCustomers: 0, newCustomers: 0 };
+                                            // If more than 20 data points, aggregate by month
+                                            if (rawData.length > 20) {
+                                                const monthlyAgg = rawData.reduce((acc: Record<string, {totalCustomers: number, newCustomers: number}>, item) => {
+                                                    const monthKey = new Date(item.weekStart + 'T00:00:00').toLocaleDateString('en-US', {
+                                                        year: 'numeric',
+                                                        month: 'short'
+                                                    });
+                                                    
+                                                    if (!acc[monthKey]) {
+                                                        acc[monthKey] = { totalCustomers: 0, newCustomers: 0 };
+                                                    }
+                                                    
+                                                    acc[monthKey].totalCustomers += item.totalCustomers;
+                                                    acc[monthKey].newCustomers += item.newCustomers;
+                                                    
+                                                    return acc;
+                                                }, {});
+
+                                                return Object.entries(monthlyAgg).map(([month, data]) => ({
+                                                    period: month,
+                                                    totalCustomers: data.totalCustomers,
+                                                    newCustomers: data.newCustomers,
+                                                }));
+                                            } else {
+                                                // Weekly data
+                                                return rawData.map((item) => ({
+                                                    period: new Date(item.weekStart + 'T00:00:00').toLocaleDateString('en-US', {
+                                                        month: 'short', 
+                                                        day: 'numeric' 
+                                                    }),
+                                                    totalCustomers: item.totalCustomers,
+                                                    newCustomers: item.newCustomers,
+                                                }));
                                             }
-                                            
-                                            acc[monthKey].totalCustomers += item.totalCustomers;
-                                            acc[monthKey].newCustomers += item.newCustomers;
-                                            
-                                            return acc;
-                                        }, {});
+                                        })()}
+                                        dataKey="period"
+                                        series={[
+                                            { name: 'totalCustomers', label: 'Total Customers', color: 'blue.6' },
+                                            { name: 'newCustomers', label: 'New Customers', color: 'orange.6' }
+                                        ]}
+                                        type="stacked"
+                                        withLegend
+                                        withTooltip
+                                    />
+                                    <Text size="xs" c="dimmed" mt="xs">
+                                        Each customer counted only once per week and is considered new for only the week of their very first order.
+                                    </Text>
+                                </Paper>
+                            )}
+                        </Grid.Col>
 
-                                        return Object.entries(monthlyAgg).map(([month, data]) => ({
-                                            period: month,
-                                            totalCustomers: data.totalCustomers,
-                                            newCustomers: data.newCustomers,
-                                        }));
-                                    } else {
-                                        // Weekly data
-                                        return rawData.map((item) => ({
-                                            period: new Date(item.weekStart + 'T00:00:00').toLocaleDateString('en-US', {
-                                                month: 'short', 
-                                                day: 'numeric' 
-                                            }),
-                                            totalCustomers: item.totalCustomers,
-                                            newCustomers: item.newCustomers,
-                                        }));
-                                    }
-                                })()}
-                                dataKey="period"
-                                series={[
-                                    { name: 'totalCustomers', label: 'Total Customers', color: 'blue.6' },
-                                    { name: 'newCustomers', label: 'New Customers', color: 'orange.6' }
-                                ]}
-                                withLegend
-                                withTooltip
-                            />
-                            <Text size="xs" c="dimmed" mt="xs">
-                                Each customer counted only once per week and is considered new for only the week of their very first order.
-                            </Text>
-                        </Paper>
-                    )}
+                        <Grid.Col span={{ base: 12, lg: 6 }}>
+                            {weeklyItemFulfillmentApi.data && (
+                                <Paper p="md" mb="lg" withBorder>
+                                    <Title order={3} mb="md">{(weeklyItemFulfillmentApi.data || []).length > 20 ? 'Monthly' : 'Weekly'} Item Fulfillment</Title>
+                                    <AreaChart
+                                        h={280}
+                                        data={(() : Array<{period: string, filledItems: number, unfilledItems: number}> => {
+                                            const rawData = weeklyItemFulfillmentApi.data.map((item: WeeklyItemFulfillment) => ({
+                                                weekStart: item.weekStart,
+                                                filledItems: item.filledItems,
+                                                unfilledItems: item.unfilledItems,
+                                            }));
+
+                                            // If more than 20 data points, aggregate by month
+                                            if (rawData.length > 20) {
+                                                const monthlyAgg = rawData.reduce((acc: Record<string, {filledItems: number, unfilledItems: number}>, item) => {
+                                                    const monthKey = new Date(item.weekStart + 'T00:00:00').toLocaleDateString('en-US', {
+                                                        year: 'numeric',
+                                                        month: 'short'
+                                                    });
+                                                    
+                                                    if (!acc[monthKey]) {
+                                                        acc[monthKey] = { filledItems: 0, unfilledItems: 0 };
+                                                    }
+                                                    
+                                                    acc[monthKey].filledItems += item.filledItems;
+                                                    acc[monthKey].unfilledItems += item.unfilledItems;
+                                                    
+                                                    return acc;
+                                                }, {});
+
+                                                return Object.entries(monthlyAgg).map(([month, data]) => ({
+                                                    period: month,
+                                                    filledItems: data.filledItems,
+                                                    unfilledItems: data.unfilledItems,
+                                                }));
+                                            } else {
+                                                // Weekly data
+                                                return rawData.map((item) => ({
+                                                    period: new Date(item.weekStart + 'T00:00:00').toLocaleDateString('en-US', {
+                                                        month: 'short', 
+                                                        day: 'numeric' 
+                                                    }),
+                                                    filledItems: item.filledItems,
+                                                    unfilledItems: item.unfilledItems,
+                                                }));
+                                            }
+                                        })()}
+                                        dataKey="period"
+                                        series={[
+                                            { name: 'filledItems', label: 'Items Filled', color: 'green.6' },
+                                            { name: 'unfilledItems', label: 'Items Unfilled', color: 'red.6' }
+                                        ]}
+                                        type="stacked"
+                                        withLegend
+                                        withTooltip
+                                    />
+                                    <LineChart
+                                        h={120}
+                                        data={(() : Array<{period: string, fillRate: number}> => {
+                                            const rawData = weeklyItemFulfillmentApi.data.map((item: WeeklyItemFulfillment) => ({
+                                                weekStart: item.weekStart,
+                                                fillRate: item.totalItems > 0 ? Math.round((item.filledItems / item.totalItems) * 100) : 0,
+                                            }));
+
+                                            // If more than 20 data points, aggregate by month
+                                            if (rawData.length > 20) {
+                                                const monthlyAgg = rawData.reduce((acc: Record<string, {filledItems: number, totalItems: number}>, item) => {
+                                                    const monthKey = new Date(item.weekStart + 'T00:00:00').toLocaleDateString('en-US', {
+                                                        year: 'numeric',
+                                                        month: 'short'
+                                                    });
+                                                    
+                                                    if (!acc[monthKey]) {
+                                                        acc[monthKey] = { filledItems: 0, totalItems: 0 };
+                                                    }
+                                                    
+                                                    const originalItem = weeklyItemFulfillmentApi.data.find(d => d.weekStart === item.weekStart);
+                                                    if (originalItem) {
+                                                        acc[monthKey].filledItems += originalItem.filledItems;
+                                                        acc[monthKey].totalItems += originalItem.totalItems;
+                                                    }
+                                                    
+                                                    return acc;
+                                                }, {});
+
+                                                return Object.entries(monthlyAgg).map(([month, data]) => ({
+                                                    period: month,
+                                                    fillRate: data.totalItems > 0 ? Math.round((data.filledItems / data.totalItems) * 100) : 0,
+                                                }));
+                                            } else {
+                                                // Weekly data
+                                                return rawData.map((item) => ({
+                                                    period: new Date(item.weekStart + 'T00:00:00').toLocaleDateString('en-US', {
+                                                        month: 'short', 
+                                                        day: 'numeric' 
+                                                    }),
+                                                    fillRate: item.fillRate,
+                                                }));
+                                            }
+                                        })()}
+                                        dataKey="period"
+                                        series={[
+                                            { name: 'fillRate', label: 'Fill Rate (%)', color: 'orange.6' }
+                                        ]}
+                                        withLegend
+                                        withTooltip
+                                        yAxisProps={{
+                                            domain: [0, 100]
+                                        }}
+                                    />
+                                    <Text size="xs" c="dimmed" mt="xs">
+                                        Total stack height represents total requested items. Fill rate shows percentage of items successfully fulfilled.
+                                    </Text>
+                                </Paper>
+                            )}
+                        </Grid.Col>
+                    </Grid>
                 </Tabs.Panel>
             </Tabs>
         </Container>

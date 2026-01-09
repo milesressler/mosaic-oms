@@ -30,6 +30,13 @@ public interface AnalyticsRepository extends JpaRepository<OrderEntity, Long> {
         Long getNewCustomers();
     }
 
+    interface WeeklyItemFulfillment {
+        LocalDate getWeekStart();
+        Long getTotalItems();
+        Long getFilledItems();
+        Long getUnfilledItems();
+    }
+
     // Always returns the top‐10 items from last week (Sunday-to-Saturday)
     @Query(value = """
         SELECT
@@ -73,9 +80,10 @@ public interface AnalyticsRepository extends JpaRepository<OrderEntity, Long> {
             o.id,
             o.customer_id,
             DATE_SUB(DATE(o.created), INTERVAL (DAYOFWEEK(o.created) - 1) DAY) AS week_start
-        FROM orders o
+        FROM orders o join customers c
         WHERE o.order_status = 'COMPLETED'
             AND o.created BETWEEN :startDate AND :endDate
+            and c.exclude_from_metrics != 1
     ),
     first_completed_orders AS (
         SELECT
@@ -105,6 +113,49 @@ public interface AnalyticsRepository extends JpaRepository<OrderEntity, Long> {
     ORDER BY ws.week_start
     """, nativeQuery = true)
     List<WeeklyCustomerCount> findWeeklyCustomersServed(
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate
+    );
+
+    @Query(value = """
+    WITH RECURSIVE week_series AS (
+        -- Generate series of weeks from start to end date
+        SELECT DATE_SUB(:startDate, INTERVAL (DAYOFWEEK(:startDate) - 1) DAY) AS week_start
+        UNION ALL
+        SELECT DATE_ADD(week_start, INTERVAL 7 DAY)
+        FROM week_series
+        WHERE DATE_ADD(week_start, INTERVAL 7 DAY) <= DATE_SUB(:endDate, INTERVAL (DAYOFWEEK(:endDate) - 1) DAY)
+    ),
+    completed_orders_in_range AS (
+        SELECT
+            o.id,
+            DATE_SUB(DATE(o.created), INTERVAL (DAYOFWEEK(o.created) - 1) DAY) AS week_start
+        FROM orders o
+        INNER JOIN customers c ON o.customer_id = c.id
+        WHERE o.order_status = 'COMPLETED'
+            AND o.created BETWEEN :startDate AND :endDate
+            AND (c.exclude_from_metrics IS NULL OR c.exclude_from_metrics = 0)
+    ),
+    weekly_item_stats AS (
+        SELECT
+            ws.week_start,
+            COALESCE(SUM(oi.quantity), 0) as total_items,
+            COALESCE(SUM(CASE WHEN oi.quantity_fulfilled = 1 THEN oi.quantity ELSE 0 END), 0) as filled_items,
+            COALESCE(SUM(CASE WHEN oi.quantity_fulfilled = 0 OR oi.quantity_fulfilled IS NULL THEN oi.quantity ELSE 0 END), 0) as unfilled_items
+        FROM week_series ws
+        LEFT JOIN completed_orders_in_range cor ON cor.week_start = ws.week_start
+        LEFT JOIN order_items oi ON oi.order_entity_id = cor.id
+        GROUP BY ws.week_start
+    )
+    SELECT
+        wis.week_start AS weekStart,
+        wis.total_items AS totalItems,
+        wis.filled_items AS filledItems,
+        wis.unfilled_items AS unfilledItems
+    FROM weekly_item_stats wis
+    ORDER BY wis.week_start
+    """, nativeQuery = true)
+    List<WeeklyItemFulfillment> findWeeklyItemFulfillment(
             @Param("startDate") LocalDate startDate,
             @Param("endDate") LocalDate endDate
     );
