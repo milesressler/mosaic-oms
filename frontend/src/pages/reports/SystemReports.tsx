@@ -20,6 +20,7 @@ import WeeklyCustomersWidget from 'src/components/reports/widgets/WeeklyCustomer
 import ItemFulfillmentWidget from 'src/components/reports/widgets/ItemFulfillmentWidget';
 import OrderCreationPatternsWidget from 'src/components/reports/widgets/OrderCreationPatternsWidget';
 import BiggestMoversWidget from 'src/components/reports/widgets/BiggestMoversWidget';
+import ProcessTimesWidget from 'src/components/reports/widgets/ProcessTimesWidget';
 
 const SystemReports: React.FC = () => {
     const [viewMode, setViewMode] = useState<string>('overview');
@@ -31,6 +32,7 @@ const SystemReports: React.FC = () => {
     const weeklyItemFulfillmentApi = useApi(reportsApi.getWeeklyItemFulfillment);
     const orderCreationPatternsApi = useApi(reportsApi.getOrderCreationPatterns);
     const biggestMoversApi = useApi(reportsApi.getBiggestMovers);
+    const processTimingsApi = useApi(reportsApi.getProcessTimings);
 
     useEffect(() => {
         // Load initial data
@@ -47,20 +49,46 @@ const SystemReports: React.FC = () => {
             weeklyItemFulfillmentApi.request(params);
             orderCreationPatternsApi.request(params);
             biggestMoversApi.request();
+            processTimingsApi.request(params);
         }
     }, [dateRange, customDateRange, viewMode]);
 
     const thisYear = (new Date()).getFullYear();
+    
+    // Helper function to get the most recent Sunday
+    const getMostRecentSunday = (date: Date) => {
+        const d = new Date(date);
+        const day = d.getDay(); // 0 = Sunday, 1 = Monday, etc.
+        const diff = d.getDate() - day;
+        return new Date(d.setDate(diff));
+    };
+    
+    // Helper function to format date for display
+    const formatDateRange = (startDate: Date) => {
+        const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
+                           'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        return `${monthNames[startDate.getMonth()]} ${startDate.getDate()}`;
+    };
+    
     // Get available date range options
-    const getDateRangeOptions = () => [
-        { value: '6weeks', label: '6 Weeks' },
-        { value: '3months', label: '3 Months' },
-        { value: '6months', label: '6 Months' },
-        { value: '1year', label: '1 Year (12 months)' },
-        { value: `thisyear`, label: `This year (${thisYear})` },
-        { value: `lastyear`, label: `Last Year (${thisYear-1})` },
-        { value: 'custom', label: 'Custom Range' },
-    ];
+    const getDateRangeOptions = () => {
+        const today = new Date();
+        const thisWeekStart = getMostRecentSunday(today);
+        const lastWeekStart = new Date(thisWeekStart);
+        lastWeekStart.setDate(lastWeekStart.getDate() - 7);
+        
+        return [
+            { value: 'thisweek', label: `This Week (${formatDateRange(thisWeekStart)})` },
+            { value: 'lastweek', label: `Last Week (${formatDateRange(lastWeekStart)})` },
+            { value: '6weeks', label: '6 Weeks' },
+            { value: '3months', label: '3 Months' },
+            { value: '6months', label: '6 Months' },
+            { value: '1year', label: '1 Year (12 months)' },
+            { value: `thisyear`, label: `This year (${thisYear})` },
+            { value: `lastyear`, label: `Last Year (${thisYear-1})` },
+            { value: 'custom', label: 'Custom Range' },
+        ];
+    };
 
     const handleRefresh = () => {
         const params: any = { range: dateRange };
@@ -76,6 +104,7 @@ const SystemReports: React.FC = () => {
             weeklyItemFulfillmentApi.request(params);
             orderCreationPatternsApi.request(params);
             biggestMoversApi.request();
+            processTimingsApi.request(params);
         }
     };
 
@@ -213,13 +242,26 @@ const SystemReports: React.FC = () => {
                             <BiggestMoversWidget 
                                 data={biggestMoversApi.data || []}
                                 loading={biggestMoversApi.loading}
+                                dateInfo={dateRange === 'thisweek' ? formatDateRange(getMostRecentSunday(new Date())) :
+                                         dateRange === 'lastweek' ? formatDateRange((() => {
+                                            const lastWeek = new Date(getMostRecentSunday(new Date()));
+                                            lastWeek.setDate(lastWeek.getDate() - 7);
+                                            return lastWeek;
+                                         })()) : undefined}
                             />
                         </Grid.Col>
 
-                        <Grid.Col span={12}>
+                        <Grid.Col span={{ base: 12, lg: 8 }}>
                             <OrderCreationPatternsWidget 
                                 data={orderCreationPatternsApi.data || {}}
                                 loading={orderCreationPatternsApi.loading}
+                            />
+                        </Grid.Col>
+
+                        <Grid.Col span={{ base: 12, lg: 4 }}>
+                            <ProcessTimesWidget 
+                                data={processTimingsApi.data?.processStages || []}
+                                loading={processTimingsApi.loading}
                             />
                         </Grid.Col>
                     </Grid>

@@ -82,11 +82,12 @@ const systemMetrics = {
             { time: '9:55', avgPassengers: 18, frequency: 'Bi-weekly - Route C' },
             { time: '10:25', avgPassengers: 8, frequency: 'Monthly - Route D' },
         ],
-        bottlenecks: [
-            { stage: 'Order Taking', avgTime: 4.2, target: 3.0, status: 'warning' },
-            { stage: 'Item Collection', avgTime: 12.8, target: 10.0, status: 'warning' },
-            { stage: 'Packing', avgTime: 5.1, target: 4.0, status: 'warning' },
-            { stage: 'Distribution', avgTime: 2.4, target: 3.0, status: 'good' },
+        processStages: [
+            { stage: 'Order Taker Time', avgTime: 4.2, description: 'Time to take and input order', source: 'PostHog' },
+            { stage: 'Lag Time for Packing', avgTime: 8.5, description: 'Wait time before packing starts', source: 'Database' },
+            { stage: 'Time to Pack', avgTime: 12.8, description: 'Active item collection and packing', source: 'PostHog + Database' },
+            { stage: 'Packed to Delivered', avgTime: 5.1, description: 'Time from packed to transferred/delivered', source: 'Database' },
+            { stage: 'Time to Complete Distribution', avgTime: 2.4, description: 'Final distribution to customer', source: 'Database' },
         ]
     }
 };
@@ -369,12 +370,15 @@ const ReportingPOC4: React.FC = () => {
                             <Card padding="lg" radius="md" withBorder>
                                 <Text fw={500} mb="md">⏱️ Typical Process Times</Text>
                                 <Stack gap="md">
-                                    {systemMetrics.operationalMetrics.bottlenecks.map((stage) => (
+                                    {systemMetrics.operationalMetrics.processStages.map((stage) => (
                                         <Paper key={stage.stage} p="md" withBorder>
                                             <Group justify="space-between" align="center">
                                                 <div>
                                                     <Text size="sm" fw={500} mb="xs">{stage.stage}</Text>
-                                                    <Text size="xs" c="dimmed">Average duration per order</Text>
+                                                    <Text size="xs" c="dimmed">{stage.description}</Text>
+                                                    <Text size="xs" c="dimmed" style={{ marginTop: '4px' }}>
+                                                        Data source: {stage.source}
+                                                    </Text>
                                                 </div>
                                                 <div style={{ textAlign: 'center' }}>
                                                     <Text size="xl" fw={700} c="blue">{stage.avgTime}</Text>

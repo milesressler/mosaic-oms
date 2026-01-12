@@ -44,6 +44,17 @@ export interface ItemMover {
     direction: 'UP' | 'DOWN' | 'FLAT';
 }
 
+ export interface ProcessStage {
+    stage: string;
+    avgTime: number;
+    description: string;
+    source: string;
+}
+
+export interface ProcessTimingsResponse {
+    processStages: ProcessStage[];
+}
+
 const getSystemMetrics = (params?: SystemMetricsParams) => 
     client.get<SystemMetricsResponse>("/reports/system-metrics", { params });
 
@@ -59,10 +70,14 @@ const getOrderCreationPatterns = (params?: SystemMetricsParams) =>
 const getBiggestMovers = () =>
     client.get<ItemMover[]>("/reports/biggest-movers");
 
+const getProcessTimings = () =>
+    client.get<ProcessTimingsResponse>("/reports/process-timings");
+
 export default {
     getSystemMetrics,
     getWeeklyCustomersServed,
     getWeeklyItemFulfillment,
     getOrderCreationPatterns,
-    getBiggestMovers
+    getBiggestMovers,
+    getProcessTimings
 };

@@ -1,6 +1,7 @@
 package com.mosaicchurchaustin.oms.controllers;
 
 import com.mosaicchurchaustin.oms.data.response.BiggestMoversResponse;
+import com.mosaicchurchaustin.oms.data.response.ProcessTimingsResponse;
 import com.mosaicchurchaustin.oms.data.response.SystemMetricsResponse;
 import com.mosaicchurchaustin.oms.repositories.AnalyticsRepository;
 import com.mosaicchurchaustin.oms.services.ReportsService;
@@ -87,5 +88,15 @@ public class ReportsController {
             @RequestParam(defaultValue = "week") String range) {
         
         return reportsService.getBiggestMovers(range);
+    }
+
+    @ResponseBody
+    @GetMapping(path = "/process-timings", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ProcessTimingsResponse getProcessTimings(
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+            @RequestParam(defaultValue = "6weeks") String range) {
+        
+        return reportsService.getProcessTimings(Optional.ofNullable(startDate), Optional.ofNullable(endDate), range);
     }
 }

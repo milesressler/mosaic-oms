@@ -15,9 +15,10 @@ import { ItemMover } from 'src/services/reportsApi';
 interface BiggestMoversWidgetProps {
     data: ItemMover[];
     loading: boolean;
+    dateInfo?: string;
 }
 
-const BiggestMoversWidget: React.FC<BiggestMoversWidgetProps> = ({ data, loading }) => {
+const BiggestMoversWidget: React.FC<BiggestMoversWidgetProps> = ({ data, loading, dateInfo }) => {
     const getDirectionIcon = (direction: 'UP' | 'DOWN' | 'FLAT') => {
         switch (direction) {
             case 'UP':
@@ -48,7 +49,9 @@ const BiggestMoversWidget: React.FC<BiggestMoversWidgetProps> = ({ data, loading
             <Card withBorder h="300px" pos="relative">
                 <LoadingOverlay visible={loading} overlayProps={{ blur: 2 }} />
                 <Stack gap="sm">
-                    <Text fw={600} size="lg">📈 Biggest Movers (vs 4-Week Average)</Text>
+                    <Text fw={600} size="lg">
+                        📈 Biggest Movers (vs 4-Week Average){dateInfo && ` • ${dateInfo}`}
+                    </Text>
                     {!loading && (
                         <Alert icon={<IconAlertCircle size={16} />} color="blue">
                             No significant changes in item requests this week.
@@ -64,7 +67,9 @@ const BiggestMoversWidget: React.FC<BiggestMoversWidgetProps> = ({ data, loading
             <LoadingOverlay visible={loading} overlayProps={{ blur: 2 }} />
             
             <Stack gap="sm">
-                <Text fw={600} size="lg">📈 Biggest Movers (vs 4-Week Average)</Text>
+                <Text fw={600} size="lg">
+                    📈 Biggest Movers (vs 4-Week Average){dateInfo && ` • ${dateInfo}`}
+                </Text>
                 
                 <Box style={{ maxHeight: '240px', overflowY: 'auto' }}>
                     <Stack gap="xs">

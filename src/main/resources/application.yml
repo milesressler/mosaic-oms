@@ -34,6 +34,10 @@ mosaic:
   oms:
     frontend:
       url: http://localhost:5173
+
+posthog:
+  api:
+    projectId: 158863
 management:
   endpoints:
     web:

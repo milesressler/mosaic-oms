@@ -1,7 +1,9 @@
 package com.mosaicchurchaustin.oms.services;
 
+import com.mosaicchurchaustin.oms.data.projections.ProcessTimingProjection;
 import com.mosaicchurchaustin.oms.data.projections.SystemOverviewProjection;
 import com.mosaicchurchaustin.oms.data.response.BiggestMoversResponse;
+import com.mosaicchurchaustin.oms.data.response.ProcessTimingsResponse;
 import com.mosaicchurchaustin.oms.data.response.SystemMetricsResponse;
 import com.mosaicchurchaustin.oms.repositories.AnalyticsRepository;
 import com.mosaicchurchaustin.oms.repositories.OrderHistoryRepository;
@@ -22,6 +24,7 @@ public class ReportsService {
     final OrderRepository orderRepository;
     final OrderHistoryRepository orderHistoryRepository;
     final AnalyticsRepository analyticsRepository;
+    final PostHogService postHogService;
 
     public static class DateRange {
         public final LocalDate start;
@@ -34,6 +37,18 @@ public class ReportsService {
             this.end = end;
             this.startInstant = start != null ? start.atStartOfDay(ZoneOffset.UTC).toInstant() : null;
             this.endInstant = end != null ? end.plusDays(1).atStartOfDay(ZoneOffset.UTC).toInstant() : null;
+        }
+    }
+
+    public static class ProcessTimingData {
+        public final Double lagTimeSeconds;
+        public final Double packToDeliverySeconds;
+        public final Double distributionTimeSeconds;
+
+        public ProcessTimingData(Double lagTimeSeconds, Double packToDeliverySeconds, Double distributionTimeSeconds) {
+            this.lagTimeSeconds = lagTimeSeconds;
+            this.packToDeliverySeconds = packToDeliverySeconds;
+            this.distributionTimeSeconds = distributionTimeSeconds;
         }
     }
 
@@ -58,13 +73,33 @@ public class ReportsService {
                 case "thisyear" -> LocalDate.now().withMonth(1).withDayOfMonth(1);
                 case "lastyear" -> LocalDate.now().withMonth(1).withDayOfMonth(1).minusYears(1);
                 case "custom" -> minimumDate; // Default for custom range without dates
+                
+                // Weekly ranges - find the most recent Sunday
+                case "thisweek" -> {
+                    LocalDate thisWeekStart = today;
+                    while (thisWeekStart.getDayOfWeek().getValue() != 7) { // 7 = Sunday
+                        thisWeekStart = thisWeekStart.minusDays(1);
+                    }
+                    yield thisWeekStart;
+                }
+                case "lastweek" -> {
+                    LocalDate thisWeekStart = today;
+                    while (thisWeekStart.getDayOfWeek().getValue() != 7) { // 7 = Sunday
+                        thisWeekStart = thisWeekStart.minusDays(1);
+                    }
+                    yield thisWeekStart.minusWeeks(1);
+                }
+                
                 default -> null; // No filter - all time
             };
 
             // Adjust so we always query starting from the first sunday in the range
-            int dayOfWeek = rangeStart.getDayOfWeek().getValue(); // Monday=1, Sunday=7
-            int daysToAdd = dayOfWeek == 7 ? 0 : 7 -dayOfWeek;
-            rangeStart = rangeStart.plusDays(daysToAdd);
+            // Skip this adjustment for weekly ranges as they already start on Sunday
+            if (!"thisweek".equals(range) && !"lastweek".equals(range)) {
+                int dayOfWeek = rangeStart.getDayOfWeek().getValue(); // Monday=1, Sunday=7
+                int daysToAdd = dayOfWeek == 7 ? 0 : 7 -dayOfWeek;
+                rangeStart = rangeStart.plusDays(daysToAdd);
+            }
 
 
             if (rangeStart != null) {
@@ -81,6 +116,10 @@ public class ReportsService {
                     endLocalDate = rangeStart.plusMonths(6).minusDays(1);
                 } else if ("1year".equals(range)) {
                     endLocalDate = rangeStart.plusYears(1).minusDays(1);
+                } else if ("thisweek".equals(range)) {
+                    endLocalDate = rangeStart.plusWeeks(1).minusDays(1);
+                } else if ("lastweek".equals(range)) {
+                    endLocalDate = rangeStart.plusWeeks(1).minusDays(1);
                 } else {
                     endLocalDate = today;
                 }
@@ -250,13 +289,73 @@ public class ReportsService {
                     .build();
             })
             // Filter out items with very low volume to reduce noise
-            .filter(mover -> Math.max(mover.getThisWeekCount().intValue(), mover.getLastWeekCount().intValue()) >= 2)
-            // Sort by absolute change (biggest movers first)
-            .sorted((a, b) -> Math.toIntExact(Math.abs(b.getAbsoluteChange()) - Math.abs(a.getAbsoluteChange())))
+            .filter(mover -> Math.max(mover.getThisWeekCount().intValue(), mover.getLastWeekCount().intValue()) >= 3)
+            // Sort by absolute percentage change (biggest movers first)
+            .sorted((a, b) -> Double.compare(Math.abs(b.getPercentageChange()), Math.abs(a.getPercentageChange())))
             // Take top 10
             .limit(10)
             .toList();
         
         return movers;
+    }
+
+    public ProcessTimingsResponse getProcessTimings(Optional<LocalDate> startDate, Optional<LocalDate> endDate, String range) {
+        // Get PostHog data for order taker time and item collection time
+        Double orderTakerTime = postHogService.getOrderTakerTimeAverage(); // in seconds
+        Double itemCollectionTime = postHogService.getItemCollectionTimeAverage(); // in seconds
+        
+        // Calculate database-based timings using the same date range approach as other reports
+        DateRange dateRange = parseDateRange(startDate, endDate, range);
+        
+        // Get timing data from database
+        ProcessTimingData timingData = calculateDatabaseTimings(dateRange);
+        Double lagTimeForPacking = timingData.lagTimeSeconds;
+        Double packedToDeliveredTime = timingData.packToDeliverySeconds; 
+        Double distributionTime = timingData.distributionTimeSeconds;
+
+        List<ProcessTimingsResponse.ProcessStage> stages = List.of(
+            ProcessTimingsResponse.ProcessStage.builder()
+                .stage("Order Taker Time")
+                .avgTime(orderTakerTime)
+                .description("Time to take and input order")
+                .build(),
+            ProcessTimingsResponse.ProcessStage.builder()
+                .stage("Lag Time to Process")
+                .avgTime(lagTimeForPacking)
+                .description("Wait time before packing starts")
+                .build(),
+            ProcessTimingsResponse.ProcessStage.builder()
+                .stage("Time to Pack")
+                .avgTime(itemCollectionTime)
+                .description("Active item collection and packing")
+                .build(),
+            ProcessTimingsResponse.ProcessStage.builder()
+                .stage("Packed to Delivered")
+                .avgTime(packedToDeliveredTime)
+                .description("Time from packed to transferred/delivered")
+                .build(),
+            ProcessTimingsResponse.ProcessStage.builder()
+                .stage("Time to Complete Distribution")
+                .avgTime(distributionTime)
+                .description("Final distribution to customer")
+                .build()
+        );
+
+        return ProcessTimingsResponse.builder()
+                .processStages(stages)
+                .build();
+    }
+
+    private ProcessTimingData calculateDatabaseTimings(DateRange dateRange) {
+        ProcessTimingProjection timing = orderHistoryRepository.findProcessTimingsForCompletedOrders(
+            dateRange.startInstant, 
+            dateRange.endInstant
+        );
+        
+        return new ProcessTimingData(
+            timing.getAvgLagTimeSeconds(), 
+            timing.getAvgPackToDeliverySeconds(), 
+            timing.getAvgDistributionTimeSeconds()
+        );
     }
 }
