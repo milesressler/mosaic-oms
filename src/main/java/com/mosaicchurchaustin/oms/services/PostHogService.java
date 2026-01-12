@@ -31,45 +31,6 @@ public class PostHogService {
     private final ObjectMapper objectMapper = new ObjectMapper();
 
 
-    private Double parseInsightValue(final String response) {
-        try {
-            final JsonNode root = objectMapper.readTree(response);
-            final JsonNode result = root.get("result");
-            
-            if (result != null && result.isArray() && !result.isEmpty()) {
-                // Most insights return an array with aggregated values
-                final JsonNode firstResult = result.get(0);
-                final JsonNode data = firstResult.get("data");
-                
-                if (data != null && data.isArray() && !data.isEmpty()) {
-                    // Get the latest/most recent value from the data points
-                    final JsonNode lastDataPoint = data.get(data.size() - 1);
-                    if (lastDataPoint.isNumber()) {
-                        final double value = lastDataPoint.asDouble();
-                        log.info("Parsed insight value: {}", value);
-                        return value;
-                    }
-                }
-                
-                // Alternative structure: direct aggregation value
-                if (firstResult.has("aggregated_value")) {
-                    final JsonNode aggregatedValue = firstResult.get("aggregated_value");
-                    if (aggregatedValue.isNumber()) {
-                        final double value = aggregatedValue.asDouble();
-                        log.info("Parsed aggregated insight value: {}", value);
-                        return value;
-                    }
-                }
-            }
-            
-            log.warn("No valid insight data found in PostHog response");
-            return null;
-            
-        } catch (final Exception e) {
-            log.error("Failed to parse PostHog insight response", e);
-            return null;
-        }
-    }
 
     /**
      * Fetches historical data for entire duration range in a single API call
@@ -95,7 +56,7 @@ public class PostHogService {
         
         try {
             final JsonNode root = objectMapper.readTree(response);
-            final JsonNode result = root.get("result");
+            final JsonNode result = root.get("results");
             
             if (result != null && result.isArray() && !result.isEmpty()) {
                 final JsonNode firstResult = result.get(0);
@@ -156,37 +117,75 @@ public class PostHogService {
             throw new RuntimeException("PostHog API key not configured");
         }
 
-        // Calculate days ago from today for PostHog relative date format
-        final LocalDate today = LocalDate.now();
-        final long daysFromStart = java.time.temporal.ChronoUnit.DAYS.between(startDate, today);
-        final long daysFromEnd = java.time.temporal.ChronoUnit.DAYS.between(endDate, today);
-        
-        // PostHog expects relative dates like "-7d" for 7 days ago, null for "today"
-        final String dateFrom = daysFromStart > 0 ? "-" + daysFromStart + "d" : "0d";
-        final String dateTo = daysFromEnd > 0 ? "-" + daysFromEnd + "d" : null;
+        // Use PostHog's query API instead of insights API for full date range control
+        final String queryBody = buildPostHogQueryForTimingType(insightId, startDate, endDate);
 
-        return webClient.get()
-                .uri(uriBuilder -> {
-                    var builder = uriBuilder
-                        .scheme("https")
-                        .host(POSTHOG_API_HOST)
-                        .path("/api/projects/{project_id}/insights/{insight_id}/")
-                        .queryParam("date_from", dateFrom)
-                        .queryParam("explicitDate", false);
-                    
-                    // Only add date_to if it's not null (null means "today")
-                    if (dateTo != null) {
-                        builder.queryParam("date_to", dateTo);
-                    }
-                    
-                    return builder.build(getProjectId(), insightId);
-                })
+        return webClient.post()
+                .uri(uriBuilder -> uriBuilder
+                    .scheme("https")
+                    .host(POSTHOG_API_HOST)
+                    .path("/api/projects/{project_id}/query/")
+                    .build(postHogProjectId))
                 .header("Authorization", "Bearer " + postHogApiKey)
+                .header("Content-Type", "application/json")
+                .bodyValue(queryBody)
                 .retrieve()
+                .onStatus(
+                    status -> status.is4xxClientError() || status.is5xxServerError(),
+                    response -> response.bodyToMono(String.class)
+                        .map(body -> {
+                            log.error("PostHog query API failed for insight {} date range {} to {}. Status: {}, Response: {}", 
+                                insightId, startDate, endDate, response.statusCode(), body);
+                            return new RuntimeException("PostHog API error: " + response.statusCode() + " - " + body);
+                        })
+                )
                 .bodyToMono(String.class)
-                .doOnError(error -> log.error("PostHog insight API call failed for insight {} with relative dates from {} ({}) to {} ({}): {}", 
-                    insightId, startDate, dateFrom, endDate, dateTo, error.getMessage()))
+                .doOnError(error -> log.error("PostHog query API call failed for insight {} date range {} to {}: {}", 
+                    insightId, startDate, endDate, error.getMessage()))
                 .block();
+    }
+
+    private String buildPostHogQueryForTimingType(final String insightId, final LocalDate startDate, final LocalDate endDate) {
+        // Map insight IDs to their corresponding events and properties
+        final String eventName;
+        final String propertyName;
+        
+        switch (insightId) {
+            case "2794475": // ORDER_TAKER_TIME
+                eventName = "order_funnel_completed";
+                propertyName = "timeToCompleteMs";
+                break;
+            case "2802550": // FULFILLMENT_TIME
+                eventName = "order_fulfillment_completed";
+                propertyName = "timeToFillSeconds";
+                break;
+            default:
+                throw new IllegalArgumentException("Unknown insight ID: " + insightId);
+        }
+
+        // Build PostHog query JSON based on the SQL from the insights
+        return String.format("""
+            {
+              "query": {
+                "kind": "TrendsQuery",
+                "series": [
+                  {
+                    "kind": "EventsNode",
+                    "event": "%s",
+                    "math": "avg",
+                    "math_property": "%s"
+                  }
+                ],
+                "interval": "week",
+                "dateRange": {
+                  "date_from": "%s",
+                  "date_to": "%s",
+                  "explicitDate": true
+                },
+                "filterTestAccounts": true
+              }
+            }
+            """, eventName, propertyName, startDate.toString(), endDate.toString());
     }
 
     /**
