@@ -85,9 +85,15 @@ public class ReportsController {
     @ResponseBody
     @GetMapping(path = "/biggest-movers", produces = MediaType.APPLICATION_JSON_VALUE)
     public List<BiggestMoversResponse.ItemMover> getBiggestMovers(
-            @RequestParam(defaultValue = "week") String range) {
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+            @RequestParam(defaultValue = "thisweek") String range) {
         
-        return reportsService.getBiggestMovers(range);
+        return reportsService.getBiggestMovers(
+            Optional.ofNullable(startDate),
+            Optional.ofNullable(endDate),
+            range
+        );
     }
 
     @ResponseBody

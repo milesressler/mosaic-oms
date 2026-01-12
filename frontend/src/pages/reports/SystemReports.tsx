@@ -48,7 +48,7 @@ const SystemReports: React.FC = () => {
             weeklyCustomersApi.request(params);
             weeklyItemFulfillmentApi.request(params);
             orderCreationPatternsApi.request(params);
-            biggestMoversApi.request();
+            biggestMoversApi.request(params);
             processTimingsApi.request(params);
         }
     }, [dateRange, customDateRange, viewMode]);
@@ -103,7 +103,7 @@ const SystemReports: React.FC = () => {
             weeklyCustomersApi.request(params);
             weeklyItemFulfillmentApi.request(params);
             orderCreationPatternsApi.request(params);
-            biggestMoversApi.request();
+            biggestMoversApi.request(params);
             processTimingsApi.request(params);
         }
     };
@@ -113,15 +113,15 @@ const SystemReports: React.FC = () => {
         setCustomDateRange([null, null]);
     };
 
-    if (systemMetricsApi.error) {
-        return (
-            <Container size="xl" py="md">
-                <Alert variant="light" color="red" title="Error Loading Reports">
-                    {systemMetricsApi.error}
-                </Alert>
-            </Container>
-        );
-    }
+    // if (systemMetricsApi.error) {
+    //     return (
+    //         <Container size="xl" py="md">
+    //             <Alert variant="light" color="red" title="Error Loading Reports">
+    //                 {systemMetricsApi.error}
+    //             </Alert>
+    //         </Container>
+    //     );
+    // }
 
     const data = systemMetricsApi.data;
 

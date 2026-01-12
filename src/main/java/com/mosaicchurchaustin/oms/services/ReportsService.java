@@ -1,5 +1,7 @@
 package com.mosaicchurchaustin.oms.services;
 
+import com.mosaicchurchaustin.oms.data.entity.ProcessTimingAnalyticsEntity;
+import com.mosaicchurchaustin.oms.data.entity.TimingType;
 import com.mosaicchurchaustin.oms.data.projections.ProcessTimingProjection;
 import com.mosaicchurchaustin.oms.data.projections.SystemOverviewProjection;
 import com.mosaicchurchaustin.oms.data.response.BiggestMoversResponse;
@@ -8,6 +10,7 @@ import com.mosaicchurchaustin.oms.data.response.SystemMetricsResponse;
 import com.mosaicchurchaustin.oms.repositories.AnalyticsRepository;
 import com.mosaicchurchaustin.oms.repositories.OrderHistoryRepository;
 import com.mosaicchurchaustin.oms.repositories.OrderRepository;
+import com.mosaicchurchaustin.oms.repositories.ProcessTimingAnalyticsRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -21,10 +24,10 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class ReportsService {
 
-    final OrderRepository orderRepository;
-    final OrderHistoryRepository orderHistoryRepository;
-    final AnalyticsRepository analyticsRepository;
-    final PostHogService postHogService;
+    private final OrderRepository orderRepository;
+    private final OrderHistoryRepository orderHistoryRepository;
+    private final AnalyticsRepository analyticsRepository;
+    private final ProcessTimingAnalyticsRepository processTimingAnalyticsRepository;
 
     public static class DateRange {
         public final LocalDate start;
@@ -220,100 +223,49 @@ public class ReportsService {
         return result;
     }
 
-    public List<BiggestMoversResponse.ItemMover> getBiggestMovers(String range) {
-        LocalDate today = LocalDate.now();
+    public List<BiggestMoversResponse.ItemMover> getBiggestMovers(final Optional<LocalDate> startDate, final Optional<LocalDate> endDate, final String range) {
+        // Use the same date range parsing as other reports  
+        final DateRange dateRange = parseDateRange(startDate, endDate, range);
         
-        // Calculate this week date range
-        // Find the most recent Sunday as start of "this week"
-        LocalDate thisWeekStart = today;
-        while (thisWeekStart.getDayOfWeek().getValue() != 7) { // 7 = Sunday
-            thisWeekStart = thisWeekStart.minusDays(1);
-        }
-        LocalDate thisWeekEnd = thisWeekStart.plusWeeks(1).minusDays(1);
+        // Get the week containing the end date (Sunday start)
+        final LocalDate targetWeekStart = PostHogService.getSundayStartForDate(dateRange.end);
+        final LocalDate targetWeekEnd = targetWeekStart.plusDays(6);
         
-        // Calculate 4-week average period (excluding current week)
-        LocalDate fourWeekPeriodStart = thisWeekStart.minusWeeks(4);
-        LocalDate fourWeekPeriodEnd = thisWeekStart.minusDays(1);
+        // Calculate 4-week average period (4 weeks prior to target week)
+        final LocalDate fourWeekPeriodStart = targetWeekStart.minusWeeks(4);
+        final LocalDate fourWeekPeriodEnd = targetWeekStart.minusDays(1);
         
-        // Get item counts for this week and the 4-week period
-        List<AnalyticsRepository.WeeklyItemRequestCount> thisWeekCounts = 
-            analyticsRepository.findWeeklyItemRequestCounts(thisWeekStart, thisWeekEnd);
-        List<AnalyticsRepository.WeeklyItemRequestCount> fourWeekCounts = 
-            analyticsRepository.findWeeklyItemRequestCounts(fourWeekPeriodStart, fourWeekPeriodEnd);
-        
-        // Convert this week to map for easier lookup
-        var thisWeekMap = thisWeekCounts.stream()
-            .collect(java.util.stream.Collectors.toMap(
-                AnalyticsRepository.WeeklyItemRequestCount::getItemName, 
-                AnalyticsRepository.WeeklyItemRequestCount::getRequestCount));
-        
-        // Calculate 4-week average for each item
-        var averageMap = new java.util.HashMap<String, Double>();
-        fourWeekCounts.stream()
-            .collect(java.util.stream.Collectors.groupingBy(
-                AnalyticsRepository.WeeklyItemRequestCount::getItemName,
-                java.util.stream.Collectors.summingLong(AnalyticsRepository.WeeklyItemRequestCount::getRequestCount)))
-            .forEach((itemName, totalCount) -> 
-                averageMap.put(itemName, totalCount / 4.0)); // 4-week average
-        
-        // Find all items that appeared in either this week or the 4-week period
-        var allItems = new java.util.HashSet<String>();
-        allItems.addAll(thisWeekMap.keySet());
-        allItems.addAll(averageMap.keySet());
-        
-        // Calculate changes vs average and create movers
-        List<BiggestMoversResponse.ItemMover> movers = allItems.stream()
-            .map(itemName -> {
-                Long thisWeekCount = thisWeekMap.getOrDefault(itemName, 0L);
-                Double weeklyAverage = averageMap.getOrDefault(itemName, 0.0);
-                Long averageAsLong = Math.round(weeklyAverage);
-                Long absoluteChange = thisWeekCount - averageAsLong;
-                
-                Double percentageChange = weeklyAverage > 0 
-                    ? ((double) absoluteChange / weeklyAverage) * 100 
-                    : (thisWeekCount > 0 ? 100.0 : 0.0);
-                
-                BiggestMoversResponse.MovementDirection direction;
-                if (absoluteChange > 0) direction = BiggestMoversResponse.MovementDirection.UP;
-                else if (absoluteChange < 0) direction = BiggestMoversResponse.MovementDirection.DOWN;
-                else direction = BiggestMoversResponse.MovementDirection.FLAT;
-                
-                return BiggestMoversResponse.ItemMover.builder()
-                    .itemName(itemName)
-                    .itemId(itemName) // Using name as ID for now
-                    .thisWeekCount(thisWeekCount)
-                    .lastWeekCount(averageAsLong) // Using average in place of lastWeekCount for consistency
-                    .absoluteChange(absoluteChange)
-                    .percentageChange(percentageChange)
-                    .direction(direction)
-                    .build();
-            })
-            // Filter out items with very low volume to reduce noise
-            .filter(mover -> Math.max(mover.getThisWeekCount().intValue(), mover.getLastWeekCount().intValue()) >= 3)
-            // Sort by absolute percentage change (biggest movers first)
-            .sorted((a, b) -> Double.compare(Math.abs(b.getPercentageChange()), Math.abs(a.getPercentageChange())))
-            // Take top 10
-            .limit(10)
+        // Use CTE-based database query to calculate biggest movers
+        return analyticsRepository.findBiggestMovers(
+            targetWeekStart, targetWeekEnd,
+            fourWeekPeriodStart, fourWeekPeriodEnd
+        ).stream()
+            .map(projection -> BiggestMoversResponse.ItemMover.builder()
+                .itemName(projection.getItemName())
+                .itemId(projection.getItemId())
+                .thisWeekCount(projection.getThisWeekCount())
+                .lastWeekCount(projection.getLastWeekCount())
+                .absoluteChange(projection.getAbsoluteChange())
+                .percentageChange(projection.getPercentageChange())
+                .direction(BiggestMoversResponse.MovementDirection.valueOf(projection.getDirection()))
+                .build())
             .toList();
-        
-        return movers;
     }
 
-    public ProcessTimingsResponse getProcessTimings(Optional<LocalDate> startDate, Optional<LocalDate> endDate, String range) {
-        // Get PostHog data for order taker time and item collection time
-        Double orderTakerTime = postHogService.getOrderTakerTimeAverage(); // in seconds
-        Double itemCollectionTime = postHogService.getItemCollectionTimeAverage(); // in seconds
+    public ProcessTimingsResponse getProcessTimings(final Optional<LocalDate> startDate, final Optional<LocalDate> endDate, final String range) {
+        final DateRange dateRange = parseDateRange(startDate, endDate, range);
         
-        // Calculate database-based timings using the same date range approach as other reports
-        DateRange dateRange = parseDateRange(startDate, endDate, range);
+        // Get analytics timing data from database for the specified date range
+        final Double orderTakerTime = getAnalyticsTimingAverage(TimingType.ORDER_TAKER_TIME, dateRange);
+        final Double itemCollectionTime = getAnalyticsTimingAverage(TimingType.FULFILLMENT_TIME, dateRange);
         
-        // Get timing data from database
-        ProcessTimingData timingData = calculateDatabaseTimings(dateRange);
-        Double lagTimeForPacking = timingData.lagTimeSeconds;
-        Double packedToDeliveredTime = timingData.packToDeliverySeconds; 
-        Double distributionTime = timingData.distributionTimeSeconds;
+        // Get database-based timings using the same date range approach as other reports
+        final ProcessTimingData timingData = calculateDatabaseTimings(dateRange);
+        final Double lagTimeForPacking = timingData.lagTimeSeconds;
+        final Double packedToDeliveredTime = timingData.packToDeliverySeconds; 
+        final Double distributionTime = timingData.distributionTimeSeconds;
 
-        List<ProcessTimingsResponse.ProcessStage> stages = List.of(
+        final List<ProcessTimingsResponse.ProcessStage> stages = List.of(
             ProcessTimingsResponse.ProcessStage.builder()
                 .stage("Order Taker Time")
                 .avgTime(orderTakerTime)
@@ -346,8 +298,27 @@ public class ReportsService {
                 .build();
     }
 
-    private ProcessTimingData calculateDatabaseTimings(DateRange dateRange) {
-        ProcessTimingProjection timing = orderHistoryRepository.findProcessTimingsForCompletedOrders(
+    private Double getAnalyticsTimingAverage(final TimingType timingType, final DateRange dateRange) {
+        final List<ProcessTimingAnalyticsEntity> analyticsData = 
+            processTimingAnalyticsRepository.findByTimingTypeAndWeekStartDateBetween(
+                timingType, dateRange.start, dateRange.end);
+        
+        if (analyticsData.isEmpty()) {
+            return null;
+        }
+        
+        // Calculate weighted average based on available data
+        final double average = analyticsData.stream()
+            .filter(data -> data.getAvgTimeSeconds() != null)
+            .mapToDouble(ProcessTimingAnalyticsEntity::getAvgTimeSeconds)
+            .average()
+            .orElse(0.0);
+            
+        return average > 0 ? average : null;
+    }
+
+    private ProcessTimingData calculateDatabaseTimings(final DateRange dateRange) {
+        final ProcessTimingProjection timing = orderHistoryRepository.findProcessTimingsForCompletedOrders(
             dateRange.startInstant, 
             dateRange.endInstant
         );

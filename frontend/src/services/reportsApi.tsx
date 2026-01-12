@@ -67,11 +67,11 @@ const getWeeklyItemFulfillment = (params?: SystemMetricsParams) =>
 const getOrderCreationPatterns = (params?: SystemMetricsParams) =>
     client.get<OrderCreationPatterns>("/reports/order-creation-patterns", { params });
 
-const getBiggestMovers = () =>
-    client.get<ItemMover[]>("/reports/biggest-movers");
+const getBiggestMovers = (params?: SystemMetricsParams) =>
+    client.get<ItemMover[]>("/reports/biggest-movers", { params });
 
-const getProcessTimings = () =>
-    client.get<ProcessTimingsResponse>("/reports/process-timings");
+const getProcessTimings = (params?: SystemMetricsParams) =>
+    client.get<ProcessTimingsResponse>("/reports/process-timings", { params });
 
 export default {
     getSystemMetrics,
