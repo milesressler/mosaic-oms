@@ -3,6 +3,7 @@ package com.mosaicchurchaustin.oms.services;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mosaicchurchaustin.oms.data.entity.TimingType;
+import com.mosaicchurchaustin.oms.utils.DateUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -36,14 +37,16 @@ public class PostHogService {
      * Fetches historical data for entire duration range in a single API call
      * Returns a Map of week start dates to average timing values for that week
      */
-    public java.util.Map<LocalDate, Double> getBulkWeeklyDataForTimingType(final TimingType timingType, final LocalDate startDate, final LocalDate endDate) {
-        log.info("Fetching bulk {} data from {} to {}", timingType, startDate, endDate);
+    public java.util.Map<LocalDate, Double> getBulkWeeklyDataForTimingType(final TimingType timingType, final LocalDate startDate) {
+        final var endDate = LocalDate.now();
+        log.info("PostHog INPUT: Fetching bulk {} data from {} to {}", timingType, startDate, endDate);
         
         final String insightId = getInsightIdForTimingType(timingType);
         final String response = fetchInsightWithDateRange(insightId, startDate, endDate);
         final java.util.Map<LocalDate, Double> weeklyData = parseWeeklyInsightResponse(response, timingType);
         
-        log.info("Parsed {} weeks of {} data", weeklyData.size(), timingType);
+        log.info("PostHog OUTPUT: Parsed {} weeks of {} data with dates: {}",
+            weeklyData.size(), timingType, weeklyData.keySet());
         return weeklyData;
     }
 
@@ -190,10 +193,11 @@ public class PostHogService {
 
     /**
      * Gets the start of a specific date's week (Sunday)
+     * @deprecated Use DateUtils.getSundayStartForDate() instead
      */
+    @Deprecated
     public static LocalDate getSundayStartForDate(final LocalDate date) {
-        final int daysFromSunday = date.getDayOfWeek().getValue() % 7;
-        return date.minusDays(daysFromSunday);
+        return DateUtils.getSundayStartForDate(date);
     }
 
     private String getProjectId() {

@@ -11,7 +11,9 @@ import com.mosaicchurchaustin.oms.repositories.AnalyticsRepository;
 import com.mosaicchurchaustin.oms.repositories.OrderHistoryRepository;
 import com.mosaicchurchaustin.oms.repositories.OrderRepository;
 import com.mosaicchurchaustin.oms.repositories.ProcessTimingAnalyticsRepository;
+import com.mosaicchurchaustin.oms.utils.DateUtils;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -22,6 +24,7 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class ReportsService {
 
     private final OrderRepository orderRepository;
@@ -77,21 +80,9 @@ public class ReportsService {
                 case "lastyear" -> LocalDate.now().withMonth(1).withDayOfMonth(1).minusYears(1);
                 case "custom" -> minimumDate; // Default for custom range without dates
                 
-                // Weekly ranges - find the most recent Sunday
-                case "thisweek" -> {
-                    LocalDate thisWeekStart = today;
-                    while (thisWeekStart.getDayOfWeek().getValue() != 7) { // 7 = Sunday
-                        thisWeekStart = thisWeekStart.minusDays(1);
-                    }
-                    yield thisWeekStart;
-                }
-                case "lastweek" -> {
-                    LocalDate thisWeekStart = today;
-                    while (thisWeekStart.getDayOfWeek().getValue() != 7) { // 7 = Sunday
-                        thisWeekStart = thisWeekStart.minusDays(1);
-                    }
-                    yield thisWeekStart.minusWeeks(1);
-                }
+                // Weekly ranges - find the most recent Sunday using same logic as analytics sync
+                case "thisweek" -> DateUtils.getSundayStartForDate(today);
+                case "lastweek" -> DateUtils.getSundayStartForDate(today).minusWeeks(1);
                 
                 default -> null; // No filter - all time
             };
@@ -228,7 +219,7 @@ public class ReportsService {
         final DateRange dateRange = parseDateRange(startDate, endDate, range);
         
         // Get the week containing the end date (Sunday start)
-        final LocalDate targetWeekStart = PostHogService.getSundayStartForDate(dateRange.end);
+        final LocalDate targetWeekStart = DateUtils.getSundayStartForDate(dateRange.end);
         final LocalDate targetWeekEnd = targetWeekStart.plusDays(6);
         
         // Calculate 4-week average period (4 weeks prior to target week)

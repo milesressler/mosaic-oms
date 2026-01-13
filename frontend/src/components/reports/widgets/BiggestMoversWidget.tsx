@@ -40,7 +40,7 @@ const BiggestMoversWidget: React.FC<BiggestMoversWidgetProps> = ({ data, loading
 
     const formatChange = (mover: ItemMover) => {
         const sign = mover.absoluteChange >= 0 ? '+' : '';
-        const percentage = Math.abs(mover.percentageChange);
+        const percentage = mover.percentageChange >= 0 ? mover.percentageChange : -mover.percentageChange;
         return `${sign}${mover.absoluteChange} (${percentage.toFixed(0)}%)`;
     };
 

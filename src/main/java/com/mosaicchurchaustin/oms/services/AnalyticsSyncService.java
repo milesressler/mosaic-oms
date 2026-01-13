@@ -3,6 +3,7 @@ package com.mosaicchurchaustin.oms.services;
 import com.mosaicchurchaustin.oms.data.entity.ProcessTimingAnalyticsEntity;
 import com.mosaicchurchaustin.oms.data.entity.TimingType;
 import com.mosaicchurchaustin.oms.repositories.ProcessTimingAnalyticsRepository;
+import com.mosaicchurchaustin.oms.utils.DateUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -48,7 +49,7 @@ public class AnalyticsSyncService {
             LocalDate startDate;
             if (latestDateOpt.isEmpty()) {
                 // No data exists, start from max(MIN_START_DATE, today minus one year)
-                final LocalDate oneYearAgo = PostHogService.getSundayStartForDate(LocalDate.now().minusYears(1));
+                final LocalDate oneYearAgo = DateUtils.getSundayStartForDate(LocalDate.now().minusYears(1));
                 startDate = MIN_START_DATE.isAfter(oneYearAgo) ? MIN_START_DATE : oneYearAgo;
             } else {
                 // Have data, start from last completed date minus one week
@@ -56,14 +57,14 @@ public class AnalyticsSyncService {
             }
             
             // Always use Sunday as reference point
-            startDate = PostHogService.getSundayStartForDate(startDate);
-            final LocalDate endDate = PostHogService.getSundayStartForDate(LocalDate.now());
+            startDate = DateUtils.getSundayStartForDate(startDate);
+            final LocalDate endDate = DateUtils.getSundayStartForDate(LocalDate.now());
             
             log.info("Fetching {} data from {} to {}", timingType, startDate, endDate);
             
             // Make API call to PostHog for this timing type
             java.util.Map<LocalDate, Double> weeklyData = 
-                postHogService.getBulkWeeklyDataForTimingType(timingType, startDate, endDate);
+                postHogService.getBulkWeeklyDataForTimingType(timingType, startDate);
 
             weeklyData.forEach((weekStart, value) -> {
                 if (0 < value) {
@@ -76,6 +77,7 @@ public class AnalyticsSyncService {
             
         } catch (Exception e) {
             log.error("Failed to sync {} data: {}", timingType, e.getMessage());
+            // Continue processing other timing types even if one fails
         }
     }
 
