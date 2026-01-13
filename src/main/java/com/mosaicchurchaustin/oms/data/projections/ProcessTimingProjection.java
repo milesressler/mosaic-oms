@@ -4,4 +4,5 @@ public interface ProcessTimingProjection {
     Double getAvgLagTimeSeconds();
     Double getAvgPackToDeliverySeconds();
     Double getAvgDistributionTimeSeconds();
+    Double getAvgTotalTimeSeconds();
 }

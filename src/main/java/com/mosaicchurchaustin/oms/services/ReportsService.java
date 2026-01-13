@@ -251,10 +251,11 @@ public class ReportsService {
         final Double itemCollectionTime = getAnalyticsTimingAverage(TimingType.FULFILLMENT_TIME, dateRange);
         
         // Get database-based timings using the same date range approach as other reports
-        final ProcessTimingData timingData = calculateDatabaseTimings(dateRange);
-        final Double lagTimeForPacking = timingData.lagTimeSeconds;
-        final Double packedToDeliveredTime = timingData.packToDeliverySeconds; 
-        final Double distributionTime = timingData.distributionTimeSeconds;
+        final ProcessTimingProjection timingData = calculateDatabaseTimings(dateRange);
+        final Double lagTimeForPacking = timingData.getAvgLagTimeSeconds();
+        final Double packedToDeliveredTime = timingData.getAvgPackToDeliverySeconds();
+        final Double distributionTime = timingData.getAvgDistributionTimeSeconds();
+        final Double totalTime = timingData.getAvgTotalTimeSeconds() + orderTakerTime;
 
         final List<ProcessTimingsResponse.ProcessStage> stages = List.of(
             ProcessTimingsResponse.ProcessStage.builder()
@@ -285,6 +286,7 @@ public class ReportsService {
         );
 
         return ProcessTimingsResponse.builder()
+                .totalEndToEndTime(totalTime)
                 .processStages(stages)
                 .build();
     }
@@ -308,16 +310,10 @@ public class ReportsService {
         return average > 0 ? average : null;
     }
 
-    private ProcessTimingData calculateDatabaseTimings(final DateRange dateRange) {
-        final ProcessTimingProjection timing = orderHistoryRepository.findProcessTimingsForCompletedOrders(
+    private ProcessTimingProjection calculateDatabaseTimings(final DateRange dateRange) {
+        return orderHistoryRepository.findProcessTimingsForCompletedOrders(
             dateRange.startInstant, 
             dateRange.endInstant
-        );
-        
-        return new ProcessTimingData(
-            timing.getAvgLagTimeSeconds(), 
-            timing.getAvgPackToDeliverySeconds(), 
-            timing.getAvgDistributionTimeSeconds()
         );
     }
 }

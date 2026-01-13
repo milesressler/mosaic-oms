@@ -41,7 +41,11 @@ public interface OrderHistoryRepository extends JpaRepository<OrderHistoryEntity
                 TIMESTAMPDIFF(SECOND,
                     MIN(CASE WHEN oh.type = 'STATUS_CHANGE' AND oh.order_status = 'READY_FOR_CUSTOMER_PICKUP' THEN oh.timestamp END),
                     MIN(CASE WHEN oh.type = 'STATUS_CHANGE' AND oh.order_status = 'COMPLETED' THEN oh.timestamp END)
-                ) as distributionTimeSeconds
+                ) as distributionTimeSeconds,
+                TIMESTAMPDIFF(SECOND,
+                    MIN(CASE WHEN oh.type = 'STATUS_CHANGE' AND oh.order_status = 'PENDING_ACCEPTANCE' THEN oh.timestamp END),
+                    MIN(CASE WHEN oh.type = 'STATUS_CHANGE' AND oh.order_status = 'COMPLETED' THEN oh.timestamp END)
+                ) as totalTimeSeconds
             FROM orders o 
             LEFT JOIN order_history oh ON oh.order_entity_id = o.id 
             LEFT JOIN customers c ON o.customer_id = c.id
@@ -59,11 +63,13 @@ public interface OrderHistoryRepository extends JpaRepository<OrderHistoryEntity
         SELECT 
             AVG(lagTimeSeconds) as avgLagTimeSeconds,
             AVG(packToDeliverySeconds) as avgPackToDeliverySeconds,
-            AVG(distributionTimeSeconds) as avgDistributionTimeSeconds
+            AVG(distributionTimeSeconds) as avgDistributionTimeSeconds,
+            AVG(totalTimeSeconds) as avgTotalTimeSeconds
         FROM order_timings
         WHERE lagTimeSeconds IS NOT NULL 
           AND packToDeliverySeconds IS NOT NULL 
           AND distributionTimeSeconds IS NOT NULL
+          AND totalTimeSeconds IS NOT NULL
         """, nativeQuery = true)
     ProcessTimingProjection findProcessTimingsForCompletedOrders(@Param("startDate") Instant startDate, @Param("endDate") Instant endDate);
 }

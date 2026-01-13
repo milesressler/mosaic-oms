@@ -11,16 +11,20 @@ interface ProcessStage {
 interface ProcessTimesWidgetProps {
     data: ProcessStage[];
     loading?: boolean;
+    totalEndToEndTime: number;
 }
 
-const ProcessTimesWidget: React.FC<ProcessTimesWidgetProps> = ({ data, loading }) => {
+const ProcessTimesWidget: React.FC<ProcessTimesWidgetProps> = ({ data, loading, totalEndToEndTime }) => {
     if (!data || data.length === 0) {
         return null;
     }
 
     return (
         <Paper p="md" mb="lg" withBorder>
-            <Title order={3} mb="md">Typical Process Times</Title>
+            <Group justify={'space-between'}>
+                <Title order={3} mb="md">Process Times</Title>
+                <Title order={4} mb="md">Total: {(totalEndToEndTime / 60).toFixed(1)}m</Title>
+            </Group>
             <Stack gap="md">
                 {data.map((stage) => (
                     <Paper key={stage.stage} p="xs" withBorder>

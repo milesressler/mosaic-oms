@@ -8,7 +8,6 @@ import {
     LoadingOverlay,
     Select,
     SimpleGrid,
-    Tabs,
     Title,
 } from '@mantine/core';
 import {DatePickerInput} from '@mantine/dates';
@@ -23,7 +22,6 @@ import BiggestMoversWidget from 'src/components/reports/widgets/BiggestMoversWid
 import ProcessTimesWidget from 'src/components/reports/widgets/ProcessTimesWidget';
 
 const SystemReports: React.FC = () => {
-    const [viewMode, setViewMode] = useState<string>('overview');
     const [dateRange, setDateRange] = useState<string>('6weeks');
     const [customDateRange, setCustomDateRange] = useState<[Date | null, Date | null]>([null, null]);
     
@@ -44,14 +42,12 @@ const SystemReports: React.FC = () => {
         }
         
         systemMetricsApi.request(params);
-        if (viewMode === 'overview') {
-            weeklyCustomersApi.request(params);
-            weeklyItemFulfillmentApi.request(params);
-            orderCreationPatternsApi.request(params);
-            biggestMoversApi.request(params);
-            processTimingsApi.request(params);
-        }
-    }, [dateRange, customDateRange, viewMode]);
+        weeklyCustomersApi.request(params);
+        weeklyItemFulfillmentApi.request(params);
+        orderCreationPatternsApi.request(params);
+        biggestMoversApi.request(params);
+        processTimingsApi.request(params);
+    }, [dateRange, customDateRange]);
 
     const thisYear = (new Date()).getFullYear();
     
@@ -99,19 +95,13 @@ const SystemReports: React.FC = () => {
         }
         
         systemMetricsApi.request(params);
-        if (viewMode === 'overview') {
-            weeklyCustomersApi.request(params);
-            weeklyItemFulfillmentApi.request(params);
-            orderCreationPatternsApi.request(params);
-            biggestMoversApi.request(params);
-            processTimingsApi.request(params);
-        }
+        weeklyCustomersApi.request(params);
+        weeklyItemFulfillmentApi.request(params);
+        orderCreationPatternsApi.request(params);
+        biggestMoversApi.request(params);
+        processTimingsApi.request(params);
     };
 
-    const handleReset = () => {
-        setDateRange('6weeks');
-        setCustomDateRange([null, null]);
-    };
 
     // if (systemMetricsApi.error) {
     //     return (
@@ -131,19 +121,22 @@ const SystemReports: React.FC = () => {
             
             <Group justify="space-between" mb="lg">
                 <Title order={1}>Operations Overview</Title>
+                <Group align="flex-end">
+                    <Select
+                        value={dateRange}
+                        onChange={(value) => setDateRange(value || '6weeks')}
+                        data={getDateRangeOptions()}
+                        w={200}
+                    />
+                    <Button variant="light" size="sm" onClick={handleRefresh}>
+                        Refresh
+                    </Button>
+                </Group>
             </Group>
 
-            {/* Controls */}
-            <Group mb="lg" align="flex-end">
-                <Select
-                    label="Date Range"
-                    value={dateRange}
-                    onChange={(value) => setDateRange(value || '6weeks')}
-                    data={getDateRangeOptions()}
-                    w={200}
-                />
-                
-                {dateRange === 'custom' && (
+            {/* Custom Date Range (only when needed) */}
+            {dateRange === 'custom' && (
+                <Group mb="lg" justify="flex-end">
                     <DatePickerInput
                         type="range"
                         label="Custom Date Range"
@@ -152,16 +145,8 @@ const SystemReports: React.FC = () => {
                         clearable
                         w={250}
                     />
-                )}
-
-                <Button variant="light" size="sm" onClick={handleRefresh}>
-                    Refresh
-                </Button>
-
-                <Button variant="light" size="sm" onClick={handleReset}>
-                    Reset Filters
-                </Button>
-            </Group>
+                </Group>
+            )}
 
             {/* Key Performance Indicators - Always visible */}
             {data && (
@@ -216,57 +201,50 @@ const SystemReports: React.FC = () => {
                 </SimpleGrid>
             )}
 
-            {/* Detailed Reports Tabs */}
-            <Tabs value={viewMode} onChange={setViewMode}>
-                <Tabs.List>
-                    <Tabs.Tab value="overview">System Overview</Tabs.Tab>
-                </Tabs.List>
+            {/* Detailed Reports */}
+            <Grid>
+                <Grid.Col span={{ base: 12, lg: 4 }}>
+                    <WeeklyCustomersWidget 
+                        data={weeklyCustomersApi.data || []}
+                        loading={weeklyCustomersApi.loading}
+                    />
+                </Grid.Col>
 
-                <Tabs.Panel value="overview" pt="md">
-                    <Grid>
-                        <Grid.Col span={{ base: 12, lg: 4 }}>
-                            <WeeklyCustomersWidget 
-                                data={weeklyCustomersApi.data || []}
-                                loading={weeklyCustomersApi.loading}
-                            />
-                        </Grid.Col>
+                <Grid.Col span={{ base: 12, lg: 4 }}>
+                    <ItemFulfillmentWidget 
+                        data={weeklyItemFulfillmentApi.data || []}
+                        loading={weeklyItemFulfillmentApi.loading}
+                    />
+                </Grid.Col>
 
-                        <Grid.Col span={{ base: 12, lg: 4 }}>
-                            <ItemFulfillmentWidget 
-                                data={weeklyItemFulfillmentApi.data || []}
-                                loading={weeklyItemFulfillmentApi.loading}
-                            />
-                        </Grid.Col>
+                <Grid.Col span={{ base: 12, lg: 4 }}>
+                    <BiggestMoversWidget 
+                        data={biggestMoversApi.data || []}
+                        loading={biggestMoversApi.loading}
+                        dateInfo={dateRange === 'thisweek' ? formatDateRange(getMostRecentSunday(new Date())) :
+                                 dateRange === 'lastweek' ? formatDateRange((() => {
+                                    const lastWeek = new Date(getMostRecentSunday(new Date()));
+                                    lastWeek.setDate(lastWeek.getDate() - 7);
+                                    return lastWeek;
+                                 })()) : undefined}
+                    />
+                </Grid.Col>
 
-                        <Grid.Col span={{ base: 12, lg: 4 }}>
-                            <BiggestMoversWidget 
-                                data={biggestMoversApi.data || []}
-                                loading={biggestMoversApi.loading}
-                                dateInfo={dateRange === 'thisweek' ? formatDateRange(getMostRecentSunday(new Date())) :
-                                         dateRange === 'lastweek' ? formatDateRange((() => {
-                                            const lastWeek = new Date(getMostRecentSunday(new Date()));
-                                            lastWeek.setDate(lastWeek.getDate() - 7);
-                                            return lastWeek;
-                                         })()) : undefined}
-                            />
-                        </Grid.Col>
+                <Grid.Col span={{ base: 12, lg: 8 }}>
+                    <OrderCreationPatternsWidget 
+                        data={orderCreationPatternsApi.data || {}}
+                        loading={orderCreationPatternsApi.loading}
+                    />
+                </Grid.Col>
 
-                        <Grid.Col span={{ base: 12, lg: 8 }}>
-                            <OrderCreationPatternsWidget 
-                                data={orderCreationPatternsApi.data || {}}
-                                loading={orderCreationPatternsApi.loading}
-                            />
-                        </Grid.Col>
-
-                        <Grid.Col span={{ base: 12, lg: 4 }}>
-                            <ProcessTimesWidget 
-                                data={processTimingsApi.data?.processStages || []}
-                                loading={processTimingsApi.loading}
-                            />
-                        </Grid.Col>
-                    </Grid>
-                </Tabs.Panel>
-            </Tabs>
+                <Grid.Col span={{ base: 12, lg: 4 }}>
+                    <ProcessTimesWidget 
+                        data={processTimingsApi.data?.processStages || []}
+                        totalEndToEndTime={processTimingsApi.data?.totalEndToEndTime || 0}
+                        loading={processTimingsApi.loading}
+                    />
+                </Grid.Col>
+            </Grid>
         </Container>
     );
 };

@@ -53,6 +53,7 @@ export interface ItemMover {
 
 export interface ProcessTimingsResponse {
     processStages: ProcessStage[];
+    totalEndToEndTime: number;
 }
 
 const getSystemMetrics = (params?: SystemMetricsParams) => 

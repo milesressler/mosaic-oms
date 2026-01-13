@@ -46,7 +46,7 @@ const BiggestMoversWidget: React.FC<BiggestMoversWidgetProps> = ({ data, loading
 
     if (!data || data.length === 0) {
         return (
-            <Card withBorder h="300px" pos="relative">
+            <Card withBorder h="400px" pos="relative">
                 <LoadingOverlay visible={loading} overlayProps={{ blur: 2 }} />
                 <Stack gap="sm">
                     <Text fw={600} size="lg">
@@ -63,7 +63,7 @@ const BiggestMoversWidget: React.FC<BiggestMoversWidgetProps> = ({ data, loading
     }
 
     return (
-        <Card withBorder h="300px" pos="relative">
+        <Card withBorder h="400px" pos="relative">
             <LoadingOverlay visible={loading} overlayProps={{ blur: 2 }} />
             
             <Stack gap="sm">
