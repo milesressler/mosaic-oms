@@ -25,6 +25,17 @@ const createCustomer = (body: {
 }) =>
     client.post<Customer>(`/customer`, body);
 
+const mergeCustomers = (body: {
+    fromCustomerUuid: string,
+    toCustomerUuid: string,
+}) =>
+    client.post<{
+        mergedToCustomerUuid: string,
+        ordersTransferred: number,
+        showerReservationsTransferred: number,
+        success: boolean,
+        message: string
+    }>(`/customer/merge`, body);
 
 export default {
     search,
@@ -32,4 +43,5 @@ export default {
     getCustomer,
     updateCustomer,
     createCustomer,
+    mergeCustomers,
 };

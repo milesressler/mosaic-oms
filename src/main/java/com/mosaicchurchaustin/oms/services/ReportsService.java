@@ -235,7 +235,7 @@ public class ReportsService {
                 .itemName(projection.getItemName())
                 .itemId(projection.getItemId())
                 .thisWeekCount(projection.getThisWeekCount())
-                .lastWeekCount(projection.getLastWeekCount())
+                .fourWeekAvg(projection.getFourWeekAvg())
                 .absoluteChange(projection.getAbsoluteChange())
                 .percentageChange(projection.getPercentageChange())
                 .direction(BiggestMoversResponse.MovementDirection.valueOf(projection.getDirection()))

@@ -1,9 +1,11 @@
 package com.mosaicchurchaustin.oms.controllers;
 
 import com.mosaicchurchaustin.oms.data.request.CreateCustomerRequest;
+import com.mosaicchurchaustin.oms.data.request.MergeCustomerRequest;
 import com.mosaicchurchaustin.oms.data.request.UpdateCustomerRequest;
 import com.mosaicchurchaustin.oms.data.response.CustomerResponse;
 import com.mosaicchurchaustin.oms.data.response.CustomerSearchResponse;
+import com.mosaicchurchaustin.oms.data.response.MergeCustomerResponse;
 import com.mosaicchurchaustin.oms.services.CustomerService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -76,5 +78,11 @@ public class CustomerController {
         return customerService
                 .getCustomers(pageable, name, flagged)
                 .map(CustomerResponse::from);
+    }
+
+    @ResponseBody
+    @PostMapping(path = "/customer/merge", produces = MediaType.APPLICATION_JSON_VALUE)
+    public MergeCustomerResponse mergeCustomers(@RequestBody final MergeCustomerRequest mergeRequest) {
+        return customerService.mergeCustomers(mergeRequest);
     }
 }

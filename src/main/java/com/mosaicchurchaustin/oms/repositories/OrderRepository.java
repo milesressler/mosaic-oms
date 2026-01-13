@@ -8,6 +8,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -59,4 +60,7 @@ public interface OrderRepository extends JpaRepository<OrderEntity, Long>, JpaSp
             "AND (:endDate IS NULL OR o.created <= :endDate)")
     SystemOverviewProjection findSystemOverview(@Param("startDate") Instant startDate, @Param("endDate") Instant endDate);
 
+    @Modifying
+    @Query("UPDATE OrderEntity o SET o.customer.id = :toCustomerId WHERE o.customer.id = :fromCustomerId")
+    int updateCustomerForAllOrders(@Param("fromCustomerId") Long fromCustomerId, @Param("toCustomerId") Long toCustomerId);
 }

@@ -38,7 +38,7 @@ export interface ItemMover {
     itemName: string;
     itemId: string;
     thisWeekCount: number;
-    lastWeekCount: number;
+    fourWeekAvg: number;
     absoluteChange: number;
     percentageChange: number;
     direction: 'UP' | 'DOWN' | 'FLAT';

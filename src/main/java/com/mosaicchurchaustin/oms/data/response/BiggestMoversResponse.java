@@ -15,7 +15,7 @@ public class BiggestMoversResponse {
         String itemName;
         String itemId;
         Long thisWeekCount;
-        Long lastWeekCount;
+        Double fourWeekAvg;
         Long absoluteChange;
         Double percentageChange;
         MovementDirection direction;

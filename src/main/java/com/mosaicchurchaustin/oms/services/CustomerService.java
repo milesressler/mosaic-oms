@@ -3,9 +3,14 @@ package com.mosaicchurchaustin.oms.services;
 import com.mosaicchurchaustin.oms.data.entity.customer.CustomerEntity;
 import com.mosaicchurchaustin.oms.data.projections.CustomerSearchProjection;
 import com.mosaicchurchaustin.oms.data.request.CreateCustomerRequest;
+import com.mosaicchurchaustin.oms.data.request.MergeCustomerRequest;
 import com.mosaicchurchaustin.oms.data.request.UpdateCustomerRequest;
+import com.mosaicchurchaustin.oms.data.response.MergeCustomerResponse;
 import com.mosaicchurchaustin.oms.exception.EntityNotFoundException;
+import com.mosaicchurchaustin.oms.exception.InvalidRequestException;
 import com.mosaicchurchaustin.oms.repositories.CustomerRepository;
+import com.mosaicchurchaustin.oms.repositories.OrderRepository;
+import com.mosaicchurchaustin.oms.repositories.ShowerReservationRepository;
 import com.mosaicchurchaustin.oms.services.common.CustomerResolver;
 import com.mosaicchurchaustin.oms.specifications.CustomerSpecification;
 import jakarta.transaction.Transactional;
@@ -26,6 +31,12 @@ public class CustomerService {
 
     @Autowired
     CustomerResolver customerResolver;
+
+    @Autowired
+    OrderRepository orderRepository;
+
+    @Autowired
+    ShowerReservationRepository showerReservationRepository;
 
     @Transactional
     public List<CustomerSearchProjection> searchCustomers(final String inputName) {
@@ -69,5 +80,32 @@ public class CustomerService {
             final String name,
             final Boolean flagged) {
         return customerRepository.findAll(CustomerSpecification.withFilters(name, flagged), pageable);
+    }
+
+    @Transactional
+    public MergeCustomerResponse mergeCustomers(final MergeCustomerRequest request) {
+        if (request.fromCustomerUuid().equals(request.toCustomerUuid())) {
+            throw new InvalidRequestException("Cannot merge customer with itself");
+        }
+
+        final CustomerEntity fromCustomer = customerRepository.findByUuid(request.fromCustomerUuid())
+                .orElseThrow(() -> new EntityNotFoundException(CustomerEntity.ENTITY_TYPE, request.fromCustomerUuid()));
+        
+        final CustomerEntity toCustomer = customerRepository.findByUuid(request.toCustomerUuid())
+                .orElseThrow(() -> new EntityNotFoundException(CustomerEntity.ENTITY_TYPE, request.toCustomerUuid()));
+
+        long ordersTransferred = orderRepository.updateCustomerForAllOrders(fromCustomer.getId(), toCustomer.getId());
+        
+        long showerReservationsTransferred = showerReservationRepository.updateCustomerForAllReservations(fromCustomer.getId(), toCustomer.getId());
+
+        customerRepository.delete(fromCustomer);
+
+        return MergeCustomerResponse.builder()
+                .mergedToCustomerUuid(request.toCustomerUuid())
+                .ordersTransferred(ordersTransferred)
+                .showerReservationsTransferred(showerReservationsTransferred)
+                .success(true)
+                .message("Successfully merged customer " + fromCustomer.fullName() + " into " + toCustomer.fullName())
+                .build();
     }
 }

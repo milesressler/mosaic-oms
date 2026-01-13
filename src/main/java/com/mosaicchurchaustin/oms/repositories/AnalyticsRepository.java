@@ -228,64 +228,56 @@ public interface AnalyticsRepository extends JpaRepository<OrderEntity, Long> {
     );
 
     @Query(value = """
-    WITH target_week_items AS (
-        -- Items in the target week with their request counts
-        SELECT 
-            i.description AS item_name,
-            SUM(oi.quantity) AS target_week_count
-        FROM order_items oi
-        INNER JOIN orders o ON oi.order_entity_id = o.id
-        INNER JOIN items i ON oi.item_entity_id = i.id
-        INNER JOIN customers c ON o.customer_id = c.id
-        WHERE (o.order_status = 'COMPLETED' OR o.order_status = 'CANCELLED')
-          AND o.created BETWEEN :targetWeekStart AND :targetWeekEnd
-          AND (c.exclude_from_metrics IS NULL OR c.exclude_from_metrics = 0)
-        GROUP BY i.description
-        HAVING SUM(oi.quantity) >= 3  -- Minimum volume filter
-    ),
-    four_week_averages AS (
-        -- 4-week averages for items from target week  
-        SELECT 
-            i.description AS item_name,
-            COALESCE(AVG(oi.quantity), 0) AS four_week_avg
-        FROM order_items oi
-        INNER JOIN orders o ON oi.order_entity_id = o.id
-        INNER JOIN items i ON oi.item_entity_id = i.id
-        INNER JOIN customers c ON o.customer_id = c.id
-        WHERE (o.order_status = 'COMPLETED' OR o.order_status = 'CANCELLED')
-          AND o.created BETWEEN :fourWeekStart AND :fourWeekEnd
-          AND (c.exclude_from_metrics IS NULL OR c.exclude_from_metrics = 0)
-          AND i.description IN (SELECT item_name FROM target_week_items)
-        GROUP BY i.description
-    )
-    SELECT 
-        tw.item_name AS itemName,
-        tw.item_name AS itemId,
-        tw.target_week_count AS thisWeekCount,
-        ROUND(COALESCE(fwa.four_week_avg, 0)) AS lastWeekCount,
-        (tw.target_week_count - ROUND(COALESCE(fwa.four_week_avg, 0))) AS absoluteChange,
-        CASE 
-            WHEN COALESCE(fwa.four_week_avg, 0) > 0 
-                THEN ROUND(((tw.target_week_count - fwa.four_week_avg) / fwa.four_week_avg) * 100, 2)
-            WHEN tw.target_week_count > 0 
-                THEN 100.0
-            ELSE 0.0
-        END AS percentageChange,
-        CASE 
-            WHEN tw.target_week_count > ROUND(COALESCE(fwa.four_week_avg, 0)) THEN 'UP'
-            WHEN tw.target_week_count < ROUND(COALESCE(fwa.four_week_avg, 0)) THEN 'DOWN'
-            ELSE 'FLAT'
-        END AS direction
-    FROM target_week_items tw
-    LEFT JOIN four_week_averages fwa ON tw.item_name = fwa.item_name
-    ORDER BY ABS(CASE 
-        WHEN COALESCE(fwa.four_week_avg, 0) > 0 
-            THEN ((tw.target_week_count - fwa.four_week_avg) / fwa.four_week_avg) * 100
-        WHEN tw.target_week_count > 0 
-            THEN 100.0
-        ELSE 0.0
-    END) DESC
-    LIMIT 10
+with valid_order_items as (
+    select o.created, oi.item_entity_id, oi.quantity
+    from orders o
+             inner join order_items oi on oi.order_entity_id = o.id
+             inner join customers c on c.id = o.customer_id
+    WHERE (o.order_status = 'COMPLETED' OR o.order_status = 'CANCELLED')
+      AND o.created BETWEEN :fourWeekStart AND :targetWeekEnd
+      AND (c.exclude_from_metrics != 1)
+), target_week_items AS (
+    -- Items in the target week with their request counts
+    SELECT
+        oi.item_entity_id AS item_id,
+        SUM(oi.quantity) AS target_week_count
+    FROM valid_order_items oi
+    WHERE oi.created BETWEEN :targetWeekStart AND :targetWeekEnd
+    GROUP BY oi.item_entity_id
+    HAVING SUM(oi.quantity) >= 3  -- Minimum volume filter
+),
+     four_week_averages AS (
+         -- 4-week averages for items from target week
+         SELECT
+             oi.item_entity_id AS item_id,
+             COALESCE(sum(oi.quantity), 0)/4 AS four_week_avg
+         FROM target_week_items twi left join valid_order_items oi
+                                              on twi.item_id = oi.item_entity_id
+                                              and oi.created BETWEEN :fourWeekStart AND :fourWeekEnd
+         GROUP BY oi.item_entity_id
+     ) SELECT
+           items.description as itemName,
+           items.id as itemId,
+           tw.target_week_count AS thisWeekCount,
+           ROUND(fwa.four_week_avg, 2) as fourWeekAvg,  -- Added rounding for consistency
+           (tw.target_week_count - ROUND(COALESCE(fwa.four_week_avg, 0))) AS absoluteChange,
+           CASE
+               WHEN COALESCE(fwa.four_week_avg, 0) > 0
+                   THEN ROUND(((tw.target_week_count - fwa.four_week_avg) / fwa.four_week_avg) * 100, 2)
+               WHEN tw.target_week_count > 0
+                   THEN 100.0
+               ELSE 0.0
+               END AS percentageChange,
+           CASE
+               WHEN tw.target_week_count > ROUND(COALESCE(fwa.four_week_avg, 0)) THEN 'UP'
+               WHEN tw.target_week_count < ROUND(COALESCE(fwa.four_week_avg, 0)) THEN 'DOWN'
+               ELSE 'FLAT'
+               END AS direction
+FROM target_week_items tw
+         LEFT JOIN four_week_averages fwa ON tw.item_id = fwa.item_id
+         LEFT JOIN items ON tw.item_id = items.id
+ORDER BY ABS(percentageChange) DESC
+LIMIT 10
     """, nativeQuery = true)
     List<BiggestMoversProjection> findBiggestMovers(
             @Param("targetWeekStart") LocalDate targetWeekStart,
@@ -298,7 +290,7 @@ public interface AnalyticsRepository extends JpaRepository<OrderEntity, Long> {
         String getItemName();
         String getItemId();
         Long getThisWeekCount();
-        Long getLastWeekCount();
+        Double getFourWeekAvg();
         Long getAbsoluteChange();
         Double getPercentageChange();
         String getDirection();
