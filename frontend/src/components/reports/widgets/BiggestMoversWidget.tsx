@@ -74,31 +74,41 @@ const BiggestMoversWidget: React.FC<BiggestMoversWidgetProps> = ({ data, loading
                 <Box style={{ maxHeight: '240px', overflowY: 'auto' }}>
                     <Stack gap="xs">
                         {data.map((mover, index) => (
-                            <Group key={index} justify="space-between" wrap="nowrap">
-                                <Group gap="xs" style={{ flex: 1, minWidth: 0 }}>
-                                    <ThemeIcon 
-                                        variant="light" 
-                                        size="sm"
-                                        color={mover.direction === 'UP' ? 'green' : mover.direction === 'DOWN' ? 'red' : 'gray'}
+                            <Stack key={index} gap={2}>
+                                <Group justify="space-between" wrap="nowrap">
+                                    <Group gap="xs" style={{ flex: 1, minWidth: 0 }}>
+                                        <ThemeIcon 
+                                            variant="light" 
+                                            size="sm"
+                                            color={mover.direction === 'UP' ? 'green' : mover.direction === 'DOWN' ? 'red' : 'gray'}
+                                        >
+                                            {getDirectionIcon(mover.direction)}
+                                        </ThemeIcon>
+                                        <Text size="sm" fw={500} truncate style={{ flex: 1 }}>
+                                            {mover.itemName}
+                                        </Text>
+                                    </Group>
+                                    
+                                    <Text 
+                                        size="sm" 
+                                        fw={500}
+                                        style={{ 
+                                            color: getChangeColor(mover.direction),
+                                            whiteSpace: 'nowrap'
+                                        }}
                                     >
-                                        {getDirectionIcon(mover.direction)}
-                                    </ThemeIcon>
-                                    <Text size="sm" truncate style={{ flex: 1 }}>
-                                        {mover.itemName}
+                                        {formatChange(mover)}
                                     </Text>
                                 </Group>
-                                
-                                <Text 
-                                    size="sm" 
-                                    fw={500}
-                                    style={{ 
-                                        color: getChangeColor(mover.direction),
-                                        whiteSpace: 'nowrap'
-                                    }}
-                                >
-                                    {formatChange(mover)}
-                                </Text>
-                            </Group>
+                                <Group justify="space-between" pl="lg">
+                                    <Text size="xs" c="dimmed">
+                                        This week: {mover.thisWeekCount}
+                                    </Text>
+                                    <Text size="xs" c="dimmed">
+                                        4-week avg: {mover.fourWeekAvg.toFixed(1)}
+                                    </Text>
+                                </Group>
+                            </Stack>
                         ))}
                     </Stack>
                 </Box>
