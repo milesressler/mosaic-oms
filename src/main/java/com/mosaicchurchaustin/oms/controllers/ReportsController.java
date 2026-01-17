@@ -1,6 +1,8 @@
 package com.mosaicchurchaustin.oms.controllers;
 
 import com.mosaicchurchaustin.oms.data.response.BiggestMoversResponse;
+import com.mosaicchurchaustin.oms.data.response.ItemBreakdownResponse;
+import com.mosaicchurchaustin.oms.data.response.ItemMetricsResponse;
 import com.mosaicchurchaustin.oms.data.response.ProcessTimingsResponse;
 import com.mosaicchurchaustin.oms.data.response.SystemMetricsResponse;
 import com.mosaicchurchaustin.oms.repositories.AnalyticsRepository;
@@ -104,5 +106,41 @@ public class ReportsController {
             @RequestParam(defaultValue = "6weeks") String range) {
         
         return reportsService.getProcessTimings(Optional.ofNullable(startDate), Optional.ofNullable(endDate), range);
+    }
+
+    @ResponseBody
+    @GetMapping(path = "/item-metrics", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ItemMetricsResponse getItemMetrics(
+            @RequestParam Long itemId,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+            @RequestParam(defaultValue = "6weeks") String range) {
+        
+        return reportsService.getItemMetrics(
+            itemId,
+            Optional.ofNullable(startDate), 
+            Optional.ofNullable(endDate), 
+            range
+        );
+    }
+
+    @ResponseBody
+    @GetMapping(path = "/item-breakdown", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ItemBreakdownResponse getItemBreakdown(
+            @RequestParam Long itemId,
+            @RequestParam String groupBy,
+            @RequestParam(required = false) String secondaryGroupBy,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+            @RequestParam(defaultValue = "6weeks") String range) {
+        
+        return reportsService.getItemBreakdown(
+            itemId,
+            groupBy,
+            secondaryGroupBy,
+            Optional.ofNullable(startDate), 
+            Optional.ofNullable(endDate), 
+            range
+        );
     }
 }

@@ -46,6 +46,12 @@ public class ItemService {
     @Autowired
     ItemAttributeOptionRepository itemAttributeOptionRepository;
 
+    public ItemEntity getItem(final Long id) {
+        return itemRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException(ItemEntity.ENTITY_TYPE, id.toString()));
+    }
+
+
     @Transactional
     @Cacheable(value = "items", key = "#root.target.ITEMS_KEY")
     public Map<ItemCategory, List<SuggestedItemResponse>> getSuggestedItems() {

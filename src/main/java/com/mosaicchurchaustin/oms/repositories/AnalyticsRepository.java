@@ -53,6 +53,19 @@ public interface AnalyticsRepository extends JpaRepository<OrderEntity, Long> {
         Long getRequestCount();
     }
 
+    interface ItemMetricsProjection {
+        Long getTotalRequested();
+        Long getTotalFulfilled();
+    }
+
+    interface ItemBreakdownProjection {
+        LocalDate getWeekStart(); // nullable for aggregated
+        String getPrimaryValue();
+        String getSecondaryValue(); // nullable
+        Long getRequestedCount();
+        Long getFulfilledCount();
+    }
+
     // Always returns the top‐10 items from last week (Sunday-to-Saturday)
     @Query(value = """
         SELECT
@@ -295,4 +308,51 @@ LIMIT 10
         Double getPercentageChange();
         String getDirection();
     }
+
+    @Query(value = """
+    SELECT 
+        COALESCE(SUM(oi.quantity), 0) AS totalRequested,
+        COALESCE(SUM(CASE WHEN oi.quantity_fulfilled = 1 THEN oi.quantity ELSE 0 END), 0) AS totalFulfilled
+    FROM orders o
+    INNER JOIN customers c ON o.customer_id = c.id
+    INNER JOIN order_items oi ON oi.order_entity_id = o.id
+    WHERE (o.order_status = 'COMPLETED' OR o.order_status = 'CANCELLED')
+        AND o.created BETWEEN :startDate AND :endDate
+        AND oi.item_entity_id = :itemId
+        AND (c.exclude_from_metrics IS NULL OR c.exclude_from_metrics = 0)
+    """, nativeQuery = true)
+    ItemMetricsProjection findItemMetrics(
+            @Param("itemId") Long itemId,
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate
+    );
+
+    @Query(value = """
+    SELECT 
+        DATE_SUB(DATE(o.created), INTERVAL (DAYOFWEEK(o.created) - 1) DAY) AS weekStart,
+        COALESCE(JSON_UNQUOTE(JSON_EXTRACT(oi.attributes, CONCAT('$.', :groupBy, '.displayValue'))), 'Unknown') AS primaryValue,
+        CASE 
+            WHEN :secondaryGroupBy IS NOT NULL AND :secondaryGroupBy != '' 
+            THEN JSON_UNQUOTE(JSON_EXTRACT(oi.attributes, CONCAT('$.', :secondaryGroupBy, '.displayValue')))
+            ELSE NULL
+        END AS secondaryValue,
+        SUM(oi.quantity) AS requestedCount,
+        SUM(CASE WHEN oi.quantity_fulfilled = 1 THEN oi.quantity ELSE 0 END) AS fulfilledCount
+    FROM orders o
+    INNER JOIN customers c ON o.customer_id = c.id
+    INNER JOIN order_items oi ON oi.order_entity_id = o.id
+    WHERE (o.order_status = 'COMPLETED' OR o.order_status = 'CANCELLED')
+        AND o.created BETWEEN :startDate AND :endDate
+        AND oi.item_entity_id = :itemId
+        AND (c.exclude_from_metrics IS NULL OR c.exclude_from_metrics = 0)
+    GROUP BY weekStart, primaryValue, secondaryValue
+    ORDER BY weekStart, primaryValue, secondaryValue
+    """, nativeQuery = true)
+    List<ItemBreakdownProjection> findItemBreakdown(
+            @Param("itemId") Long itemId,
+            @Param("groupBy") String groupBy,
+            @Param("secondaryGroupBy") String secondaryGroupBy,
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate
+    );
 }

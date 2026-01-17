@@ -1,5 +1,5 @@
 import React from 'react';
-import { Paper, Title, Text, Stack, Group } from '@mantine/core';
+import {Paper, Title, Text, Stack, Group, LoadingOverlay} from '@mantine/core';
 
 interface ProcessStage {
     stage: string;
@@ -21,9 +21,16 @@ const ProcessTimesWidget: React.FC<ProcessTimesWidgetProps> = ({ data, loading, 
 
     return (
         <Paper p="md" mb="lg" withBorder>
-            <Group justify={'space-between'}>
-                <Title order={3} mb="md">Process Times</Title>
-                <Title order={4} mb="md">Total: {(totalEndToEndTime / 60).toFixed(1)}m</Title>
+            <LoadingOverlay visible={loading} opacity={.5}/>
+            <Group justify={'space-between'} mb="md">
+                <Title order={3}>⏱️ Process Times</Title>
+                <div style={{ textAlign: 'center' }}>
+                    <Text size="xs" c="dimmed" style={{ marginBottom: 2 }}>Total End-to-End</Text>
+                    <Text size="xl" fw={700} c="green">
+                        {totalEndToEndTime ? (totalEndToEndTime / 60).toFixed(1) : '--'}
+                    </Text>
+                    <Text size="xs" c="dimmed">minutes</Text>
+                </div>
             </Group>
             <Stack gap="md">
                 {data.map((stage) => (

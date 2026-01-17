@@ -5,6 +5,8 @@ import com.mosaicchurchaustin.oms.data.entity.TimingType;
 import com.mosaicchurchaustin.oms.data.projections.ProcessTimingProjection;
 import com.mosaicchurchaustin.oms.data.projections.SystemOverviewProjection;
 import com.mosaicchurchaustin.oms.data.response.BiggestMoversResponse;
+import com.mosaicchurchaustin.oms.data.response.ItemBreakdownResponse;
+import com.mosaicchurchaustin.oms.data.response.ItemMetricsResponse;
 import com.mosaicchurchaustin.oms.data.response.ProcessTimingsResponse;
 import com.mosaicchurchaustin.oms.data.response.SystemMetricsResponse;
 import com.mosaicchurchaustin.oms.repositories.AnalyticsRepository;
@@ -103,7 +105,7 @@ public class ReportsService {
                 } else if ("lastyear".equals(range)) {
                     endLocalDate = LocalDate.now().withMonth(1).withDayOfMonth(1).minusDays(1);
                 } else if ("6weeks".equals(range)) {
-                    endLocalDate = rangeStart.plusWeeks(6).minusDays(1);
+                    endLocalDate = today.plusDays(1);
                 } else if ("3months".equals(range)) {
                     endLocalDate = rangeStart.plusMonths(3).minusDays(1);
                 } else if ("6months".equals(range)) {
@@ -315,5 +317,47 @@ public class ReportsService {
             dateRange.startInstant, 
             dateRange.endInstant
         );
+    }
+
+    public ItemMetricsResponse getItemMetrics(Long itemId, Optional<LocalDate> startDate, Optional<LocalDate> endDate, String range) {
+        final DateRange dateRange = parseDateRange(startDate, endDate, range);
+        
+        final AnalyticsRepository.ItemMetricsProjection result = analyticsRepository.findItemMetrics(itemId, dateRange.start, dateRange.end);
+        
+        final Long totalRequested = result.getTotalRequested();
+        final Long totalFulfilled = result.getTotalFulfilled();
+        
+        // Calculate fill rate
+        double fillRate = totalRequested > 0 ? (double) totalFulfilled / totalRequested : 0.0;
+        
+        return ItemMetricsResponse.builder()
+                .totalRequested(totalRequested)
+                .totalFulfilled(totalFulfilled)
+                .fillRate(fillRate)
+                .build();
+    }
+
+    public ItemBreakdownResponse getItemBreakdown(Long itemId, String groupBy, String secondaryGroupBy, Optional<LocalDate> startDate, Optional<LocalDate> endDate, String range) {
+        final DateRange dateRange = parseDateRange(startDate, endDate, range);
+        
+        final List<AnalyticsRepository.ItemBreakdownProjection> results = analyticsRepository.findItemBreakdown(
+                itemId, groupBy, secondaryGroupBy, dateRange.start, dateRange.end);
+        
+        final List<ItemBreakdownResponse.ItemBreakdownData> data = results.stream()
+                .map(projection -> ItemBreakdownResponse.ItemBreakdownData.builder()
+                        .weekStart(projection.getWeekStart())
+                        .primaryValue(projection.getPrimaryValue())
+                        .secondaryValue(projection.getSecondaryValue())
+                        .requestedCount(projection.getRequestedCount())
+                        .fulfilledCount(projection.getFulfilledCount())
+                        .build())
+                .toList();
+        
+        return ItemBreakdownResponse.builder()
+                .itemId(itemId)
+                .groupBy(groupBy)
+                .secondaryGroupBy(secondaryGroupBy)
+                .data(data)
+                .build();
     }
 }

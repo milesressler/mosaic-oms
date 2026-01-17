@@ -37,6 +37,7 @@ import CustomerDetailPage from "src/pages/search/CustomerDetailPage.tsx";
 import ShowersDashboard from "src/pages/dashboards/ShowersDashboard.tsx";
 import OrderDetailsPageOld from "./pages/orders/OrderDetailsPageOld";
 import SystemReports from "src/pages/reports/SystemReports.tsx";
+import ItemAnalysis from "src/pages/reports/ItemAnalysis.tsx";
 
 
 const routes = [
@@ -239,6 +240,13 @@ const routes = [
                 path: '/reports/overview',
                 element: SystemReports,
                 title: 'Overview',
+                showInNavBar: true,
+            },
+            {
+                key: 'item-analysis',
+                path: '/reports/items',
+                element: ItemAnalysis,
+                title: 'Item Analysis',
                 showInNavBar: true,
             },
             {

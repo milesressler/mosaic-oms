@@ -1,6 +1,5 @@
 package com.mosaicchurchaustin.oms.controllers.admin;
 
-import com.mosaicchurchaustin.oms.data.entity.item.ItemAvailability;
 import com.mosaicchurchaustin.oms.data.entity.item.ItemCategory;
 import com.mosaicchurchaustin.oms.data.request.CreateItemRequest;
 import com.mosaicchurchaustin.oms.data.request.UpdateItemRequest;
@@ -38,6 +37,12 @@ public class AdminItemController {
     public AdminItemResponse updateItem(@PathVariable("id") final Long id,
                                         @Valid @RequestBody final UpdateItemRequest request) {
         return AdminItemResponse.from(itemService.updateItem(id, request));
+    }
+
+    @ResponseBody
+    @GetMapping(path = "/item/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public AdminItemResponse fetchItem(@PathVariable("id") final Long id) {
+        return AdminItemResponse.from(itemService.getItem(id));
     }
 
     @ResponseBody

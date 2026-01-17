@@ -56,6 +56,38 @@ export interface ProcessTimingsResponse {
     totalEndToEndTime: number;
 }
 
+export interface ItemMetricsResponse {
+    totalRequested: number;
+    totalFulfilled: number;
+    fillRate: number; // as decimal (0.82 = 82%)
+}
+
+export interface ItemBreakdownData {
+    weekStart: string; // LocalDate as ISO string, nullable for aggregated
+    primaryValue: string; // "Size 32", "Blue", etc.
+    secondaryValue: string | null; // nullable if no secondary grouping
+    requestedCount: number;
+    fulfilledCount: number;
+}
+
+export interface ItemBreakdownResponse {
+    itemId: number;
+    groupBy: string;
+    secondaryGroupBy: string | null;
+    data: ItemBreakdownData[];
+}
+
+
+interface ItemMetricsParams extends SystemMetricsParams {
+    itemId: number;
+}
+
+interface ItemBreakdownParams extends SystemMetricsParams {
+    itemId: number;
+    groupBy: string;
+    secondaryGroupBy?: string;
+}
+
 const getSystemMetrics = (params?: SystemMetricsParams) => 
     client.get<SystemMetricsResponse>("/reports/system-metrics", { params });
 
@@ -74,11 +106,19 @@ const getBiggestMovers = (params?: SystemMetricsParams) =>
 const getProcessTimings = (params?: SystemMetricsParams) =>
     client.get<ProcessTimingsResponse>("/reports/process-timings", { params });
 
+const getItemMetrics = (params: ItemMetricsParams) =>
+    client.get<ItemMetricsResponse>("/reports/item-metrics", { params });
+
+const getItemBreakdown = (params: ItemBreakdownParams) =>
+    client.get<ItemBreakdownResponse>("/reports/item-breakdown", { params });
+
 export default {
     getSystemMetrics,
     getWeeklyCustomersServed,
     getWeeklyItemFulfillment,
     getOrderCreationPatterns,
     getBiggestMovers,
-    getProcessTimings
+    getProcessTimings,
+    getItemMetrics,
+    getItemBreakdown
 };

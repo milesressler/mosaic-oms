@@ -18,6 +18,9 @@ const createAdminItem = (request: CreateItemRequest) =>
     client.post<AdminItem>( `/admin/item`, request)
 const updateAdminItem = (id: number, request: UpdateItemRequest) =>
     client.put<AdminItem>( `/admin/item/${id}`, request)
+const getAdminItem = (id: number) =>
+    client.get<AdminItem>(`/admin/item/${id}`)
+
 const deleteAdminItem = (id: number) =>
     client.delete( `/admin/item/${id}`)
 
@@ -27,6 +30,7 @@ export default {
     getAdminItemsPageSort,
     createItem,
     updateAdminItem,
+    getAdminItem,
     deleteAdminItem,
     createAdminItem,
 };
