@@ -418,14 +418,7 @@ const ItemAnalysis: React.FC = () => {
                 {!selectedItem && (
                     <Alert variant="light" color="blue" icon={<IconInfoCircle />}>
                         <Text>
-                            Use the search above to select an item and view detailed metrics including:
-                        </Text>
-                        <Text component="ul" mt="sm">
-                            <li>Order frequency and trends</li>
-                            <li>Fulfillment rates and patterns</li>
-                            <li>Popular variants and attributes</li>
-                            <li>Seasonal demand analysis</li>
-                            <li>Inventory recommendations</li>
+                            Use the search above to select an item and view detailed metrics
                         </Text>
                     </Alert>
                 )}
