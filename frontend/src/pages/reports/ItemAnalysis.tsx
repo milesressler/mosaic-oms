@@ -72,7 +72,7 @@ const ItemAnalysis: React.FC = () => {
     // Load all items on mount
     useEffect(() => {
         suggestedItemsApi.request();
-        popularItemsApi.request({ range: '4weeks' });
+        popularItemsApi.request({ range: '6weeks' });
     }, []); // eslint-disable-line react-hooks/exhaustive-deps
     
     // When items are loaded and we have a URL param, find and set the item
