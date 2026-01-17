@@ -66,9 +66,13 @@ const ItemAnalysis: React.FC = () => {
     // API to fetch item details for attributes
     const itemDetailsApi = useApi(itemsApi.getAdminItem);
     
+    // API to fetch popular items
+    const popularItemsApi = useApi(reportsApi.getBiggestMovers);
+    
     // Load all items on mount
     useEffect(() => {
         suggestedItemsApi.request();
+        popularItemsApi.request({ range: '4weeks' });
     }, []); // eslint-disable-line react-hooks/exhaustive-deps
     
     // When items are loaded and we have a URL param, find and set the item
@@ -204,7 +208,7 @@ const ItemAnalysis: React.FC = () => {
     const metrics = itemMetricsApi.data;
     
     // Transform breakdown data for nested view
-    const transformBreakdownData = () => {
+    const transformBreakdownData = (): Record<string, { total: number; filled: number; fillRate: number; breakdown: Record<string, any> }> => {
         const breakdownData = itemBreakdownApi.data;
         if (!breakdownData || !breakdownData.data) return {};
 
@@ -391,6 +395,36 @@ const ItemAnalysis: React.FC = () => {
         // TODO: Implement actual export functionality
     };
     
+    // Helper to find item by ID in suggested items data
+    const findItemById = (itemId: string): Item | undefined => {
+        if (!suggestedItemsApi.data) return undefined;
+        
+        const allItems = Object.values(suggestedItemsApi.data).flat();
+        const id = parseInt(itemId);
+        return allItems.find(item => item.id === id);
+    };
+    
+    // Handle popular item click
+    const handlePopularItemClick = (itemId: string) => {
+        const item = findItemById(itemId);
+        if (item) {
+            handleItemSelect(item);
+        }
+    };
+    
+    // Get featured items when no popular items are available
+    const getFeaturedItems = (): Item[] => {
+        if (!suggestedItemsApi.data) return [];
+        
+        const allItems = Object.values(suggestedItemsApi.data).flat();
+        return allItems.slice(0, 6); // Take first 6 items as fallback
+    };
+    
+    // Handle featured item click
+    const handleFeaturedItemClick = (item: Item) => {
+        handleItemSelect(item);
+    };
+    
     return (
         <Container size="xl" py="md">
             <LoadingOverlay visible={loading || itemMetricsApi.loading} overlayProps={{ blur: 2 }} />
@@ -416,11 +450,129 @@ const ItemAnalysis: React.FC = () => {
                 />
                 
                 {!selectedItem && (
-                    <Alert variant="light" color="blue" icon={<IconInfoCircle />}>
-                        <Text>
-                            Use the search above to select an item and view detailed metrics
-                        </Text>
-                    </Alert>
+                    <Stack gap="lg">
+                        <Alert variant="light" color="blue" icon={<IconInfoCircle />}>
+                            <Text>
+                                Use the search above to select an item and view detailed metrics, or explore one of the items below:
+                            </Text>
+                        </Alert>
+                        
+                        {/* Popular/Featured Items Section */}
+                        {(popularItemsApi.data && popularItemsApi.data.length > 0) ? (
+                            <Card withBorder>
+                                <Stack gap="md">
+                                    <Group gap="sm" align="center">
+                                        <IconTrendingUp size={20} />
+                                        <Title order={4}>Popular Items (Last 4 Weeks)</Title>
+                                    </Group>
+                                    
+                                    <SimpleGrid cols={{ base: 1, sm: 2, md: 3 }} spacing="md">
+                                        {popularItemsApi.data.slice(0, 6).map((item) => {
+                                            const foundItem = findItemById(item.itemId);
+                                            if (!foundItem) return null;
+                                            
+                                            return (
+                                                <Card 
+                                                    key={item.itemId}
+                                                    withBorder
+                                                    style={{ cursor: 'pointer', transition: 'all 0.2s' }}
+                                                    onClick={() => handlePopularItemClick(item.itemId)}
+                                                    className="hover:shadow-md"
+                                                >
+                                                    <Stack gap="sm">
+                                                        <Group justify="space-between" align="flex-start">
+                                                            <Text fw={500} size="sm" lineClamp={2}>
+                                                                {item.itemName}
+                                                            </Text>
+                                                            <Badge 
+                                                                size="xs" 
+                                                                variant="light"
+                                                                color={item.direction === 'UP' ? 'green' : item.direction === 'DOWN' ? 'red' : 'gray'}
+                                                            >
+                                                                {item.direction === 'UP' ? '↗' : item.direction === 'DOWN' ? '↘' : '→'} 
+                                                                {item.direction}
+                                                            </Badge>
+                                                        </Group>
+                                                        
+                                                        <Group justify="space-between">
+                                                            <Text size="xs" c="dimmed">This Week</Text>
+                                                            <Text size="xs" fw={500}>{item.thisWeekCount}</Text>
+                                                        </Group>
+                                                        
+                                                        <Group justify="space-between">
+                                                            <Text size="xs" c="dimmed">4-Week Avg</Text>
+                                                            <Text size="xs">{Math.round(item.fourWeekAvg)}</Text>
+                                                        </Group>
+                                                        
+                                                        {Math.abs(item.percentageChange) > 0 && (
+                                                            <Group justify="space-between">
+                                                                <Text size="xs" c="dimmed">Change</Text>
+                                                                <Text 
+                                                                    size="xs" 
+                                                                    fw={500}
+                                                                    c={item.percentageChange > 0 ? 'green' : 'red'}
+                                                                >
+                                                                    {item.percentageChange > 0 ? '+' : ''}{item.percentageChange.toFixed(1)}%
+                                                                </Text>
+                                                            </Group>
+                                                        )}
+                                                    </Stack>
+                                                </Card>
+                                            );
+                                        })}
+                                    </SimpleGrid>
+                                </Stack>
+                            </Card>
+                        ) : (
+                            /* Featured Items Fallback */
+                            getFeaturedItems().length > 0 && (
+                                <Card withBorder>
+                                    <Stack gap="md">
+                                        <Group gap="sm" align="center">
+                                            <IconPackage size={20} />
+                                            <Title order={4}>Featured Items</Title>
+                                        </Group>
+                                        
+                                        <SimpleGrid cols={{ base: 1, sm: 2, md: 3 }} spacing="md">
+                                            {getFeaturedItems().map((item) => (
+                                                <Card 
+                                                    key={item.id}
+                                                    withBorder
+                                                    style={{ cursor: 'pointer', transition: 'all 0.2s' }}
+                                                    onClick={() => handleFeaturedItemClick(item)}
+                                                    className="hover:shadow-md"
+                                                >
+                                                    <Stack gap="sm">
+                                                        <Group justify="space-between" align="flex-start">
+                                                            <Text fw={500} size="sm" lineClamp={2}>
+                                                                {item.description}
+                                                            </Text>
+                                                            <Badge 
+                                                                size="xs" 
+                                                                variant="light"
+                                                                color="blue"
+                                                            >
+                                                                {item.category}
+                                                            </Badge>
+                                                        </Group>
+                                                        
+                                                        {item.availability !== 'AVAILABLE' && (
+                                                            <Group justify="space-between">
+                                                                <Text size="xs" c="dimmed">Status</Text>
+                                                                <Badge size="xs" variant="outline" color="orange">
+                                                                    {item.availability}
+                                                                </Badge>
+                                                            </Group>
+                                                        )}
+                                                    </Stack>
+                                                </Card>
+                                            ))}
+                                        </SimpleGrid>
+                                    </Stack>
+                                </Card>
+                            )
+                        )}
+                    </Stack>
                 )}
                 
                 {selectedItem && (
@@ -616,7 +768,7 @@ const ItemAnalysis: React.FC = () => {
                                                                     }}>
                                                                         <Text size="sm" pl="md">↳ {subKey}</Text>
                                                                         <Group gap="sm">
-                                                                            <Text size="sm">{subValue} req.</Text>
+                                                                            <Text size="sm">{String(subValue)} req.</Text>
                                                                             <Badge size="xs" variant="outline">
                                                                                 {Math.round((subValue as number) / data.total * 100)}%
                                                                             </Badge>

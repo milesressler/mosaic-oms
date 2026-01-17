@@ -105,7 +105,7 @@ public class ReportsService {
                 } else if ("lastyear".equals(range)) {
                     endLocalDate = LocalDate.now().withMonth(1).withDayOfMonth(1).minusDays(1);
                 } else if ("6weeks".equals(range)) {
-                    endLocalDate = today.plusDays(1);
+                    endLocalDate = today;
                 } else if ("3months".equals(range)) {
                     endLocalDate = rangeStart.plusMonths(3).minusDays(1);
                 } else if ("6months".equals(range)) {
@@ -123,9 +123,9 @@ public class ReportsService {
         }
 
 
-        // Validation: end date cannot be farther ahead than today + 1 day
-        if (endLocalDate == null || endLocalDate.isAfter(today.plusDays(1))) {
-            endLocalDate = today.plusDays(1);
+        // Validation: end date cannot be farther ahead than today
+        if (endLocalDate == null || endLocalDate.isAfter(today)) {
+            endLocalDate = today;
         }
         // Validation: start date cannot be farther back than 2025
         if (startLocalDate == null || startLocalDate.isBefore(minimumDate)) {
