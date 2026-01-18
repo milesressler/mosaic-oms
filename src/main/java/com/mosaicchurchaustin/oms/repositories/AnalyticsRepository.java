@@ -142,8 +142,8 @@ public interface AnalyticsRepository extends JpaRepository<OrderEntity, Long> {
     ORDER BY ws.week_start
     """, nativeQuery = true)
     List<WeeklyCustomerCount> findWeeklyCustomersServed(
-            @Param("startDate") LocalDate startDate,
-            @Param("endDate") LocalDate endDate
+            @Param("startDate") java.time.Instant startDate,
+            @Param("endDate") java.time.Instant endDate
     );
 
     @Query(value = """
@@ -185,8 +185,8 @@ public interface AnalyticsRepository extends JpaRepository<OrderEntity, Long> {
     ORDER BY wis.week_start
     """, nativeQuery = true)
     List<WeeklyItemFulfillment> findWeeklyItemFulfillment(
-            @Param("startDate") LocalDate startDate,
-            @Param("endDate") LocalDate endDate
+            @Param("startDate") java.time.Instant startDate,
+            @Param("endDate") java.time.Instant endDate
     );
 
     @Query(value = """
@@ -217,8 +217,8 @@ public interface AnalyticsRepository extends JpaRepository<OrderEntity, Long> {
     ORDER BY weekStart, timeSlot
     """, nativeQuery = true)
     List<OrderCreationPatternByWeek> findOrderCreationPatternsByWeek(
-            @Param("startDate") LocalDate startDate,
-            @Param("endDate") LocalDate endDate
+            @Param("startDate") java.time.Instant startDate,
+            @Param("endDate") java.time.Instant endDate
     );
 
     @Query(value = """

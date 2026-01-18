@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 @Service
 @RequiredArgsConstructor
@@ -26,7 +27,7 @@ public class AnalyticsSyncService {
      * Sync analytics data every 15 minutes
      * Fetches data from the last completed date to present
      */
-    @Scheduled(fixedDelay = 900000) // 15 minutes
+    @Scheduled(fixedRate = 15, timeUnit = TimeUnit.MINUTES)
     public void syncAnalyticsData() {
         log.info("Starting scheduled analytics sync");
         

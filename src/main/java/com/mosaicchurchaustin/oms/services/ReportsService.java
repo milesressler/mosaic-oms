@@ -166,17 +166,17 @@ public class ReportsService {
 
     public List<AnalyticsRepository.WeeklyCustomerCount> getWeeklyCustomersServed(Optional<LocalDate> startDate, Optional<LocalDate> endDate, String range) {
         final DateRange dateRange = parseDateRange(startDate, endDate, range);
-        return analyticsRepository.findWeeklyCustomersServed(dateRange.start, dateRange.end);
+        return analyticsRepository.findWeeklyCustomersServed(dateRange.startInstant, dateRange.endInstant);
     }
 
     public List<AnalyticsRepository.WeeklyItemFulfillment> getWeeklyItemFulfillment(Optional<LocalDate> startDate, Optional<LocalDate> endDate, String range) {
         final DateRange dateRange = parseDateRange(startDate, endDate, range);
-        return analyticsRepository.findWeeklyItemFulfillment(dateRange.start, dateRange.end);
+        return analyticsRepository.findWeeklyItemFulfillment(dateRange.startInstant, dateRange.endInstant);
     }
 
     public java.util.Map<String, java.util.Map<String, Long>> getOrderCreationPatterns(Optional<LocalDate> startDate, Optional<LocalDate> endDate, String range) {
         final DateRange dateRange = parseDateRange(startDate, endDate, range);
-        final List<AnalyticsRepository.OrderCreationPatternByWeek> results = analyticsRepository.findOrderCreationPatternsByWeek(dateRange.start, dateRange.end);
+        final List<AnalyticsRepository.OrderCreationPatternByWeek> results = analyticsRepository.findOrderCreationPatternsByWeek(dateRange.startInstant, dateRange.endInstant);
         
         // Generate all possible time slots from 9:00-11:00 AM in 10-minute intervals
         final String[] allTimeSlots = {

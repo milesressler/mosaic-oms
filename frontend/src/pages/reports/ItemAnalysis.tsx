@@ -417,7 +417,9 @@ const ItemAnalysis: React.FC = () => {
         if (!suggestedItemsApi.data) return [];
         
         const allItems = Object.values(suggestedItemsApi.data).flat();
-        return allItems.slice(0, 6); // Take first 6 items as fallback
+        // Shuffle the items and take first 6 for random selection
+        const shuffled = allItems.sort(() => Math.random() - 0.5);
+        return shuffled.slice(0, 6);
     };
     
     // Handle featured item click
@@ -463,7 +465,7 @@ const ItemAnalysis: React.FC = () => {
                                 <Stack gap="md">
                                     <Group gap="sm" align="center">
                                         <IconTrendingUp size={20} />
-                                        <Title order={4}>Popular Items (Last 4 Weeks)</Title>
+                                        <Title order={4}>Popular Items (Last 6 Weeks)</Title>
                                     </Group>
                                     
                                     <SimpleGrid cols={{ base: 1, sm: 2, md: 3 }} spacing="md">
