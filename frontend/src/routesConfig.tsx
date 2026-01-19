@@ -10,7 +10,8 @@ import {
     IconReport,
     IconMovie,
     IconExclamationCircle,
-    IconBasketSearch
+    IconBasketSearch,
+    IconPrinter
 } from "@tabler/icons-react";
 import ItemsManagementPage from "src/pages/admin/ItemsManagementPage.tsx";
 import OrderTakerDashboard from "src/pages/dashboards/OrderTakerDashboard.tsx";
@@ -38,6 +39,7 @@ import ShowersDashboard from "src/pages/dashboards/ShowersDashboard.tsx";
 import OrderDetailsPageOld from "./pages/orders/OrderDetailsPageOld";
 import SystemReports from "src/pages/reports/SystemReports.tsx";
 import ItemAnalysis from "src/pages/reports/ItemAnalysis.tsx";
+import PrinterManagementPage from "src/pages/admin/PrinterManagementPage.tsx";
 
 
 const routes = [
@@ -219,6 +221,14 @@ const routes = [
                 path: '/devices',
                 element: DevicesPage,
                 title: 'Devices',
+                showInNavBar: true,
+            },
+            {
+                key: 'printers',
+                path: '/admin/printers',
+                element: PrinterManagementPage,
+                title: 'Printers',
+                icon: IconPrinter,
                 showInNavBar: true,
             },
             {
