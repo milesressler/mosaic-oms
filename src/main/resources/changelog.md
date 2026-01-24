@@ -1,5 +1,31 @@
 # Changelog
 
+## [2026-01-18]
+### Added
+- **Printer status page** - Monitor label printer health and job statuses
+
+## [2026-01-17]
+### Added
+- **Item analysis dashboard** - Deep dive into item performance with metrics and insights
+
+## [2026-01-12]
+### Added
+- **System metrics & overview** - Process timing metrics with time-based filters for better monitoring
+
+## [2026-01-08]
+### Added
+- **Shower queue on customer dashboard** - Live shower availability with auto-close after 8 hours
+### Improved  
+- **Shower workflow** - Better queue management, move people up/down, improved dashboard integration
+
+## [2025-12-09]
+### Improved
+- **Mobile item management** - Much friendlier interface for managing items on phones/tablets
+
+## [2025-12-06]
+### Added
+- **Plain text attribute support** - Added freeform text fields for items
+
 ## [2025-11-11]
 
 ### Improvements
