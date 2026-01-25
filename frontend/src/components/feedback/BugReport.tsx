@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
-import { Modal, Textarea, Button, Group } from '@mantine/core';
+import { Modal, Textarea, Button, Group, TextInput } from '@mantine/core';
 import posthog from 'posthog-js';
+import bugReportApi from '../../services/bugReportApi';
 // import html2canvas from 'html2canvas';
 
 type Props = {
@@ -24,6 +25,7 @@ if (typeof window !== 'undefined' && !(console as any)._patchedForPostHog) {
 }
 
 export function BugReportModal({ opened, onClose, appVersion }: Props) {
+    const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
     const [submitting, setSubmitting] = useState(false);
     const modalRef = useRef<HTMLDivElement>(null);
@@ -37,35 +39,49 @@ export function BugReportModal({ opened, onClose, appVersion }: Props) {
     const handleSubmit = async () => {
         setSubmitting(true);
 
-        // let screenshotDataUrl: string | undefined;
-        if (modalRef.current) {
-            // try {
-            //     const canvas = await html2canvas(document.body);
-            //     screenshotDataUrl = canvas.toDataURL('image/png');
-            // } catch (e) {
-            //     console.warn('Screenshot failed', e);
-            // }
-        }
+        try {
+            // Step 1: Create bug report in backend first
+            const response = await bugReportApi.createBugReport({
+                title,
+                description,
+            });
 
-        posthog.capture('bug_report_submitted', {
-            description,
-            page: window.location.href,
-            userAgent: navigator.userAgent,
-            screenSize: `${window.innerWidth}x${window.innerHeight}`,
-            consoleErrors: [...recentConsoleErrors],
-            appVersion: appVersion || 'unknown',
-            // screenshot: screenshotDataUrl,
-        });
+            const bugUuid = response.data.uuid;
 
-        setTimeout(() => {
+            // Step 2: Submit to PostHog with bug UUID reference
+            posthog.capture('bug_report_submitted', {
+                bugUuid,
+                title,
+                description,
+                page: window.location.href,
+                userAgent: navigator.userAgent,
+                screenSize: `${window.innerWidth}x${window.innerHeight}`,
+                consoleErrors: [...recentConsoleErrors],
+                appVersion: appVersion || 'unknown',
+            });
+
+            setTimeout(() => {
+                setSubmitting(false);
+                setTitle('');
+                setDescription('');
+                onClose();
+            }, 800);
+        } catch (error) {
+            console.error('Failed to submit bug report:', error);
             setSubmitting(false);
-            setDescription('');
-            onClose();
-        }, 800);
+        }
     };
 
     return (
         <Modal opened={opened} onClose={onClose} title="Report a Bug" centered ref={modalRef}>
+            <TextInput
+                label="Bug title"
+                placeholder="Brief summary of the issue..."
+                value={title}
+                onChange={(e) => setTitle(e.currentTarget.value)}
+                required
+                mb="md"
+            />
             <Textarea
                 label="What went wrong?"
                 placeholder="Describe the issue..."
@@ -79,7 +95,7 @@ export function BugReportModal({ opened, onClose, appVersion }: Props) {
                 <Button variant="default" onClick={onClose} disabled={submitting}>
                     Cancel
                 </Button>
-                <Button onClick={handleSubmit} loading={submitting} disabled={!description}>
+                <Button onClick={handleSubmit} loading={submitting} disabled={!title || !description}>
                     Submit
                 </Button>
             </Group>

@@ -98,11 +98,11 @@ public interface AnalyticsRepository extends JpaRepository<OrderEntity, Long> {
     @Query(value = """
     WITH RECURSIVE week_series AS (
         -- Generate series of weeks from start to end date
-        SELECT DATE_SUB(:startDate, INTERVAL (DAYOFWEEK(:startDate) - 1) DAY) AS week_start
+        SELECT DATE_SUB(DATE(:startDate), INTERVAL (DAYOFWEEK(DATE(:startDate)) - 1) DAY) AS week_start
         UNION ALL
         SELECT DATE_ADD(week_start, INTERVAL 7 DAY)
         FROM week_series
-        WHERE DATE_ADD(week_start, INTERVAL 7 DAY) <= DATE_SUB(:endDate, INTERVAL (DAYOFWEEK(:endDate) - 1) DAY)
+        WHERE DATE_ADD(week_start, INTERVAL 7 DAY) <= DATE_SUB(DATE(:endDate), INTERVAL (DAYOFWEEK(DATE(:endDate)) - 1) DAY)
     ),
     completed_orders_in_range AS (
         SELECT
@@ -149,11 +149,11 @@ public interface AnalyticsRepository extends JpaRepository<OrderEntity, Long> {
     @Query(value = """
     WITH RECURSIVE week_series AS (
         -- Generate series of weeks from start to end date
-        SELECT DATE_SUB(:startDate, INTERVAL (DAYOFWEEK(:startDate) - 1) DAY) AS week_start
+        SELECT DATE_SUB(DATE(:startDate), INTERVAL (DAYOFWEEK(DATE(:startDate)) - 1) DAY) AS week_start
         UNION ALL
         SELECT DATE_ADD(week_start, INTERVAL 7 DAY)
         FROM week_series
-        WHERE DATE_ADD(week_start, INTERVAL 7 DAY) <= DATE_SUB(:endDate, INTERVAL (DAYOFWEEK(:endDate) - 1) DAY)
+        WHERE DATE_ADD(week_start, INTERVAL 7 DAY) <= DATE_SUB(DATE(:endDate), INTERVAL (DAYOFWEEK(DATE(:endDate)) - 1) DAY)
     ),
     completed_orders_in_range AS (
         SELECT

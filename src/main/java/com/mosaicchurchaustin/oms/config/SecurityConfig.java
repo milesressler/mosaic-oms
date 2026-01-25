@@ -96,6 +96,11 @@ public class SecurityConfig {
                 .authorizeHttpRequests((registry) -> {
                     registry.requestMatchers("/api/admin/**")
                             .hasAuthority(MosaicAuthority.ADMIN.getAuthority());
+                    
+                    registry.requestMatchers(HttpMethod.POST, "/api/bugs")
+                            .access(KIOSK_OR_ANY_AUTHORITY);
+                    registry.requestMatchers("/api/bugs/**")
+                            .hasAuthority(MosaicAuthority.ADMIN.getAuthority());
                     registry.requestMatchers(HttpMethod.GET, "/api/actuator/**")
                             .permitAll();
                     registry.requestMatchers(HttpMethod.GET, "/api/announcements/**")

@@ -11,7 +11,7 @@ import {
     IconMovie,
     IconExclamationCircle,
     IconBasketSearch,
-    IconPrinter
+    IconPrinter, IconBug
 } from "@tabler/icons-react";
 import ItemsManagementPage from "src/pages/admin/ItemsManagementPage.tsx";
 import OrderTakerDashboard from "src/pages/dashboards/OrderTakerDashboard.tsx";
@@ -40,6 +40,7 @@ import OrderDetailsPageOld from "./pages/orders/OrderDetailsPageOld";
 import SystemReports from "src/pages/reports/SystemReports.tsx";
 import ItemAnalysis from "src/pages/reports/ItemAnalysis.tsx";
 import PrinterManagementPage from "src/pages/admin/PrinterManagementPage.tsx";
+import BugManagementPage from "src/pages/admin/BugManagementPage.tsx";
 
 
 const routes = [
@@ -232,6 +233,14 @@ const routes = [
                 showInNavBar: true,
             },
             {
+                key: 'bugs',
+                path: '/admin/bugs',
+                element: BugManagementPage,
+                title: 'Bugs',
+                icon: IconBug,
+                showInNavBar: true,
+            },
+            {
                 key: 'settings',
                 path: '/settings',
                 element: AdminSettingsPage,
@@ -264,7 +273,7 @@ const routes = [
                 path: '/reports/old',
                 element: ReportPlaceholder,
                 title: 'Reports [Old]',
-                showInNavBar: true,
+                showInNavBar: false,
             },
          ]
     },

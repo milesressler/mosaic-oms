@@ -203,4 +203,78 @@ public class PostHogService {
     private String getProjectId() {
         return postHogProjectId;
     }
+
+    /**
+     * Search for PostHog events by bug UUID
+     * Returns the PostHog event ID for the bug report submission event
+     */
+    public String findBugReportEventId(final String bugUuid) {
+        if (postHogApiKey == null || postHogApiKey.isEmpty()) {
+            log.warn("PostHog API key not configured, cannot search for bug report event");
+            return null;
+        }
+
+        try {
+            final String queryBody = buildBugReportSearchQuery(bugUuid);
+            final String response = webClient.post()
+                    .uri(uriBuilder -> uriBuilder
+                        .scheme("https")
+                        .host(POSTHOG_API_HOST)
+                        .path("/api/projects/{project_id}/query/")
+                        .build(postHogProjectId))
+                    .header("Authorization", "Bearer " + postHogApiKey)
+                    .header("Content-Type", "application/json")
+                    .bodyValue(queryBody)
+                    .retrieve()
+                    .onStatus(
+                        status -> status.is4xxClientError() || status.is5xxServerError(),
+                        errorResponse -> errorResponse.bodyToMono(String.class)
+                            .map(body -> {
+                                log.error("PostHog search API failed for bug UUID {}. Status: {}, Response: {}", 
+                                    bugUuid, errorResponse.statusCode(), body);
+                                return new RuntimeException("PostHog API error: " + errorResponse.statusCode());
+                            })
+                    )
+                    .bodyToMono(String.class)
+                    .block();
+
+            return parseEventIdFromResponse(response);
+        } catch (final Exception e) {
+            log.error("Failed to search PostHog for bug UUID {}: {}", bugUuid, e.getMessage());
+            return null;
+        }
+    }
+
+    private String buildBugReportSearchQuery(final String bugUuid) {
+        return String.format("""
+            {
+              "query": {
+                "kind": "HogQLQuery",
+                "query": "SELECT uuid, timestamp, properties FROM events WHERE event = 'bug_report_submitted' AND properties.bugUuid = '%s' ORDER BY timestamp DESC LIMIT 1"
+              }
+            }
+            """, bugUuid);
+    }
+
+    private String parseEventIdFromResponse(final String response) {
+        try {
+            final JsonNode root = objectMapper.readTree(response);
+            final JsonNode results = root.get("results");
+            
+            if (results != null && results.isArray() && !results.isEmpty()) {
+                final JsonNode firstResult = results.get(0);
+                final JsonNode eventId = firstResult.get(0); // uuid is first column
+                
+                if (eventId != null && eventId.isTextual()) {
+                    return eventId.asText();
+                }
+            }
+            
+            log.info("No PostHog event found for bug UUID search");
+            return null;
+        } catch (final Exception e) {
+            log.error("Failed to parse PostHog search response: {}", e.getMessage());
+            return null;
+        }
+    }
 }
