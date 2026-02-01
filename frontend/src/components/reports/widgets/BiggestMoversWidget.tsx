@@ -105,7 +105,7 @@ const BiggestMoversWidget: React.FC<BiggestMoversWidgetProps> = ({ data, loading
                                         This week: {mover.thisWeekCount}
                                     </Text>
                                     <Text size="xs" c="dimmed">
-                                        4-week avg: {mover.fourWeekAvg.toFixed(1)}
+                                        4-week avg: {mover.fourWeekAvg?.toFixed(1)}
                                     </Text>
                                 </Group>
                             </Stack>
