@@ -257,7 +257,7 @@ public class ReportsService {
         final Double lagTimeForPacking = timingData.getAvgLagTimeSeconds();
         final Double packedToDeliveredTime = timingData.getAvgPackToDeliverySeconds();
         final Double distributionTime = timingData.getAvgDistributionTimeSeconds();
-        final Double totalTime = timingData.getAvgTotalTimeSeconds() + orderTakerTime;
+        final Double totalTime = timingData.getAvgTotalTimeSeconds() + (orderTakerTime == null ? 0 : orderTakerTime)  ;
 
         final List<ProcessTimingsResponse.ProcessStage> stages = List.of(
             ProcessTimingsResponse.ProcessStage.builder()
