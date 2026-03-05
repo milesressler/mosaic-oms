@@ -10,6 +10,7 @@ import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Predicate;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class OrderSpecBuilder {
@@ -18,6 +19,7 @@ public class OrderSpecBuilder {
     private String customerUuid;
     private Long orderId;
     private Long handledByUserId;
+    private List<String> myOrdersActions;
 
     private OrderSpecBuilder() {}
 
@@ -47,6 +49,11 @@ public class OrderSpecBuilder {
 
     public OrderSpecBuilder handledByUser(Long handledByUserId) {
         this.handledByUserId = handledByUserId;
+        return this;
+    }
+
+    public OrderSpecBuilder myOrdersActions(List<String> myOrdersActions) {
+        this.myOrdersActions = myOrdersActions;
         return this;
     }
 
@@ -81,7 +88,59 @@ public class OrderSpecBuilder {
                         root.join("orderHistoryEntityList", JoinType.LEFT);
                 Join<OrderHistoryEntity, UserEntity> user =
                         hist.join("userEntity", JoinType.LEFT);
-                p.add(cb.equal(user.get("id"), handledByUserId));
+                
+                Predicate userPredicate = cb.equal(user.get("id"), handledByUserId);
+                
+                // If specific actions are requested, filter by order status transitions
+                if (myOrdersActions != null && !myOrdersActions.isEmpty()) {
+                    List<Predicate> actionPredicates = new ArrayList<>();
+                    
+                    if (myOrdersActions.contains("created")) {
+                        // Orders where user was the creator (assigned user on PENDING_ACCEPTANCE)
+                        actionPredicates.add(cb.and(
+                            userPredicate,
+                            cb.equal(hist.get("orderStatus"), OrderStatus.PENDING_ACCEPTANCE)
+                        ));
+                    }
+                    
+                    if (myOrdersActions.contains("packed")) {
+                        // Orders where user packed them (transitions to PACKED or READY_FOR_CUSTOMER_PICKUP)
+                        actionPredicates.add(cb.and(
+                            userPredicate,
+                            cb.or(
+                                cb.equal(hist.get("orderStatus"), OrderStatus.PACKED),
+                                cb.equal(hist.get("orderStatus"), OrderStatus.READY_FOR_CUSTOMER_PICKUP)
+                            )
+                        ));
+                    }
+                    
+                    if (myOrdersActions.contains("transported")) {
+                        // Orders where user transported them (transitions involving IN_TRANSIT)
+                        actionPredicates.add(cb.and(
+                            userPredicate,
+                            cb.or(
+                                cb.equal(hist.get("orderStatus"), OrderStatus.IN_TRANSIT),
+                                cb.equal(hist.get("previousOrderStatus"), OrderStatus.IN_TRANSIT)
+                            )
+                        ));
+                    }
+                    
+                    if (myOrdersActions.contains("distributed")) {
+                        // Orders where user completed them (transitions to COMPLETED)
+                        actionPredicates.add(cb.and(
+                            userPredicate,
+                            cb.equal(hist.get("orderStatus"), OrderStatus.COMPLETED)
+                        ));
+                    }
+                    
+                    if (!actionPredicates.isEmpty()) {
+                        p.add(cb.or(actionPredicates.toArray(new Predicate[0])));
+                    }
+                } else {
+                    // Default behavior: any interaction with the order
+                    p.add(userPredicate);
+                }
+                
                 query.distinct(true);
             }
 

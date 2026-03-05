@@ -79,7 +79,8 @@ public class OrderService {
                                        final String customer,
                                        final String customerUuid,
                                        final Long orderId,
-                                       final boolean onlyMyOrders) {
+                                       final boolean onlyMyOrders,
+                                       final List<String> myOrdersActions) {
         final List<OrderStatus> statusList = Stream.ofNullable(statusFilters)
                 .flatMap(Collection::stream)
                 .map(OrderStatus::from)
@@ -91,6 +92,7 @@ public class OrderService {
                 .customerUuid(customerUuid)
                 .orderId(orderId)
                 .handledByUser(onlyMyOrders ? userService.currentUser().getId() : null)
+                .myOrdersActions(onlyMyOrders ? myOrdersActions : null)
                 .build();
         return orderRepository.findAll(spec, pageable);
     }

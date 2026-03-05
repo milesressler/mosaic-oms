@@ -5,8 +5,10 @@ import {
     Badge,
     Box,
     Center,
+    Checkbox,
+    Divider,
     Group, Image,
-    Pagination, rem, Select, Switch,
+    Pagination, rem, Select, Stack, Switch,
     Table, Text,
     TextInput, UnstyledButton
 } from "@mantine/core";
@@ -34,6 +36,14 @@ const AdminOrdersPage = () => {
     const getOrders = useApi(ordersApi.getOrdersWithDetails);
     const [searchParams, setSearchParams] = useSearchParams();
 
+    // Role action options
+    const roleActionOptions = [
+        { value: 'created', label: 'Created' },
+        { value: 'packed', label: 'Packed' },
+        { value: 'transported', label: 'Transported' },
+        { value: 'distributed', label: 'Distributed' },
+    ];
+
     // Get page from URL or default to 1
     const customerUuidFilter = searchParams.get('customerUuid') || null;
     const page = Number(searchParams.get("page")) || 1;
@@ -44,6 +54,12 @@ const AdminOrdersPage = () => {
     const onlyMyOrdersFilter = searchParams.get("onlyMyOrders") === "true";
     const customerFilter = searchParams.get("customer") || null;
     const [customerSearchString, setCustomerSearchString] = useState(customerFilter);
+
+    // Role action filter state
+    const myOrdersActionsParam = searchParams.get("myOrdersActions");
+    const [myOrdersActions, setMyOrdersActions] = useState<string[]>(
+        myOrdersActionsParam ? myOrdersActionsParam.split(',') : ['created', 'packed', 'transported', 'distributed']
+    );
 
     const [debouncedCustomer] = useDebouncedValue(customerSearchString, 300);
 
@@ -58,8 +74,9 @@ const AdminOrdersPage = () => {
             customer: customerFilter,
             customerUuid: customerUuidFilter,
             onlyMyOrders: onlyMyOrdersFilter,
+            myOrdersActions: onlyMyOrdersFilter && myOrdersActions.length > 0 ? myOrdersActions.join(',') : undefined,
         });
-    }, [page, sortField, reversed, statusFilter, customerFilter, customerUuidFilter, orderId, onlyMyOrdersFilter]);
+    }, [page, sortField, reversed, statusFilter, customerFilter, customerUuidFilter, orderId, onlyMyOrdersFilter, myOrdersActions]);
 
     useEffect(() => {
         const params = new URLSearchParams(searchParams);
@@ -72,6 +89,14 @@ const AdminOrdersPage = () => {
         params.set("page", "1");
         setSearchParams(params, { replace: true });
     }, [debouncedCustomer]);
+
+    // Sync myOrdersActions with URL on initial load
+    useEffect(() => {
+        if (myOrdersActionsParam) {
+            const actions = myOrdersActionsParam.split(',');
+            setMyOrdersActions(actions);
+        }
+    }, [myOrdersActionsParam]);
 
     const setOrderId = (orderId: string) => {
         const params = new URLSearchParams(searchParams);
@@ -123,9 +148,31 @@ const AdminOrdersPage = () => {
         console.log(val);
         if (val) {
             params.set('onlyMyOrders', 'true');
+            // When enabling, default to all actions selected
+            const allActions = ['created', 'packed', 'transported', 'distributed'];
+            setMyOrdersActions(allActions);
+            params.set('myOrdersActions', allActions.join(','));
         } else {
             params.delete('onlyMyOrders');
+            params.delete('myOrdersActions');
+            setMyOrdersActions(['created', 'packed', 'transported', 'distributed']);
         }
+        setSearchParams(params, { replace: true });
+    }
+
+    const handleMyOrdersActionsChange = (actions: string[]) => {
+        setMyOrdersActions(actions);
+        updateMyOrdersActionsParam(actions);
+    }
+
+    const updateMyOrdersActionsParam = (actions: string[]) => {
+        const params = new URLSearchParams(searchParams);
+        if (actions.length > 0) {
+            params.set('myOrdersActions', actions.join(','));
+        } else {
+            params.delete('myOrdersActions');
+        }
+        params.set('page', '1'); // reset pagination
         setSearchParams(params, { replace: true });
     }
 
@@ -190,64 +237,85 @@ const AdminOrdersPage = () => {
 
     return (
         <>
-            <Group m="xs" align="end" justify="space-between" wrap="wrap">
-                <Group gap="sm">
-                    <TextInput
-                        // label={"Customer"}
-                        placeholder="Search customer name"
-                        leftSection={<IconSearch size={16} stroke={1.5} />}
-                        value={customerSearchString || ''}
-                        onChange={(e) => setCustomerSearchString(e.currentTarget.value)}
-                    />
-                    <Select
-                        // label="Status"
-                        data={[OrderStatus.PENDING_ACCEPTANCE, OrderStatus.ACCEPTED, OrderStatus.PACKED, OrderStatus.READY_FOR_CUSTOMER_PICKUP, OrderStatus.NEEDS_INFO, OrderStatus.CANCELLED, OrderStatus.COMPLETED].map(status => {
-                            return { label: statusDisplay(status), value: status.toString() }
-                        })}
-                        placeholder="Filter by status"
-                        value={statusFilter}
-                        onChange={(val: string|null) => (setStatusSearch(val))}
-                    />
-                    <TextInput
-                        // label={"Customer"}
-                        placeholder="Order ID (Exact match)"
-                        leftSection={<IconSearch size={16} stroke={1.5} />}
-                        value={orderId || ''}
-                        type={'number'}
-                        onChange={(e) => setOrderId(e.currentTarget.value)}
-                    />
-                    <Switch
-                        id={'onlyMyOrdersToggle'}
-                        label={"Only my orders"}
-                      description={"Filters to orders that you've handled"}
-                        checked={onlyMyOrdersFilter}
-                        onChange={(e) => setOnlyMyOrders(e.currentTarget.checked)}
+            <Stack gap="xs" m="xs">
+                {/* Row 1: 3 input boxes + QR scanner */}
+                <Group justify="space-between" wrap="wrap" style={{ flex: 1 }}>
+                    <Group gap="sm" style={{ flex: 1 }} wrap="wrap">
+                        <TextInput
+                            placeholder="Search customer name"
+                            leftSection={<IconSearch size={16} stroke={1.5} />}
+                            value={customerSearchString || ''}
+                            onChange={(e) => setCustomerSearchString(e.currentTarget.value)}
+                            style={{ flex: 1, minWidth: 200 }}
                         />
-                    {customerUuidFilter && (
-                        <Badge
-                            size={'md'}
-                            rightSection={
-                                <IconX
-                                    size={16}
-                                    style={{ cursor: 'pointer' }}
-                                    onClick={() => setCustomerUuid(null)}
-                                />
-                            }
-                            variant="outline"
-                            // color="teal"
-                        >
-                            Customer:
-                            <Text span ml={4}>
-                                {customerUuidFilter.slice(0, 8)}…
-                            </Text>
-                        </Badge>
-                    )}
+                        <Select
+                            data={[OrderStatus.PENDING_ACCEPTANCE, OrderStatus.ACCEPTED, OrderStatus.PACKED, OrderStatus.READY_FOR_CUSTOMER_PICKUP, OrderStatus.NEEDS_INFO, OrderStatus.CANCELLED, OrderStatus.COMPLETED].map(status => {
+                                return { label: statusDisplay(status), value: status.toString() }
+                            })}
+                            placeholder="Filter by status"
+                            value={statusFilter}
+                            onChange={(val: string|null) => (setStatusSearch(val))}
+                            style={{ flex: 1, minWidth: 150 }}
+                        />
+                        <TextInput
+                            placeholder="Order ID"
+                            leftSection={<IconSearch size={16} stroke={1.5} />}
+                            value={orderId || ''}
+                            type={'number'}
+                            onChange={(e) => setOrderId(e.currentTarget.value)}
+                            style={{ minWidth: 120 }}
+                            visibleFrom="sm"
+                        />
+                        {customerUuidFilter && (
+                            <Badge
+                                size={'md'}
+                                rightSection={
+                                    <IconX
+                                        size={16}
+                                        style={{ cursor: 'pointer' }}
+                                        onClick={() => setCustomerUuid(null)}
+                                    />
+                                }
+                                variant="outline"
+                            >
+                                Customer:
+                                <Text span ml={4}>
+                                    {customerUuidFilter.slice(0, 8)}…
+                                </Text>
+                            </Badge>
+                        )}
+                    </Group>
+                    <QrScannerButton onOrderScanned={(order: {id: number, uuid: string}) => {
+                        navigate(`/order/${order.id}`);
+                    }}/>
                 </Group>
 
-                <QrScannerButton onOrderScanned={(order: {id: number, uuid: string}) => {
-                    navigate(`/order/${order.id}`);
-                }}/>
-            </Group>
+                {/* Row 2: Switch + action checkboxes */}
+                <Group gap="sm">
+                    <Switch
+                        id={'onlyMyOrdersToggle'}
+                        label={"Only orders that I've handled"}
+                        checked={onlyMyOrdersFilter}
+                        onChange={(e) => setOnlyMyOrders(e.currentTarget.checked)}
+                    />
+                    {onlyMyOrdersFilter && (
+                        <>
+                            <Divider orientation="vertical" />
+                            <Checkbox.Group
+                                value={myOrdersActions}
+                                onChange={handleMyOrdersActionsChange}
+                            >
+                                <Group gap="xs">
+                                    <Checkbox value="created" label="Created" size="sm" />
+                                    <Checkbox value="packed" label="Packed" size="sm" />
+                                    <Checkbox value="transported" label="Transported" size="sm" />
+                                    <Checkbox value="distributed" label="Distributed" size="sm" />
+                                </Group>
+                            </Checkbox.Group>
+                        </>
+                    )}
+                </Group>
+            </Stack>
             <Table pos={'relative'}>
                 <Table.Thead>
                     <Table.Tr>
