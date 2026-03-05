@@ -147,15 +147,7 @@ public class OrderNotifier {
             }
         }
 
-        var printingActions = Map.<OrderStatus, Consumer<OrderEntity>>of(
-                OrderStatus.PACKED, printingService::printPackedLabel,
-                OrderStatus.ACCEPTED, printingService::printAcceptedOrderLabel
-        );
-
-        Optional.of(orderEntity.getOrderStatus())
-                .filter(status -> status == featuresService.getFeaturesConfig().getPrintOnTransitionToStatus())
-                .map(printingActions::get)
-                .ifPresent(action -> action.accept(orderEntity));
+        // Automatic printing removed - now handled by frontend via explicit user action
     }
 
     public void notifyOrderAssigneeChanged(final OrderEntity orderEntity) {

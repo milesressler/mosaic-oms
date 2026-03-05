@@ -1,5 +1,5 @@
 import { Modal, Text, Button, Group, List, Box, Alert } from '@mantine/core';
-import { IconAlertTriangle } from '@tabler/icons-react';
+import { IconAlertTriangle, IconPrinter } from '@tabler/icons-react';
 import { OrderItem } from 'src/models/types';
 
 interface PlaceInWagonModalProps {
@@ -8,6 +8,9 @@ interface PlaceInWagonModalProps {
     onConfirm: () => void;
     unfilledItems: OrderItem[];
     loading?: boolean;
+    onPrintLabel?: () => void;
+    printLabelLoading?: boolean;
+    printingEnabled?: boolean;
 }
 
 export function PlaceInWagonModal({ 
@@ -15,7 +18,10 @@ export function PlaceInWagonModal({
     onClose, 
     onConfirm, 
     unfilledItems,
-    loading = false
+    loading = false,
+    onPrintLabel,
+    printLabelLoading = false,
+    printingEnabled = false
 }: PlaceInWagonModalProps) {
     const hasUnfilledItems = unfilledItems.length > 0;
 
@@ -60,6 +66,11 @@ export function PlaceInWagonModal({
                 ) : (
                     <Text size="sm">
                         Ready to place this fully packed order in the wagon?
+                        {printingEnabled && (
+                            <Text size="sm" c="dimmed" mt="xs">
+                                Print a label if needed, then place the order in the wagon.
+                            </Text>
+                        )}
                     </Text>
                 )}
             </Box>
@@ -68,16 +79,29 @@ export function PlaceInWagonModal({
                 <Button 
                     variant="subtle" 
                     onClick={onClose}
-                    disabled={loading}
+                    disabled={loading || printLabelLoading}
                 >
                     Cancel
                 </Button>
+                {printingEnabled && onPrintLabel && (
+                    <Button 
+                        variant="outline"
+                        color="blue"
+                        onClick={onPrintLabel}
+                        loading={printLabelLoading}
+                        disabled={loading}
+                        leftSection={<IconPrinter size={16} />}
+                    >
+                        Print Label
+                    </Button>
+                )}
                 <Button 
                     color="green"
                     onClick={onConfirm}
                     loading={loading}
+                    disabled={printLabelLoading}
                 >
-                    {'Place in Wagon'}
+                    Place in Wagon
                 </Button>
             </Group>
         </Modal>

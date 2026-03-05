@@ -40,8 +40,8 @@ public class PrintingService {
 
     private final OkHttpClient client = new OkHttpClient.Builder()
             .addInterceptor(chain -> {
-                Request original = chain.request();
-                Request request = original.newBuilder()
+                final Request original = chain.request();
+                final Request request = original.newBuilder()
                         .header("Authorization", Credentials.basic(apiKey, ""))
                         .header("Content-Type", "application/json")
                         .build();

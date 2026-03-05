@@ -31,6 +31,7 @@ function PackingView() {
     const { selectedOrder, doForceRefresh } = useSelectedOrder();
     const updateQuantities = useApi(ordersApi.updateOrderItems);
     const updateStatus = useApi(ordersApi.updateOrderStatus);
+    const printLabel = useApi(ordersApi.print);
     const [draftItems, setDraftItems] = useState<OrderItem[]>([]);
     const [placeInWagonModalOpened, setPlaceInWagonModalOpened] = useState(false);
     const navigate = useNavigate();
@@ -92,10 +93,14 @@ function PackingView() {
     };
 
     const handlePlaceInWagonClick = () => {
-        if (unfilledItems.length > 0) {
+        if (printOnTransitionToStatus !== null) {
+            // If printing is enabled, always show modal
+            setPlaceInWagonModalOpened(true);
+        } else if (unfilledItems.length > 0) {
+            // If no printing and unfilled items, show modal
             setPlaceInWagonModalOpened(true);
         } else {
-            // All items filled, go directly to wagon
+            // No printing and all items filled, go directly to wagon
             updateStatus.request(selectedOrder!.uuid, OrderStatus.PACKED);
         }
     };
@@ -104,6 +109,11 @@ function PackingView() {
         updateStatus.request(selectedOrder!.uuid, OrderStatus.PACKED);
         setPlaceInWagonModalOpened(false);
     };
+
+    const handlePrintLabel = () => {
+        printLabel.request(selectedOrder!.uuid, OrderStatus.ACCEPTED);
+    };
+
 
     const hasStateChanged = draftItems.some(
         (draftItem) => draftItem.quantityFulfilled !== selectedOrder?.items.find((item) => item.id === draftItem.id)?.quantityFulfilled
@@ -260,10 +270,9 @@ function PackingView() {
                             color="green"
                             p={'xs'}
                             size="sm"
-                            leftSection={printOnTransitionToStatus === OrderStatus.PACKED && <IconPrinter />}
                             style={{ marginLeft: 'auto' }}
                         >
-                            Place in Wagon
+                            Done Packing
                         </Button>
                     )}
                 </Group>
@@ -275,6 +284,9 @@ function PackingView() {
                 onConfirm={confirmPlaceInWagon}
                 unfilledItems={unfilledItems}
                 loading={updateStatus.loading}
+                onPrintLabel={handlePrintLabel}
+                printLabelLoading={printLabel.loading}
+                printingEnabled={printOnTransitionToStatus !== null}
             />
         </Box>
     );
