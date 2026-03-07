@@ -1,5 +1,24 @@
 # Changelog
 
+## [2026-03-04]
+### Added
+- **Role-based order filtering** - Admin orders page now shows a "My Orders" filter tailored to your role (created, packed, transported, or distributed)
+- **Explicit print step** - Printing is now a clear, separate step in the packing workflow to reduce accidental prints
+
+## [2026-02-01]
+### Fixed
+- Various stability fixes and crash prevention
+
+## [2026-01-24]
+### Added
+- **Bug tracking system** - Report and manage bugs directly from the app; admin bug management page added
+### Fixed
+- Chart data accuracy improvements
+
+## [2026-01-23]
+### Improved
+- **Print settings** - Confirmation dialog added when changing printer settings to prevent accidental changes
+
 ## [2026-01-18]
 ### Added
 - **Printer status page** - Monitor label printer health and job statuses
