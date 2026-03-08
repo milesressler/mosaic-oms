@@ -111,7 +111,7 @@ function PackingView() {
     };
 
     const handlePrintLabel = () => {
-        printLabel.request(selectedOrder!.uuid, OrderStatus.ACCEPTED);
+        printLabel.request(selectedOrder!.uuid, OrderStatus.PACKED);
     };
 
 
