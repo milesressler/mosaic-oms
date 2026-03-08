@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 
@@ -32,7 +33,7 @@ public class PdfGenerator {
 
     public byte[] generatePackedOrderPDF(final byte[] qrCodeBytes, final OrderEntity orderEntity) {
         final var items = orderEntity.getOrderItemList().stream()
-                .filter(item -> item.getQuantity() > item.getQuantityFulfilled())
+                .filter(item -> item.getQuantity() > Objects.requireNonNullElse(item.getQuantityFulfilled(), 0))
                 .toList();
 
         final boolean allFulfilled = items.isEmpty();
@@ -73,7 +74,7 @@ public class PdfGenerator {
 
                     for (final OrderItemEntity item : pageItems) {
                         drawUnfulfilledItem(contentStream, item.getItemEntity().getDescription(),
-                                item.getQuantity(), item.getQuantityFulfilled(), PADDING, itemYPosition);
+                                item.getQuantity(), Objects.requireNonNullElse(item.getQuantityFulfilled(), 0), PADDING, itemYPosition);
                         itemYPosition -= lineHeight;
                     }
                 }
