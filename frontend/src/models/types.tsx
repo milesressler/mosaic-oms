@@ -214,11 +214,30 @@ export interface CreateItemRequest {
     description: string
     category?: string
 }
+export interface OrderItemSubstitution {
+    uuid: string;
+    itemId: number;
+    itemDescription: string;
+    quantity: number;
+    attributes: { [key: string]: { value: string; displayValue: string } };
+    note: string | null;
+}
+
+export interface CreateSubstitutionRequest {
+    itemId: number;
+    attributes?: Record<string, unknown>;
+    quantity: number;
+    note?: string;
+}
+
 export interface OrderItem {
     description: string;
     category?: Category;
     quantityRequested: number;
     quantityFulfilled: number;
+    totalHandled: number;
+    substituted: boolean;
+    substitutions: OrderItemSubstitution[];
     attributes: { [key: string]: string };
     notes: string | null;
     id: number;

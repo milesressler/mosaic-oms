@@ -6,24 +6,24 @@ interface PlaceInWagonModalProps {
     opened: boolean;
     onClose: () => void;
     onConfirm: () => void;
-    unfilledItems: OrderItem[];
+    unhandledItems: OrderItem[];
     loading?: boolean;
     onPrintLabel?: () => void;
     printLabelLoading?: boolean;
     printingEnabled?: boolean;
 }
 
-export function PlaceInWagonModal({ 
-    opened, 
-    onClose, 
-    onConfirm, 
-    unfilledItems,
+export function PlaceInWagonModal({
+    opened,
+    onClose,
+    onConfirm,
+    unhandledItems,
     loading = false,
     onPrintLabel,
     printLabelLoading = false,
     printingEnabled = false
 }: PlaceInWagonModalProps) {
-    const hasUnfilledItems = unfilledItems.length > 0;
+    const hasUnhandledItems = unhandledItems.length > 0;
 
     return (
         <Modal
@@ -33,21 +33,21 @@ export function PlaceInWagonModal({
             centered
         >
             <Box mb="md">
-                {hasUnfilledItems ? (
+                {hasUnhandledItems ? (
                     <>
-                        <Alert 
-                            icon={<IconAlertTriangle size="1rem" />} 
-                            color="orange" 
+                        <Alert
+                            icon={<IconAlertTriangle size="1rem" />}
+                            color="orange"
                             mb="md"
                         >
-                            This order has {unfilledItems.length} unfilled item{unfilledItems.length > 1 ? 's' : ''}
+                            This order has {unhandledItems.length} unfilled item{unhandledItems.length > 1 ? 's' : ''}
                         </Alert>
-                        
+
                         <Text size="sm" mb="sm" fw={500}>
                             Unfilled items:
                         </Text>
                         <List size="sm" mb="lg">
-                            {unfilledItems.map(item => (
+                            {unhandledItems.map(item => (
                                 <List.Item key={item.id}>
                                     {item.description}
                                     {item.quantityFulfilled > 0 && (
@@ -58,7 +58,7 @@ export function PlaceInWagonModal({
                                 </List.Item>
                             ))}
                         </List>
-                        
+
                         <Text size="sm" c="dimmed">
                             Are you sure you want to place this order in the wagon?
                         </Text>
@@ -76,15 +76,15 @@ export function PlaceInWagonModal({
             </Box>
 
             <Group justify="flex-end">
-                <Button 
-                    variant="subtle" 
+                <Button
+                    variant="subtle"
                     onClick={onClose}
                     disabled={loading || printLabelLoading}
                 >
                     Cancel
                 </Button>
                 {printingEnabled && onPrintLabel && (
-                    <Button 
+                    <Button
                         variant="outline"
                         color="blue"
                         onClick={onPrintLabel}
@@ -95,7 +95,7 @@ export function PlaceInWagonModal({
                         Print Label
                     </Button>
                 )}
-                <Button 
+                <Button
                     color="green"
                     onClick={onConfirm}
                     loading={loading}
