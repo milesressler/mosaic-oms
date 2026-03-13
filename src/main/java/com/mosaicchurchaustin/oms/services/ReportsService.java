@@ -322,7 +322,7 @@ public class ReportsService {
     public ItemMetricsResponse getItemMetrics(Long itemId, Optional<LocalDate> startDate, Optional<LocalDate> endDate, String range) {
         final DateRange dateRange = parseDateRange(startDate, endDate, range);
         
-        final AnalyticsRepository.ItemMetricsProjection result = analyticsRepository.findItemMetrics(itemId, dateRange.start, dateRange.end);
+        final AnalyticsRepository.ItemMetricsProjection result = analyticsRepository.findItemMetrics(itemId, dateRange.start, dateRange.end.plusDays(1));
         
         final Long totalRequested = result.getTotalRequested();
         final Long totalFulfilled = result.getTotalFulfilled();
@@ -337,11 +337,16 @@ public class ReportsService {
                 .build();
     }
 
+    public List<String> getItemAttributeKeys(Long itemId, Optional<LocalDate> startDate, Optional<LocalDate> endDate, String range) {
+        final DateRange dateRange = parseDateRange(startDate, endDate, range);
+        return analyticsRepository.findDistinctAttributeKeys(itemId, dateRange.start, dateRange.end.plusDays(1));
+    }
+
     public ItemBreakdownResponse getItemBreakdown(Long itemId, String groupBy, String secondaryGroupBy, Optional<LocalDate> startDate, Optional<LocalDate> endDate, String range) {
         final DateRange dateRange = parseDateRange(startDate, endDate, range);
         
         final List<AnalyticsRepository.ItemBreakdownProjection> results = analyticsRepository.findItemBreakdown(
-                itemId, groupBy, secondaryGroupBy, dateRange.start, dateRange.end);
+                itemId, groupBy, secondaryGroupBy, dateRange.start, dateRange.end.plusDays(1));
         
         final List<ItemBreakdownResponse.ItemBreakdownData> data = results.stream()
                 .map(projection -> ItemBreakdownResponse.ItemBreakdownData.builder()

@@ -125,6 +125,22 @@ public class ReportsController {
     }
 
     @ResponseBody
+    @GetMapping(path = "/item-attribute-keys", produces = MediaType.APPLICATION_JSON_VALUE)
+    public List<String> getItemAttributeKeys(
+            @RequestParam Long itemId,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+            @RequestParam(defaultValue = "6weeks") String range) {
+
+        return reportsService.getItemAttributeKeys(
+            itemId,
+            Optional.ofNullable(startDate),
+            Optional.ofNullable(endDate),
+            range
+        );
+    }
+
+    @ResponseBody
     @GetMapping(path = "/item-breakdown", produces = MediaType.APPLICATION_JSON_VALUE)
     public ItemBreakdownResponse getItemBreakdown(
             @RequestParam Long itemId,

@@ -328,7 +328,26 @@ LIMIT 10
     );
 
     @Query(value = """
-    SELECT 
+    SELECT DISTINCT JSON_UNQUOTE(jt.attr_key) AS attrKey
+    FROM order_items oi
+    INNER JOIN orders o ON oi.order_entity_id = o.id
+    INNER JOIN customers c ON o.customer_id = c.id
+    CROSS JOIN JSON_TABLE(JSON_KEYS(oi.attributes), '$[*]' COLUMNS (attr_key VARCHAR(255) PATH '$')) jt
+    WHERE (o.order_status = 'COMPLETED' OR o.order_status = 'CANCELLED')
+        AND o.created BETWEEN :startDate AND :endDate
+        AND oi.item_entity_id = :itemId
+        AND oi.attributes IS NOT NULL
+        AND (c.exclude_from_metrics IS NULL OR c.exclude_from_metrics = 0)
+    ORDER BY attrKey
+    """, nativeQuery = true)
+    List<String> findDistinctAttributeKeys(
+            @Param("itemId") Long itemId,
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate
+    );
+
+    @Query(value = """
+    SELECT
         DATE_SUB(DATE(o.created), INTERVAL (DAYOFWEEK(o.created) - 1) DAY) AS weekStart,
         COALESCE(JSON_UNQUOTE(JSON_EXTRACT(oi.attributes, CONCAT('$.', :groupBy, '.displayValue'))), 'Unknown') AS primaryValue,
         CASE 

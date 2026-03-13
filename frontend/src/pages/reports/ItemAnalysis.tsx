@@ -63,8 +63,10 @@ const ItemAnalysis: React.FC = () => {
     const itemBreakdownApi = useApi(reportsApi.getItemBreakdown);
     const secondaryBreakdownApi = useApi(reportsApi.getItemBreakdown);
     
-    // API to fetch item details for attributes
+    // API to fetch item details for attributes (used for display labels)
     const itemDetailsApi = useApi(itemsApi.getAdminItem);
+    // API to fetch actual attribute keys present in order data
+    const itemAttributeKeysApi = useApi(reportsApi.getItemAttributeKeys);
     
     // API to fetch popular items
     const popularItemsApi = useApi(reportsApi.getBiggestMovers);
@@ -118,12 +120,13 @@ const ItemAnalysis: React.FC = () => {
         }
     };
     
-    // Load item details when item is selected to get attributes
+    // Load item details (for labels) and actual attribute keys from order data
     useEffect(() => {
         if (selectedItem) {
             itemDetailsApi.request(selectedItem.id);
+            itemAttributeKeysApi.request({ itemId: selectedItem.id, ...getDateRangeParams() });
         }
-    }, [selectedItem]); // eslint-disable-line react-hooks/exhaustive-deps
+    }, [selectedItem, dateRange, customDateRange]); // eslint-disable-line react-hooks/exhaustive-deps
     
     // Load item metrics when item is selected or date range changes
     useEffect(() => {
@@ -148,22 +151,16 @@ const ItemAnalysis: React.FC = () => {
         }
     }, [selectedItem, dateRange, customDateRange, breakdownAttribute]); // eslint-disable-line react-hooks/exhaustive-deps
     
-    // Update default breakdown attribute when item details are loaded
+    // Update default breakdown attribute when actual attribute keys from order data are loaded
     useEffect(() => {
-        if (itemDetailsApi.data && itemDetailsApi.data.attributes) {
-            const attributes = itemDetailsApi.data.attributes
-                .map(attr => attr.key)
-                .filter(key => key && key.trim() !== '');
-                
-            if (attributes.length > 0) {
-                const firstAttribute = attributes[0];
-                if (firstAttribute && breakdownAttribute !== firstAttribute) {
-                    setBreakdownAttribute(firstAttribute);
-                    setSecondaryBreakdownAttribute(''); // Reset secondary breakdown
-                }
+        if (itemAttributeKeysApi.data && itemAttributeKeysApi.data.length > 0) {
+            const firstAttribute = itemAttributeKeysApi.data[0];
+            if (firstAttribute && breakdownAttribute !== firstAttribute) {
+                setBreakdownAttribute(firstAttribute);
+                setSecondaryBreakdownAttribute(''); // Reset secondary breakdown
             }
         }
-    }, [itemDetailsApi.data]); // eslint-disable-line react-hooks/exhaustive-deps
+    }, [itemAttributeKeysApi.data]); // eslint-disable-line react-hooks/exhaustive-deps
     
     // Load secondary breakdown data when secondary attribute is selected
     useEffect(() => {
@@ -342,15 +339,24 @@ const ItemAnalysis: React.FC = () => {
         }
     };
     
-    // Get available attributes from item details
+    // Get label for an attribute key: use item_attributes label if key matches, else capitalize key
+    const getAttributeLabel = (key: string): string => {
+        const match = itemDetailsApi.data?.attributes?.find(attr => attr.key === key);
+        return match?.label ?? (key.charAt(0).toUpperCase() + key.slice(1));
+    };
+
+    // Get available attributes from actual order data keys
     const getAvailableAttributes = () => {
+        if (itemAttributeKeysApi.data && itemAttributeKeysApi.data.length > 0) {
+            return itemAttributeKeysApi.data.filter(key => key && key.trim() !== '');
+        }
+        // Fall back to item_attributes if no order data exists yet
         if (!itemDetailsApi.data || !itemDetailsApi.data.attributes) {
             return [];
         }
-        
         return itemDetailsApi.data.attributes
             .map(attr => attr.key)
-            .filter(key => key && key.trim() !== ''); // Filter out empty/null keys
+            .filter((key): key is string => !!key && key.trim() !== '');
     };
     
     const availableAttributes = getAvailableAttributes();
@@ -640,9 +646,9 @@ const ItemAnalysis: React.FC = () => {
                                         <Select
                                             value={breakdownAttribute}
                                             onChange={(value) => setBreakdownAttribute(value || 'size')}
-                                            data={availableAttributes.map(attr => ({ 
-                                                value: attr, 
-                                                label: attr.charAt(0).toUpperCase() + attr.slice(1) 
+                                            data={availableAttributes.map(attr => ({
+                                                value: attr,
+                                                label: getAttributeLabel(attr)
                                             }))}
                                             w={120}
                                         />
@@ -683,9 +689,9 @@ const ItemAnalysis: React.FC = () => {
                                                 setBreakdownAttribute(value || 'size');
                                                 setSecondaryBreakdownAttribute('');
                                             }}
-                                            data={availableAttributes.map(attr => ({ 
-                                                value: attr, 
-                                                label: attr.charAt(0).toUpperCase() + attr.slice(1) 
+                                            data={availableAttributes.map(attr => ({
+                                                value: attr,
+                                                label: getAttributeLabel(attr)
                                             }))}
                                             w={140}
                                         />

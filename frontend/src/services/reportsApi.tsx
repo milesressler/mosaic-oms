@@ -112,6 +112,13 @@ const getItemMetrics = (params: ItemMetricsParams) =>
 const getItemBreakdown = (params: ItemBreakdownParams) =>
     client.get<ItemBreakdownResponse>("/reports/item-breakdown", { params });
 
+interface ItemAttributeKeysParams extends SystemMetricsParams {
+    itemId: number;
+}
+
+const getItemAttributeKeys = (params: ItemAttributeKeysParams) =>
+    client.get<string[]>("/reports/item-attribute-keys", { params });
+
 export default {
     getSystemMetrics,
     getWeeklyCustomersServed,
@@ -120,5 +127,6 @@ export default {
     getBiggestMovers,
     getProcessTimings,
     getItemMetrics,
-    getItemBreakdown
+    getItemBreakdown,
+    getItemAttributeKeys
 };
