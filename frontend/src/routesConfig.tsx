@@ -11,7 +11,7 @@ import {
     IconMovie,
     IconExclamationCircle,
     IconBasketSearch,
-    IconPrinter, IconBug
+    IconPrinter, IconBug, IconSparkles
 } from "@tabler/icons-react";
 import ItemsManagementPage from "src/pages/admin/ItemsManagementPage.tsx";
 import OrderTakerDashboard from "src/pages/dashboards/OrderTakerDashboard.tsx";
@@ -41,6 +41,7 @@ import SystemReports from "src/pages/reports/SystemReports.tsx";
 import ItemAnalysis from "src/pages/reports/ItemAnalysis.tsx";
 import PrinterManagementPage from "src/pages/admin/PrinterManagementPage.tsx";
 import BugManagementPage from "src/pages/admin/BugManagementPage.tsx";
+import AiQueryPage from "src/pages/admin/AiQueryPage.tsx";
 
 
 const routes = [
@@ -238,6 +239,14 @@ const routes = [
                 element: BugManagementPage,
                 title: 'Bugs',
                 icon: IconBug,
+                showInNavBar: true,
+            },
+            {
+                key: 'ai-query',
+                path: '/admin/ai-query',
+                element: AiQueryPage,
+                title: 'AI Query',
+                icon: IconSparkles,
                 showInNavBar: true,
             },
             {
