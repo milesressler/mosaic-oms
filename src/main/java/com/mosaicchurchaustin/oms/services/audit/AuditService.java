@@ -6,6 +6,7 @@ import com.mosaicchurchaustin.oms.data.constants.AuditAction;
 import com.mosaicchurchaustin.oms.data.entity.BaseEntity;
 import com.mosaicchurchaustin.oms.data.entity.BaseUuidEntity;
 import com.mosaicchurchaustin.oms.data.entity.audit.AuditLogEntry;
+import com.mosaicchurchaustin.oms.data.entity.customer.CustomerEntity;
 import com.mosaicchurchaustin.oms.data.response.AuditLogResponse;
 import com.mosaicchurchaustin.oms.repositories.AuditLogEntryRepository;
 import org.apache.commons.lang3.NotImplementedException;
@@ -70,6 +71,20 @@ public class AuditService {
             entry.setEntityUuid(uuidEntity.getUuid());
         }
 
+        auditLogEntryRepository.save(entry);
+    }
+
+    public void logCustomerMerge(final CustomerEntity fromCustomer, final CustomerEntity toCustomer) {
+        final AuditLogEntry entry = AuditLogEntry.builder()
+                .userId(getExternalIdFromAuth().orElse(null))
+                .action(AuditAction.MERGE)
+                .entityType(CustomerEntity.ENTITY_TYPE)
+                .entityId(toCustomer.getId())
+                .entityUuid(toCustomer.getUuid())
+                .previousState(Collections.emptyMap())
+                .newState(Collections.emptyMap())
+                .additionalInfo("Merged from customer: " + fromCustomer.fullName() + " (uuid: " + fromCustomer.getUuid() + ")")
+                .build();
         auditLogEntryRepository.save(entry);
     }
 

@@ -6,7 +6,8 @@ import lombok.Getter;
 public enum AuditAction {
     CREATE("create"),
     UPDATE("update"),
-    DELETE("delete");
+    DELETE("delete"),
+    MERGE("merge");
 
     final String action;
 

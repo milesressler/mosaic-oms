@@ -11,6 +11,7 @@ import com.mosaicchurchaustin.oms.exception.InvalidRequestException;
 import com.mosaicchurchaustin.oms.repositories.CustomerRepository;
 import com.mosaicchurchaustin.oms.repositories.OrderRepository;
 import com.mosaicchurchaustin.oms.repositories.ShowerReservationRepository;
+import com.mosaicchurchaustin.oms.services.audit.AuditService;
 import com.mosaicchurchaustin.oms.services.common.CustomerResolver;
 import com.mosaicchurchaustin.oms.specifications.CustomerSpecification;
 import jakarta.transaction.Transactional;
@@ -37,6 +38,9 @@ public class CustomerService {
 
     @Autowired
     ShowerReservationRepository showerReservationRepository;
+
+    @Autowired
+    AuditService auditService;
 
     @Transactional
     public List<CustomerSearchProjection> searchCustomers(final String inputName) {
@@ -99,6 +103,7 @@ public class CustomerService {
         long showerReservationsTransferred = showerReservationRepository.updateCustomerForAllReservations(fromCustomer.getId(), toCustomer.getId());
 
         customerRepository.delete(fromCustomer);
+        auditService.logCustomerMerge(fromCustomer, toCustomer);
 
         return MergeCustomerResponse.builder()
                 .mergedToCustomerUuid(request.toCustomerUuid())
