@@ -43,13 +43,22 @@ async function globalTeardown() {
     });
     const page    = await context.newPage();
 
-    // 4) Cancel each order by ID
+    // 4) Cancel each order by ID (skip orders that are already completed/cancelled)
     for (const line of lines) {
         const [id, uuid] = line.split(',');
 
         await page.goto(`${baseURL}/order/${id}`);
 
-        await page.getByRole('button', { name: 'Actions' }).click();
+        // The Actions button is only rendered for orders that can still be cancelled.
+        // Completed or already-cancelled orders have no such button – skip them.
+        const actionsBtn = page.getByRole('button', { name: 'Actions' });
+        const canCancel = await actionsBtn.isVisible({ timeout: 5000 }).catch(() => false);
+        if (!canCancel) {
+            console.log(`→ Order ${id} has no Actions button (likely already completed/cancelled) – skipping.`);
+            continue;
+        }
+
+        await actionsBtn.click();
         const [cancelResp] = await Promise.all([
             page.waitForResponse(resp =>
                 resp.request().method() === 'PUT' &&
@@ -60,8 +69,6 @@ async function globalTeardown() {
         ]);
 
         console.log(`→ API responded ${cancelResp.status()}`);
-
-
     }
 
     await browser.close();
