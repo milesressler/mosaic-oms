@@ -17,6 +17,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -79,13 +80,21 @@ public class AuditService {
                 .userId(getExternalIdFromAuth().orElse(null))
                 .action(AuditAction.MERGE)
                 .entityType(CustomerEntity.ENTITY_TYPE)
-                .entityId(toCustomer.getId())
-                .entityUuid(toCustomer.getUuid())
-                .previousState(Collections.emptyMap())
-                .newState(Collections.emptyMap())
-                .additionalInfo("Merged from customer: " + fromCustomer.fullName() + " (uuid: " + fromCustomer.getUuid() + ")")
+                .entityId(fromCustomer.getId())
+                .entityUuid(fromCustomer.getUuid())
+                .previousState(customerStateMap(fromCustomer))
+                .newState(customerStateMap(toCustomer))
                 .build();
         auditLogEntryRepository.save(entry);
+    }
+
+    private Map<String, String> customerStateMap(final CustomerEntity customer) {
+        final Map<String, String> state = new java.util.HashMap<>();
+        state.put("id", String.valueOf(customer.getId()));
+        state.put("uuid", customer.getUuid());
+        state.put("firstName", customer.getFirstName());
+        state.put("lastName", customer.getLastName());
+        return state;
     }
 
     private Optional<String> getExternalIdFromAuth() {
