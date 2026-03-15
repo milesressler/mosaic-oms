@@ -415,7 +415,8 @@ public class OrderService {
                     item.attributes(),
                     item.notes() == null ? null : item.notes().trim(),
                     item.quantity(),
-                    0
+                    0,
+                    new java.util.ArrayList<>()
             ));
 
             orderEntity.getOrderItemList().add(orderItemEntity);

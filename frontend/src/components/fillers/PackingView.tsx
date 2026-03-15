@@ -11,7 +11,6 @@ import {
     Progress,
     Badge,
     Collapse,
-    NumberInput,
     Textarea,
     CloseButton,
 } from '@mantine/core';
@@ -37,7 +36,6 @@ import { ItemSearch } from 'src/components/common/ItemSearch';
 interface SubstitutionFormState {
     orderItemId: number;
     selectedItem: Item | null;
-    quantity: number;
     note: string;
 }
 
@@ -143,14 +141,10 @@ function PackingView() {
 
     const openSubstitutionForm = (orderItemId: number) => {
         const item = draftItems.find(i => i.id === orderItemId);
-        const serverItem = selectedOrder?.items.find(i => i.id === orderItemId);
         if (!item) return;
-        const subTotal = serverItem?.substitutions?.reduce((s, sub) => s + sub.quantity, 0) ?? 0;
-        const remaining = item.quantityRequested - item.quantityFulfilled - subTotal;
         setSubstitutionForm({
             orderItemId,
             selectedItem: null,
-            quantity: Math.max(1, remaining),
             note: '',
         });
     };
@@ -159,7 +153,7 @@ function PackingView() {
         if (!substitutionForm?.selectedItem) return;
         const req: CreateSubstitutionRequest = {
             itemId: substitutionForm.selectedItem.id,
-            quantity: substitutionForm.quantity,
+            quantity: 1,
             note: substitutionForm.note || undefined,
         };
         addSubstitutionApi.request(substitutionForm.orderItemId, req);
@@ -209,7 +203,6 @@ function PackingView() {
                         const isComplete = totalHandled >= item.quantityRequested;
                         const isSubstituted = serverSubs.length > 0;
                         const showSubForm = substitutionForm?.orderItemId === item.id;
-                        const remaining = item.quantityRequested - totalHandled;
 
                         return (
                             <Card
@@ -276,6 +269,19 @@ function PackingView() {
                                             </Group>
                                         ))}
 
+                                        {assignedToMe && !isComplete && !showSubForm && (
+                                            <Button
+                                                mt="xs"
+                                                size="xs"
+                                                color="yellow"
+                                                variant="light"
+                                                leftSection={<IconArrowsExchange size={13} />}
+                                                onClick={() => openSubstitutionForm(item.id)}
+                                            >
+                                                Substitute
+                                            </Button>
+                                        )}
+
                                         <Collapse in={showSubForm}>
                                             <Box mt="xs" p="xs" style={{ background: theme.colors.gray[0], borderRadius: 6 }}>
                                                 <Group justify="space-between" mb="xs">
@@ -289,16 +295,6 @@ function PackingView() {
                                                         }
                                                         placeholder="Search substitute item..."
                                                         size="xs"
-                                                    />
-                                                    <NumberInput
-                                                        label="Quantity"
-                                                        size="xs"
-                                                        min={1}
-                                                        max={remaining > 0 ? remaining : item.quantityRequested}
-                                                        value={substitutionForm?.quantity ?? 1}
-                                                        onChange={(val) =>
-                                                            setSubstitutionForm(prev => prev ? { ...prev, quantity: Number(val) } : null)
-                                                        }
                                                     />
                                                     <Textarea
                                                         label="Note (optional)"
@@ -325,29 +321,16 @@ function PackingView() {
                                         </Collapse>
                                     </Box>
 
-                                    <Stack gap={4} align="center">
-                                        {assignedToMe && (
-                                            <ActionIcon
-                                                size="lg"
-                                                color={isComplete ? (isSubstituted ? 'yellow' : 'green') : 'gray'}
-                                                variant={isComplete ? 'light' : 'outline'}
-                                                onClick={() => togglePack(item.id)}
-                                            >
-                                                {isComplete ? <IconCheckbox size={18} /> : <IconSquare size={18} />}
-                                            </ActionIcon>
-                                        )}
-                                        {assignedToMe && !isComplete && (
-                                            <ActionIcon
-                                                size="sm"
-                                                color="yellow"
-                                                variant="subtle"
-                                                title="Add substitution"
-                                                onClick={() => openSubstitutionForm(item.id)}
-                                            >
-                                                <IconArrowsExchange size={14} />
-                                            </ActionIcon>
-                                        )}
-                                    </Stack>
+                                    {assignedToMe && (
+                                        <ActionIcon
+                                            size="lg"
+                                            color={isComplete ? (isSubstituted ? 'yellow' : 'green') : 'gray'}
+                                            variant={isComplete ? 'light' : 'outline'}
+                                            onClick={() => togglePack(item.id)}
+                                        >
+                                            {isComplete ? <IconCheckbox size={18} /> : <IconSquare size={18} />}
+                                        </ActionIcon>
+                                    )}
                                 </Group>
                             </Card>
                         );
