@@ -3,6 +3,7 @@ package com.mosaicchurchaustin.oms.services.labels;
 import ch.qos.logback.core.testUtil.RandomUtil;
 import com.mosaicchurchaustin.oms.data.entity.customer.CustomerEntity;
 import com.mosaicchurchaustin.oms.data.entity.order.OrderItemEntity;
+import com.mosaicchurchaustin.oms.data.entity.order.OrderItemSubstitutionEntity;
 import com.mosaicchurchaustin.oms.data.entity.order.OrderEntity;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
@@ -31,18 +32,44 @@ public class PdfGenerator {
     private static final int ITEMS_PER_PAGE =10;// Margin for text
 
     public byte[] generatePackedOrderPDF(final byte[] qrCodeBytes, final OrderEntity orderEntity) {
-        final var items = orderEntity.getOrderItemList().stream()
-                .filter(item -> item.getQuantity() > item.getQuantityFulfilled())
+        // Items that are not fully handled (exact fill + substitutions)
+        final var unhandledItems = orderEntity.getOrderItemList().stream()
+                .filter(item -> item.getQuantity() > item.getTotalHandled())
+                .toList();
+        // Items that have at least one substitution
+        final var substitutedItems = orderEntity.getOrderItemList().stream()
+                .filter(item -> !item.getSubstitutions().isEmpty())
                 .toList();
 
-        final boolean allFulfilled = items.isEmpty();
-        final int totalPageCount = Math.max(1, (int) Math.ceil((double) items.size() / ITEMS_PER_PAGE));
+        final boolean allHandled = unhandledItems.isEmpty() && substitutedItems.isEmpty();
+
+        // Each substitution gets its own label line; combine unhandled items + substitution lines for paging
+        final int totalLines = unhandledItems.size()
+                + substitutedItems.stream().mapToInt(i -> i.getSubstitutions().size()).sum();
+        final int totalPageCount = Math.max(1, (int) Math.ceil((double) totalLines / ITEMS_PER_PAGE));
 
         try (final PDDocument document = new PDDocument();
              final ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
 
             final PDImageXObject qrCodeImage = PDImageXObject
                     .createFromByteArray(document, qrCodeBytes, "qrcode.png");
+
+            // Build a flat list of lines to render
+            record LabelLine(String text) {}
+            final List<LabelLine> lines = new java.util.ArrayList<>();
+            for (final OrderItemSubstitutionEntity sub : substitutedItems.stream()
+                    .flatMap(i -> i.getSubstitutions().stream()).toList()) {
+                final String originalDesc = sub.getOrderItem().getItemEntity().getDescription();
+                final String subDesc = sub.getItem().getDescription();
+                final String label = "SUB: " + subDesc + " (x" + sub.getQuantity() + ")"
+                        + (originalDesc.equals(subDesc) ? "" : " [for " + originalDesc + "]");
+                lines.add(new LabelLine(label));
+            }
+            for (final OrderItemEntity item : unhandledItems) {
+                lines.add(new LabelLine(
+                        "(" + item.getTotalHandled() + " of " + item.getQuantity() + ") "
+                                + item.getItemEntity().getDescription()));
+            }
 
             for (int pageNum = 0; pageNum < totalPageCount; pageNum++) {
                 final PDPage page = appendPage(document);
@@ -55,35 +82,35 @@ public class PdfGenerator {
                     buildHeading(orderEntity, pageNum, totalPageCount, contentStream);
 
                     float itemYPosition = LABEL_HEIGHT - qrSize - PADDING - 10;
-                    int lineHeight = 16;
+                    final int lineHeight = 16;
 
-                    if (allFulfilled) {
+                    if (allHandled) {
                         contentStream.beginText();
                         contentStream.setFont(new PDType1Font(Standard14Fonts.FontName.HELVETICA_BOLD), 10);
                         contentStream.newLineAtOffset(PADDING, itemYPosition);
                         contentStream.showText("All items filled.");
                         contentStream.endText();
-                        break; // Only need one page
+                        break;
                     }
 
-                    final List<OrderItemEntity> pageItems = items.subList(
+                    final List<LabelLine> pageLines = lines.subList(
                             pageNum * ITEMS_PER_PAGE,
-                            Math.min((pageNum + 1) * ITEMS_PER_PAGE, items.size())
+                            Math.min((pageNum + 1) * ITEMS_PER_PAGE, lines.size())
                     );
 
-                    for (final OrderItemEntity item : pageItems) {
-                        drawUnfulfilledItem(contentStream, item.getItemEntity().getDescription(),
-                                item.getQuantity(), item.getQuantityFulfilled(), PADDING, itemYPosition);
+                    for (final LabelLine line : pageLines) {
+                        contentStream.beginText();
+                        contentStream.setFont(new PDType1Font(Standard14Fonts.FontName.HELVETICA_BOLD), 10);
+                        contentStream.newLineAtOffset(PADDING, itemYPosition + 2);
+                        contentStream.showText(line.text());
+                        contentStream.endText();
                         itemYPosition -= lineHeight;
                     }
                 }
             }
 
             document.save(outputStream);
-            final var result = outputStream.toByteArray();
-//            Files.write(Path.of("test_label" + RandomUtil.getPositiveInt() + ".pdf"), result);
-
-            return result;
+            return outputStream.toByteArray();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -201,9 +228,8 @@ public class PdfGenerator {
         contentStream.endText();
     }
 
+    @Deprecated
     private void drawUnfulfilledItem(PDPageContentStream contentStream, String itemName, int quantityRequested, int quantityFulfilled, float x, float y) throws IOException {
-        float boxSize = 10;
-
         // Restart text block for text
         contentStream.beginText();
         contentStream.setFont(new PDType1Font(Standard14Fonts.FontName.HELVETICA_BOLD), 10);
