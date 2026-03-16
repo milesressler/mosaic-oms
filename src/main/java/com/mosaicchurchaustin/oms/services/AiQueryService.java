@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.mosaicchurchaustin.oms.data.entity.AiQueryLogEntity;
 import com.mosaicchurchaustin.oms.data.entity.user.UserEntity;
+import com.mosaicchurchaustin.oms.data.request.AiQueryRequest;
 import com.mosaicchurchaustin.oms.data.response.AiQueryResponse;
 import com.mosaicchurchaustin.oms.repositories.AiQueryLogRepository;
 import lombok.RequiredArgsConstructor;
@@ -121,13 +122,15 @@ public class AiQueryService {
     @Value("${anthropic.api-key:}")
     private String anthropicApiKey;
 
-    public AiQueryResponse processQuery(final String question, final UserEntity user) {
+    public AiQueryResponse processQuery(final String question,
+                                        final List<AiQueryRequest.ConversationTurn> history,
+                                        final UserEntity user) {
         final List<String> sqlQueriesRun = new ArrayList<>();
         String errorMessage = null;
         String answer = null;
 
         try {
-            answer = runAgenticLoop(question, sqlQueriesRun);
+            answer = runAgenticLoop(question, history, sqlQueriesRun);
         } catch (final Exception e) {
             errorMessage = e.getMessage();
             throw new RuntimeException("Query failed: " + e.getMessage(), e);
@@ -150,8 +153,22 @@ public class AiQueryService {
         return AiQueryResponse.builder().answer(answer).build();
     }
 
-    private String runAgenticLoop(final String question, final List<String> sqlQueriesRun) throws Exception {
+    private String runAgenticLoop(final String question,
+                                  final List<AiQueryRequest.ConversationTurn> history,
+                                  final List<String> sqlQueriesRun) throws Exception {
         final ArrayNode messages = objectMapper.createArrayNode();
+
+        if (history != null) {
+            for (final AiQueryRequest.ConversationTurn turn : history) {
+                final ObjectNode prevUser = messages.addObject();
+                prevUser.put("role", "user");
+                prevUser.put("content", turn.getQuestion());
+                final ObjectNode prevAssistant = messages.addObject();
+                prevAssistant.put("role", "assistant");
+                prevAssistant.put("content", turn.getAnswer());
+            }
+        }
+
         final ObjectNode userMsg = messages.addObject();
         userMsg.put("role", "user");
         userMsg.put("content", question);

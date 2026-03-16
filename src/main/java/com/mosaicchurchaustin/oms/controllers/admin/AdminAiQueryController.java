@@ -23,6 +23,6 @@ public class AdminAiQueryController {
     @PostMapping
     public AiQueryResponse query(@Valid @RequestBody final AiQueryRequest request) {
         final UserEntity currentUser = userService.currentUser();
-        return aiQueryService.processQuery(request.getQuestion(), currentUser);
+        return aiQueryService.processQuery(request.getQuestion(), request.getHistory(), currentUser);
     }
 }
