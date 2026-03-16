@@ -190,7 +190,7 @@ public class AiQueryService {
         }
         final String[] blocked = {"INSERT", "UPDATE", "DELETE", "DROP", "CREATE", "ALTER", "TRUNCATE", "EXEC", "EXECUTE", "GRANT", "REVOKE"};
         for (final String keyword : blocked) {
-            if (upper.contains(keyword)) {
+            if (Pattern.compile("\\b" + keyword + "\\b").matcher(upper).find()) {
                 throw new IllegalArgumentException("Query contains disallowed keyword: " + keyword);
             }
         }
