@@ -1,5 +1,6 @@
 package com.mosaicchurchaustin.oms.data.entity;
 
+import com.mosaicchurchaustin.oms.data.entity.user.UserEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;

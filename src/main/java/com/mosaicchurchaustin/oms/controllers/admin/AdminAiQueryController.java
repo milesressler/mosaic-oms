@@ -1,6 +1,6 @@
 package com.mosaicchurchaustin.oms.controllers.admin;
 
-import com.mosaicchurchaustin.oms.data.entity.UserEntity;
+import com.mosaicchurchaustin.oms.data.entity.user.UserEntity;
 import com.mosaicchurchaustin.oms.data.request.AiQueryRequest;
 import com.mosaicchurchaustin.oms.data.response.AiQueryResponse;
 import com.mosaicchurchaustin.oms.services.AiQueryService;

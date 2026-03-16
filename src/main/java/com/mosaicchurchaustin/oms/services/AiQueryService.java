@@ -5,10 +5,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.mosaicchurchaustin.oms.data.entity.AiQueryLogEntity;
-import com.mosaicchurchaustin.oms.data.entity.UserEntity;
+import com.mosaicchurchaustin.oms.data.entity.user.UserEntity;
 import com.mosaicchurchaustin.oms.data.response.AiQueryResponse;
 import com.mosaicchurchaustin.oms.repositories.AiQueryLogRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -24,6 +25,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AiQueryService {
@@ -163,6 +165,7 @@ public class AiQueryService {
 
         try (final Response response = okHttpClient.newCall(request).execute()) {
             if (!response.isSuccessful()) {
+               log.error("Request failed: " + response.body().string());
                 throw new RuntimeException("Anthropic API error: " + response.code());
             }
             final String responseBody = response.body().string();
