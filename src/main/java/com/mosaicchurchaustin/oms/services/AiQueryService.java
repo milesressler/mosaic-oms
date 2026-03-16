@@ -11,6 +11,7 @@ import com.mosaicchurchaustin.oms.repositories.AiQueryLogRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.MediaType;
+import org.springframework.beans.factory.annotation.Qualifier;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
@@ -113,6 +114,8 @@ public class AiQueryService {
             """.formatted(MAX_ROWS);
 
     private final AiQueryLogRepository aiQueryLogRepository;
+
+    @Qualifier("readOnlyJdbcTemplate")
     private final JdbcTemplate jdbcTemplate;
 
     @Value("${anthropic.api-key:}")

@@ -34,6 +34,10 @@ mosaic:
   oms:
     frontend:
       url: http://localhost:5173
+    readonly-datasource:
+      url: ${DB_READONLY_URL:}
+      username: ${DB_READONLY_USERNAME:}
+      password: ${DB_READONLY_PASSWORD:}
 
 posthog:
   api:
