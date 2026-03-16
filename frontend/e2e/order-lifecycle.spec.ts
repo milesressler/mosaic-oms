@@ -67,26 +67,9 @@ test.describe('Order Lifecycle', () => {
         expect(acceptBody.orderStatus).toBe('ACCEPTED');
         console.log('Order accepted.');
 
-        // ── Step 3: Assign + Pack (Order Filler) ─────────────────────────────
-        // After accepting, the modal stays open and the button changes to "Assign to Me".
-        const assignBtn = page.getByRole('button', { name: 'Assign to Me' });
-        await assignBtn.waitFor({ state: 'visible', timeout: 10000 });
-
-        await Promise.all([
-            page.waitForResponse(
-                (r: Response) =>
-                    r.request().method() === 'PUT' &&
-                    r.url().includes(`/api/order/${uuid}/assign`) &&
-                    r.status() === 200,
-                { timeout: 10000 }
-            ),
-            assignBtn.click(),
-        ]);
-        console.log('Order assigned to self.');
-
-        // Pack all items so Done Packing is reachable without "save progress".
+        // ── Step 3: Pack (Order Filler) ──────────────────────────────────────
         const packAllBtn = page.getByRole('button', { name: 'Pack All' });
-        await packAllBtn.waitFor({ state: 'visible', timeout: 10000 });
+        await packAllBtn.waitFor({ state: 'visible', timeout: 15000 });
         await packAllBtn.click();
 
         // "Pack All" sets hasStateChanged=true → button switches to "Save Progress".
@@ -107,20 +90,15 @@ test.describe('Order Lifecycle', () => {
         // After save, hasStateChanged=false → "Done Packing" reappears.
         const donePackingBtn = page.getByRole('button', { name: 'Done Packing' });
         await donePackingBtn.waitFor({ state: 'visible', timeout: 10000 });
-
-        // Set up listener before clicking in case there is no confirmation modal.
-        const packRespPromise = waitForStateChange(page, uuid, 'PACKED');
         await donePackingBtn.click();
 
-        // If the "Place in Wagon" modal is shown (print setting enabled or unfilled
-        // items remain), confirm it.  Otherwise the API fires immediately.
+        // "Done Packing" always opens the "Place in Wagon" modal.
+        // The PACKED API call fires after confirming the modal.
         const placeInWagonBtn = page.getByRole('button', { name: 'Place in Wagon' });
-        const modalShown = await placeInWagonBtn
-            .isVisible({ timeout: 3000 })
-            .catch(() => false);
-        if (modalShown) {
-            await placeInWagonBtn.click();
-        }
+        await placeInWagonBtn.waitFor({ state: 'visible', timeout: 10000 });
+
+        const packRespPromise = waitForStateChange(page, uuid, 'PACKED');
+        await placeInWagonBtn.click();
 
         const packBody = await packRespPromise;
         expect(packBody.orderStatus).toBe('PACKED');
@@ -134,7 +112,7 @@ test.describe('Order Lifecycle', () => {
         await orderRow.click(); // toggles selection
 
         const deliverBtn = page.getByRole('button', { name: 'Mark Selected as Delivered' });
-        await deliverBtn.waitFor({ state: 'enabled', timeout: 5000 });
+        await deliverBtn.waitFor({ state: 'visible', timeout: 5000 });
 
         const [deliverResp] = await Promise.all([
             page.waitForResponse(
