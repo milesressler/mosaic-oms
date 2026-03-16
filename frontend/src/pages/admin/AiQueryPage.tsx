@@ -1,17 +1,15 @@
 import {
     Box,
     Button,
-    Code,
     Group,
-    ScrollArea,
+    Paper,
     Stack,
-    Table,
     Text,
     Textarea,
 } from "@mantine/core";
 import { useState } from "react";
 import useApi from "src/hooks/useApi.tsx";
-import aiQueryApi, { AiQueryResponse } from "src/services/aiQueryApi.tsx";
+import aiQueryApi from "src/services/aiQueryApi.tsx";
 
 export default function AiQueryPage() {
     const [question, setQuestion] = useState<string>("");
@@ -28,17 +26,15 @@ export default function AiQueryPage() {
         }
     };
 
-    const result: AiQueryResponse | null = queryApi.data;
-
     return (
         <Stack gap="md" m="xs">
             <Text size="xl" fw={700}>AI Data Query</Text>
             <Text size="sm" c="dimmed">
-                Ask a question about the data in plain English. For example: "How many orders were completed last week?"
+                Ask a question about the data in plain English. The AI will explore the database to find the answer.
             </Text>
 
             <Textarea
-                placeholder="Ask a question about the data..."
+                placeholder='e.g. "How many orders were completed last week?" or "What are the most requested items this month?"'
                 value={question}
                 onChange={(e) => setQuestion(e.currentTarget.value)}
                 onKeyDown={handleKeyDown}
@@ -53,56 +49,25 @@ export default function AiQueryPage() {
                     loading={queryApi.loading}
                     disabled={!question.trim()}
                 >
-                    Run Query
+                    Ask
                 </Button>
                 <Text size="xs" c="dimmed">or Cmd/Ctrl + Enter</Text>
             </Group>
 
             {queryApi.error && (
-                <Box>
-                    <Text size="sm" c="red">{queryApi.error}</Text>
-                </Box>
+                <Text size="sm" c="red">{queryApi.error}</Text>
             )}
 
-            {result && (
-                <Stack gap="xs">
-                    <Text size="sm" c="dimmed">
-                        {result.rowCount} {result.rowCount === 1 ? "row" : "rows"} returned
-                    </Text>
+            {queryApi.data && (
+                <Paper withBorder p="md" radius="md">
+                    <Text style={{ whiteSpace: "pre-wrap" }}>{queryApi.data.answer}</Text>
+                </Paper>
+            )}
 
-                    {result.rowCount === 0 ? (
-                        <Text c="dimmed" ta="center">No results found.</Text>
-                    ) : (
-                        <ScrollArea>
-                            <Table striped highlightOnHover withTableBorder withColumnBorders>
-                                <Table.Thead>
-                                    <Table.Tr>
-                                        {result.columns.map((col) => (
-                                            <Table.Th key={col}>
-                                                <Code>{col}</Code>
-                                            </Table.Th>
-                                        ))}
-                                    </Table.Tr>
-                                </Table.Thead>
-                                <Table.Tbody>
-                                    {result.rows.map((row, rowIdx) => (
-                                        <Table.Tr key={rowIdx}>
-                                            {row.map((cell, cellIdx) => (
-                                                <Table.Td key={cellIdx}>
-                                                    <Text size="sm" ff="monospace">
-                                                        {cell === null ? (
-                                                            <Text span c="dimmed" fs="italic">null</Text>
-                                                        ) : String(cell)}
-                                                    </Text>
-                                                </Table.Td>
-                                            ))}
-                                        </Table.Tr>
-                                    ))}
-                                </Table.Tbody>
-                            </Table>
-                        </ScrollArea>
-                    )}
-                </Stack>
+            {queryApi.loading && (
+                <Box>
+                    <Text size="sm" c="dimmed">Analyzing data...</Text>
+                </Box>
             )}
         </Stack>
     );

@@ -1,9 +1,7 @@
 import client from "./client";
 
 export interface AiQueryResponse {
-    columns: string[];
-    rows: (string | number | boolean | null)[][];
-    rowCount: number;
+    answer: string;
 }
 
 const query = (question: string) =>

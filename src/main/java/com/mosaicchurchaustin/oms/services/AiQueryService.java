@@ -22,8 +22,9 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Matcher;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -32,83 +33,83 @@ public class AiQueryService {
 
     private static final String ANTHROPIC_API_URL = "https://api.anthropic.com/v1/messages";
     private static final String MODEL = "claude-haiku-4-5-20251001";
-    private static final int MAX_ROWS = 500;
-    private static final Pattern SQL_CODE_BLOCK = Pattern.compile("```(?:sql)?\\s*([\\s\\S]*?)```", Pattern.CASE_INSENSITIVE);
-    private final OkHttpClient okHttpClient = new OkHttpClient();
+    private static final int MAX_ROWS = 200;
+    private static final int MAX_ITERATIONS = 8;
+
+    private final OkHttpClient okHttpClient = new OkHttpClient.Builder()
+            .callTimeout(120, TimeUnit.SECONDS)
+            .build();
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    private static final String SCHEMA_CONTEXT = """
-            You are a SQL query generator for a church street ministry order management system.
-            Generate a single, read-only MySQL SELECT query based on the user's question.
+    private static final String SYSTEM_PROMPT = """
+            You are a data analyst assistant for a church street ministry order management system.
+            You have access to a tool called execute_sql that runs read-only SELECT queries against the MySQL database.
+
+            Use the tool to explore the data and answer the user's question accurately.
+            If you're unsure of exact values (like item names or statuses), run an exploratory query first.
 
             DATABASE SCHEMA:
 
             TABLE: orders
-              id BIGINT, uuid VARCHAR, created DATETIME, updated DATETIME,
-              order_status VARCHAR -- values: PENDING_ACCEPTANCE, IN_PROGRESS, READY, COMPLETED, CANCELLED,
-              customer_id BIGINT (FK -> customers.id),
-              assignee BIGINT NULL (FK -> users.id) -- the staff member assigned to this order,
+              id, uuid, created DATETIME (UTC), updated DATETIME (UTC),
+              order_status VARCHAR -- PENDING_ACCEPTANCE, IN_PROGRESS, READY, COMPLETED, CANCELLED,
+              customer_id BIGINT FK→customers.id,
+              assignee BIGINT NULL FK→users.id -- staff member assigned to the order,
               special_instructions VARCHAR NULL,
               cart_id VARCHAR NULL
 
             TABLE: customers
-              id BIGINT, uuid VARCHAR, created DATETIME, updated DATETIME,
-              first_name VARCHAR, last_name VARCHAR,
-              flagged BIT -- 1 if flagged for staff attention,
-              exclude_from_metrics BOOLEAN -- 1 if excluded from reporting
+              id, uuid, first_name VARCHAR, last_name VARCHAR, created DATETIME (UTC),
+              flagged BIT, exclude_from_metrics BOOLEAN
 
             TABLE: order_items
-              id BIGINT, created DATETIME,
-              order_entity_id BIGINT (FK -> orders.id),
-              item_entity_id BIGINT (FK -> items.id),
+              id, created DATETIME (UTC),
+              order_entity_id BIGINT FK→orders.id,
+              item_entity_id BIGINT FK→items.id,
               quantity INT, quantity_fulfilled INT NULL,
-              notes VARCHAR NULL,
-              attributes JSON NULL
+              notes VARCHAR NULL, attributes JSON NULL
 
             TABLE: items
-              id BIGINT, description VARCHAR,
+              id, description VARCHAR -- the item name (e.g. "Men's Jeans", "Women's T-Shirt"),
               category VARCHAR NULL,
-              availability VARCHAR -- values: AVAILABLE, UNAVAILABLE,
-              managed TINYINT -- 1 if managed/tracked by staff
+              availability VARCHAR -- AVAILABLE or UNAVAILABLE,
+              managed TINYINT
 
             TABLE: order_history
-              id BIGINT, timestamp DATETIME,
-              order_entity_id BIGINT (FK -> orders.id),
-              user_entity_id BIGINT (FK -> users.id),
-              type VARCHAR -- e.g. STATUS_CHANGE,
-              order_status VARCHAR,
-              comment VARCHAR NULL
+              id, timestamp DATETIME (UTC),
+              order_entity_id BIGINT FK→orders.id,
+              user_entity_id BIGINT FK→users.id,
+              type VARCHAR, order_status VARCHAR, comment VARCHAR NULL
 
             TABLE: shower_reservations
-              id BIGINT, created DATETIME, updated DATETIME,
-              customer_id BIGINT (FK -> customers.id),
-              created_by BIGINT NULL (FK -> users.id),
+              id, created DATETIME (UTC), updated DATETIME (UTC),
+              customer_id BIGINT FK→customers.id,
+              created_by BIGINT NULL FK→users.id,
               started_at DATETIME NULL, ended_at DATETIME NULL,
-              reservation_status VARCHAR -- e.g. WAITING, IN_PROGRESS, COMPLETED, CANCELLED,
-              queue_position BIGINT,
-              notes TEXT NULL,
-              shower_number INT NULL
+              reservation_status VARCHAR -- WAITING, IN_PROGRESS, COMPLETED, CANCELLED,
+              queue_position BIGINT, notes TEXT NULL, shower_number INT NULL
 
             TABLE: users
-              id BIGINT, uuid VARCHAR, name VARCHAR, username VARCHAR, created DATETIME
+              id, uuid, name VARCHAR, username VARCHAR, created DATETIME (UTC)
 
             VIEW: daily_order_counts
-              date DATE, order_count INT -- total orders created each day
+              date DATE, order_count INT
 
             VIEW: weekly_item_requests_with_names
               week_start DATE, item_entity_id BIGINT, item_name VARCHAR, request_count INT
 
             TABLE: process_timing_analytics
               week_start_date DATE,
-              timing_type VARCHAR -- values: ORDER_TAKER_TIME, FULFILLMENT_TIME,
+              timing_type VARCHAR -- ORDER_TAKER_TIME or FULFILLMENT_TIME,
               avg_time_seconds DOUBLE
 
             RULES:
-            - Return ONLY the raw SQL query with no explanation, markdown, or commentary
-            - Use only SELECT statements - no INSERT, UPDATE, DELETE, DROP, CREATE, ALTER, or TRUNCATE
-            - Always add LIMIT %d at the end unless the query already has a limit
-            - All dates/times are stored in UTC
-            - Use table aliases for readability when joining multiple tables
+            - Only SELECT statements are allowed
+            - Use LIMIT when exploring data (20-50 rows is usually enough)
+            - Add LIMIT %d to any query that could return many rows
+            - Dates are UTC; use DATE() for date comparisons, NOW() for current time
+            - When looking up item names, use LIKE with %% for partial matching
+            - Provide a clear, concise answer once you have enough data
             """.formatted(MAX_ROWS);
 
     private final AiQueryLogRepository aiQueryLogRepository;
@@ -118,43 +119,119 @@ public class AiQueryService {
     private String anthropicApiKey;
 
     public AiQueryResponse processQuery(final String question, final UserEntity user) {
-        String generatedSql = null;
+        final List<String> sqlQueriesRun = new ArrayList<>();
         String errorMessage = null;
-        AiQueryResponse response = null;
+        String answer = null;
 
         try {
-            generatedSql = generateSql(question);
-            validateSql(generatedSql);
-            response = executeQuery(generatedSql);
+            answer = runAgenticLoop(question, sqlQueriesRun);
         } catch (final Exception e) {
             errorMessage = e.getMessage();
             throw new RuntimeException("Query failed: " + e.getMessage(), e);
         } finally {
-            final Integer rowCount = response != null ? response.getRowCount() : null;
+            String sqlLog = null;
+            try {
+                if (!sqlQueriesRun.isEmpty()) {
+                    sqlLog = objectMapper.writeValueAsString(sqlQueriesRun);
+                }
+            } catch (final Exception ignored) {}
             aiQueryLogRepository.save(AiQueryLogEntity.builder()
                     .user(user)
                     .question(question)
-                    .generatedSql(generatedSql)
-                    .resultRowCount(rowCount)
+                    .generatedSql(sqlLog)
+                    .resultRowCount(sqlQueriesRun.size())
                     .errorMessage(errorMessage)
                     .build());
         }
 
-        return response;
+        return AiQueryResponse.builder().answer(answer).build();
     }
 
-    private String generateSql(final String question) throws Exception {
+    private String runAgenticLoop(final String question, final List<String> sqlQueriesRun) throws Exception {
+        final ArrayNode messages = objectMapper.createArrayNode();
+        final ObjectNode userMsg = messages.addObject();
+        userMsg.put("role", "user");
+        userMsg.put("content", question);
+
+        for (int i = 0; i < MAX_ITERATIONS; i++) {
+            final JsonNode response = callAnthropic(messages);
+            final String stopReason = response.path("stop_reason").asText();
+            final JsonNode content = response.path("content");
+
+            final ObjectNode assistantMsg = messages.addObject();
+            assistantMsg.put("role", "assistant");
+            assistantMsg.set("content", content);
+
+            if ("end_turn".equals(stopReason)) {
+                for (final JsonNode block : content) {
+                    if ("text".equals(block.path("type").asText())) {
+                        return block.path("text").asText();
+                    }
+                }
+                return "No answer was provided.";
+            }
+
+            if ("tool_use".equals(stopReason)) {
+                final ObjectNode toolResultMsg = messages.addObject();
+                toolResultMsg.put("role", "user");
+                final ArrayNode toolResults = toolResultMsg.putArray("content");
+
+                for (final JsonNode block : content) {
+                    if ("tool_use".equals(block.path("type").asText())) {
+                        final String toolUseId = block.path("id").asText();
+                        final String sql = block.path("input").path("sql").asText();
+                        sqlQueriesRun.add(sql);
+                        log.debug("AI executing SQL: {}", sql);
+
+                        final ObjectNode toolResult = toolResults.addObject();
+                        toolResult.put("type", "tool_result");
+                        toolResult.put("tool_use_id", toolUseId);
+                        toolResult.put("content", executeSafeQuery(sql));
+                    }
+                }
+            }
+        }
+
+        throw new RuntimeException("Could not complete analysis within the allowed number of queries.");
+    }
+
+    private String executeSafeQuery(final String sql) {
+        try {
+            validateSql(sql);
+            final List<Map<String, Object>> results = jdbcTemplate.queryForList(sql);
+            return formatResultForClaude(results);
+        } catch (final Exception e) {
+            return "Error: " + e.getMessage();
+        }
+    }
+
+    private String formatResultForClaude(final List<Map<String, Object>> results) {
+        if (results.isEmpty()) {
+            return "(no rows returned)";
+        }
+        final List<String> columns = new ArrayList<>(results.get(0).keySet());
+        final StringBuilder sb = new StringBuilder();
+        sb.append(String.join(" | ", columns)).append("\n");
+        sb.append("-".repeat(Math.min(columns.size() * 15, 100))).append("\n");
+        for (final Map<String, Object> row : results) {
+            sb.append(columns.stream()
+                    .map(col -> row.get(col) == null ? "NULL" : String.valueOf(row.get(col)))
+                    .collect(Collectors.joining(" | ")))
+              .append("\n");
+        }
+        sb.append("(").append(results.size()).append(" rows)");
+        return sb.toString();
+    }
+
+    private JsonNode callAnthropic(final ArrayNode messages) throws Exception {
         final ObjectNode requestBody = objectMapper.createObjectNode();
         requestBody.put("model", MODEL);
-        requestBody.put("max_tokens", 1024);
-
-        final ArrayNode messages = requestBody.putArray("messages");
-        final ObjectNode userMessage = messages.addObject();
-        userMessage.put("role", "user");
-        userMessage.put("content", SCHEMA_CONTEXT + "\n\nQuestion: " + question);
+        requestBody.put("max_tokens", 2048);
+        requestBody.put("system", SYSTEM_PROMPT);
+        requestBody.set("tools", buildToolDefinition());
+        requestBody.set("messages", messages);
 
         final String requestJson = objectMapper.writeValueAsString(requestBody);
-
         final Request request = new Request.Builder()
                 .url(ANTHROPIC_API_URL)
                 .addHeader("x-api-key", anthropicApiKey)
@@ -165,22 +242,26 @@ public class AiQueryService {
 
         try (final Response response = okHttpClient.newCall(request).execute()) {
             if (!response.isSuccessful()) {
-               log.error("Request failed: " + response.body().string());
+                log.error("Anthropic API error {}: {}", response.code(), response.body().string());
                 throw new RuntimeException("Anthropic API error: " + response.code());
             }
-            final String responseBody = response.body().string();
-            final JsonNode responseNode = objectMapper.readTree(responseBody);
-            final String rawContent = responseNode.path("content").get(0).path("text").asText();
-            return extractSql(rawContent);
+            return objectMapper.readTree(response.body().string());
         }
     }
 
-    private String extractSql(final String rawContent) {
-        final Matcher matcher = SQL_CODE_BLOCK.matcher(rawContent);
-        if (matcher.find()) {
-            return matcher.group(1).trim();
-        }
-        return rawContent.trim();
+    private ArrayNode buildToolDefinition() {
+        final ArrayNode tools = objectMapper.createArrayNode();
+        final ObjectNode tool = tools.addObject();
+        tool.put("name", "execute_sql");
+        tool.put("description", "Execute a read-only MySQL SELECT query against the database. Returns results as a text table. Use this to explore data and find the answer to the user's question.");
+        final ObjectNode inputSchema = tool.putObject("input_schema");
+        inputSchema.put("type", "object");
+        final ObjectNode properties = inputSchema.putObject("properties");
+        final ObjectNode sqlProp = properties.putObject("sql");
+        sqlProp.put("type", "string");
+        sqlProp.put("description", "A valid MySQL SELECT query");
+        inputSchema.putArray("required").add("sql");
+        return tools;
     }
 
     private void validateSql(final String sql) {
@@ -194,33 +275,5 @@ public class AiQueryService {
                 throw new IllegalArgumentException("Query contains disallowed keyword: " + keyword);
             }
         }
-    }
-
-    private AiQueryResponse executeQuery(final String sql) {
-        final List<Map<String, Object>> results = jdbcTemplate.queryForList(sql);
-
-        if (results.isEmpty()) {
-            return AiQueryResponse.builder()
-                    .columns(List.of())
-                    .rows(List.of())
-                    .rowCount(0)
-                    .build();
-        }
-
-        final List<String> columns = new ArrayList<>(results.get(0).keySet());
-        final List<List<Object>> rows = new ArrayList<>();
-        for (final Map<String, Object> row : results) {
-            final List<Object> rowValues = new ArrayList<>();
-            for (final String column : columns) {
-                rowValues.add(row.get(column));
-            }
-            rows.add(rowValues);
-        }
-
-        return AiQueryResponse.builder()
-                .columns(columns)
-                .rows(rows)
-                .rowCount(rows.size())
-                .build();
     }
 }
