@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import * as XLSX from 'xlsx';
 import {
     Container,
     Title,
@@ -394,11 +395,67 @@ const ItemAnalysis: React.FC = () => {
         );
     };
     
-    // Export breakdown data
+    // Export breakdown data to Excel
     const exportBreakdownData = () => {
-        const data = getBreakdownData();
-        console.log('Exporting breakdown data:', data);
-        // TODO: Implement actual export functionality
+        if (!selectedItem) return;
+
+        const wb = XLSX.utils.book_new();
+
+        // Sheet 1: Summary metrics
+        const summaryRows = [
+            ['Item', selectedItem.description],
+            ['Category', selectedItem.category],
+            ['Date Range', dateRange],
+            [],
+            ['Metric', 'Value'],
+            ['Total Requested', metrics?.totalRequested ?? 0],
+            ['Total Fulfilled', metrics?.totalFulfilled ?? 0],
+            ['Fill Rate', `${Math.round((metrics?.fillRate || 0) * 100)}%`],
+        ];
+        XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(summaryRows), 'Summary');
+
+        // Sheet 2: Attribute breakdown
+        const breakdownData = getBreakdownData();
+        const hasSecondary = !!secondaryBreakdownAttribute;
+        const breakdownHeader = hasSecondary
+            ? [getAttributeLabel(breakdownAttribute), 'Requested', 'Fulfilled', 'Fill Rate', getAttributeLabel(secondaryBreakdownAttribute), 'Secondary Requested', '% of Primary']
+            : [getAttributeLabel(breakdownAttribute), 'Requested', 'Fulfilled', 'Fill Rate'];
+
+        const breakdownRows: (string | number)[][] = [breakdownHeader];
+        Object.entries(breakdownData).forEach(([key, data]) => {
+            if (hasSecondary && Object.keys(data.breakdown[secondaryBreakdownAttribute] || {}).length > 0) {
+                const secondaryEntries = Object.entries(data.breakdown[secondaryBreakdownAttribute] || {});
+                secondaryEntries.forEach(([subKey, subValue], idx) => {
+                    if (idx === 0) {
+                        breakdownRows.push([key, data.total, data.filled, `${data.fillRate}%`, subKey, subValue as number, `${Math.round((subValue as number) / data.total * 100)}%`]);
+                    } else {
+                        breakdownRows.push(['', '', '', '', subKey, subValue as number, `${Math.round((subValue as number) / data.total * 100)}%`]);
+                    }
+                });
+            } else {
+                breakdownRows.push([key, data.total, data.filled, `${data.fillRate}%`]);
+            }
+        });
+        XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(breakdownRows), 'Attribute Breakdown');
+
+        // Sheet 3: Weekly trend
+        const temporalData = getTemporalData();
+        const uniqueValues = getUniqueBreakdownValues();
+        const trendHeader = ['Week', ...uniqueValues.map(v => `${getAttributeLabel(breakdownAttribute)}: ${v}`), 'Total'];
+        const trendRows: (string | number)[][] = [trendHeader];
+        temporalData.forEach((row: Record<string, unknown>) => {
+            const rowValues: (string | number)[] = [row.week as string];
+            uniqueValues.forEach(v => {
+                const seriesKey = `${breakdownAttribute}_${v}_req`;
+                rowValues.push((row[seriesKey] as number) || 0);
+            });
+            rowValues.push(row.total as number || 0);
+            trendRows.push(rowValues);
+        });
+        XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(trendRows), 'Weekly Trend');
+
+        const fileName = `${selectedItem.description.replace(/[^a-z0-9]/gi, '_')}_analysis.xlsx`;
+        XLSX.writeFile(wb, fileName);
     };
     
     // Helper to find item by ID in suggested items data

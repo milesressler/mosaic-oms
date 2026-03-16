@@ -10,13 +10,12 @@
     "buildForBoot": "vite build  --mode integrated",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
-    "test:local":       "npx playwright test --project=local",
-    "test:qa":          "npx playwright test --project=qa",
-    "test:prod":        "npx playwright test --project=prod",
-    "record:local":     "RECORD=true npx playwright test e2e/login-record.spec.ts --project=local",
-    "record:qa":        "RECORD=true npx playwright test e2e/login-record.spec.ts --project=qa",
-    "record:prod":      "RECORD=true npx playwright test e2e/login-record.spec.ts --project=prod"
-
+    "test:local": "npx playwright test --project=local",
+    "test:qa": "npx playwright test --project=qa",
+    "test:prod": "npx playwright test --project=prod",
+    "record:local": "RECORD=true npx playwright test e2e/login-record.spec.ts --project=local",
+    "record:qa": "RECORD=true npx playwright test e2e/login-record.spec.ts --project=qa",
+    "record:prod": "RECORD=true npx playwright test e2e/login-record.spec.ts --project=prod"
   },
   "dependencies": {
     "posthog-js": "^1.242.2",
@@ -25,7 +24,8 @@
     "react-markdown": "^10.1.0",
     "recharts": "^2.15.2",
     "remark-gfm": "^4.0.1",
-    "ua-parser-js": "^2.0.3"
+    "ua-parser-js": "^2.0.3",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@auth0/auth0-react": "^2.2.1",
