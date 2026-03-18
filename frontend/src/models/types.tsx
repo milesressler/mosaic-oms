@@ -184,6 +184,7 @@ export interface ItemAttribute {
     options: {label: string, value: string, available: boolean}[]
     groupName?: string
     groupOrder?: number
+    sortOrder?: number
 }
 
 export interface Item {

@@ -192,6 +192,7 @@ public class ItemService {
                             .itemEntity(itemEntity)
                             .groupName(itemAttributeRequest.groupName())
                             .groupOrder(itemAttributeRequest.groupOrder())
+                            .sortOrder(itemAttributeRequest.sortOrder())
                             .build()
             );
 
@@ -229,6 +230,7 @@ public class ItemService {
             
             existingAttr.setGroupName(requestedAttr.groupName());
             existingAttr.setGroupOrder(requestedAttr.groupOrder());
+            existingAttr.setSortOrder(requestedAttr.sortOrder());
 
             // Only process options for non-TEXT types
             if (requestedAttr.attributeType() != ItemAttributeType.TEXT) {
