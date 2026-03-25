@@ -77,7 +77,7 @@ public class ItemEntity extends BaseEntity implements Auditable {
     List<OrderItemEntity> orderItems;
 
     @OneToMany(mappedBy = "itemEntity", fetch = FetchType.EAGER)
-    @OrderBy("groupName NULLS LAST, groupOrder ASC, value ASC")
+    @OrderBy("sortOrder ASC NULLS LAST, groupOrder ASC NULLS LAST, value ASC")
     @ToString.Exclude
     List<ItemAttribute> attributes;
 
