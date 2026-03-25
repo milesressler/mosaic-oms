@@ -6,6 +6,7 @@ import com.mosaicchurchaustin.oms.data.constants.AuditAction;
 import com.mosaicchurchaustin.oms.data.entity.BaseEntity;
 import com.mosaicchurchaustin.oms.data.entity.BaseUuidEntity;
 import com.mosaicchurchaustin.oms.data.entity.audit.AuditLogEntry;
+import com.mosaicchurchaustin.oms.data.entity.customer.CustomerEntity;
 import com.mosaicchurchaustin.oms.data.response.AuditLogResponse;
 import com.mosaicchurchaustin.oms.repositories.AuditLogEntryRepository;
 import org.apache.commons.lang3.NotImplementedException;
@@ -16,6 +17,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -71,6 +74,28 @@ public class AuditService {
         }
 
         auditLogEntryRepository.save(entry);
+    }
+
+    public void logCustomerMerge(final CustomerEntity fromCustomer, final CustomerEntity toCustomer) {
+        final AuditLogEntry entry = AuditLogEntry.builder()
+                .userId(getExternalIdFromAuth().orElse(null))
+                .action(AuditAction.MERGE)
+                .entityType(CustomerEntity.ENTITY_TYPE)
+                .entityId(fromCustomer.getId())
+                .entityUuid(fromCustomer.getUuid())
+                .previousState(customerStateMap(fromCustomer))
+                .newState(customerStateMap(toCustomer))
+                .build();
+        auditLogEntryRepository.save(entry);
+    }
+
+    private Map<String, String> customerStateMap(final CustomerEntity customer) {
+        final Map<String, String> state = new HashMap<>();
+        state.put("id", String.valueOf(customer.getId()));
+        state.put("uuid", customer.getUuid());
+        state.put("firstName", customer.getFirstName());
+        state.put("lastName", customer.getLastName());
+        return state;
     }
 
     private Optional<String> getExternalIdFromAuth() {

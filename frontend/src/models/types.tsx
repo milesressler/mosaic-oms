@@ -70,7 +70,8 @@ export interface Customer {
     displayName: string
     uuid: string
     created: number
-    showerWaiverCompleted: number
+    showerWaiverCompleted: number | null
+    waiverIsValid: boolean
     flagged: boolean
     obfuscatedName: boolean
     excludeFromMetrics: boolean
