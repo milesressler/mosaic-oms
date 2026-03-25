@@ -99,8 +99,16 @@ public class CustomerService {
                 .orElseThrow(() -> new EntityNotFoundException(CustomerEntity.ENTITY_TYPE, request.toCustomerUuid()));
 
         long ordersTransferred = orderRepository.updateCustomerForAllOrders(fromCustomer.getId(), toCustomer.getId());
-        
+
         long showerReservationsTransferred = showerReservationRepository.updateCustomerForAllReservations(fromCustomer.getId(), toCustomer.getId());
+
+        Optional.ofNullable(request.firstName()).ifPresent(toCustomer::setFirstName);
+        Optional.ofNullable(request.lastName()).ifPresent(toCustomer::setLastName);
+        Optional.ofNullable(request.flagged()).ifPresent(toCustomer::setFlagged);
+        Optional.ofNullable(request.obfuscateName()).ifPresent(toCustomer::setObfuscateName);
+        Optional.ofNullable(request.excludeFromMetrics()).ifPresent(toCustomer::setExcludeFromMetrics);
+        Optional.ofNullable(request.showerWaiverSigned()).map(OffsetDateTime::toInstant).ifPresent(toCustomer::setShowerWaiverCompleted);
+        customerRepository.save(toCustomer);
 
         customerRepository.delete(fromCustomer);
         auditService.logCustomerMerge(fromCustomer, toCustomer);

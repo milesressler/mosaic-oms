@@ -28,6 +28,12 @@ const createCustomer = (body: {
 const mergeCustomers = (body: {
     fromCustomerUuid: string,
     toCustomerUuid: string,
+    firstName?: string,
+    lastName?: string,
+    flagged?: boolean,
+    obfuscateName?: boolean,
+    excludeFromMetrics?: boolean,
+    showerWaiverSigned?: string,
 }) =>
     client.post<{
         mergedToCustomerUuid: string,

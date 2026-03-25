@@ -14,7 +14,8 @@ import {
     Text,
     Alert,
     Card,
-    ThemeIcon
+    ThemeIcon,
+    Divider,
 } from '@mantine/core';
 import {IconSearch, IconFlag, IconX, IconGitMerge, IconInfoCircle, IconTrash, IconCheck} from '@tabler/icons-react';
 import { useDebouncedValue } from '@mantine/hooks';
@@ -24,6 +25,28 @@ import useApi from 'src/hooks/useApi.tsx';
 import customersApi from 'src/services/customersApi.tsx';
 import { Customer } from 'src/models/types.tsx';
 import { DateTime } from 'luxon';
+
+type FieldSource = 'kept' | 'deleted';
+
+interface FieldResolutions {
+    firstName: FieldSource;
+    lastName: FieldSource;
+    flagged: FieldSource;
+    obfuscateName: FieldSource;
+    excludeFromMetrics: FieldSource;
+    showerWaiver: FieldSource;
+}
+
+const initResolutions = (kept: Customer, deleted: Customer): FieldResolutions => ({
+    firstName: 'kept',
+    lastName: 'kept',
+    // Preserve flag if the deleted customer is flagged and the kept one isn't
+    flagged: (!kept.flagged && deleted.flagged) ? 'deleted' : 'kept',
+    obfuscateName: 'kept',
+    excludeFromMetrics: 'kept',
+    // Preserve waiver if kept has no valid waiver but deleted does
+    showerWaiver: (!kept.waiverIsValid && deleted.waiverIsValid) ? 'deleted' : 'kept',
+});
 
 export default function CustomerManagementPage() {
     const getCustomers = useApi(customersApi.getCustomers);
@@ -36,11 +59,15 @@ export default function CustomerManagementPage() {
     const [selectedCustomers, setSelectedCustomers] = useState<Customer[]>([]);
     const [mergeModalOpen, setMergeModalOpen] = useState(false);
     const [mergeTarget, setMergeTarget] = useState<Customer | null>(null);
+    const [fieldResolutions, setFieldResolutions] = useState<FieldResolutions>({
+        firstName: 'kept', lastName: 'kept', flagged: 'kept',
+        obfuscateName: 'kept', excludeFromMetrics: 'kept', showerWaiver: 'kept',
+    });
 
     /* ---------- query‑param state ---------- */
     const page       = Number(searchParams.get('page')) || 1;
     const nameFilter = searchParams.get('name') || '';
-    const flaggedStr = searchParams.get('flagged');        // "true" | "false" | null
+    const flaggedStr = searchParams.get('flagged');
     const flagged    = flaggedStr === null ? null : flaggedStr === 'true';
 
     const [nameSearch, setNameSearch] = useState(nameFilter);
@@ -48,16 +75,10 @@ export default function CustomerManagementPage() {
 
     /* ---------- fetch whenever filters change ---------- */
     useEffect(() => {
-        getCustomers.request(
-            page - 1,
-            10,
-        {
-            name: debouncedName || null,
-            flagged
-        });
+        getCustomers.request(page - 1, 10, { name: debouncedName || null, flagged });
     }, [page, debouncedName, flagged]);
 
-    /* ---------- clear selections when search/filter changes ---------- */
+    /* ---------- clear selections when search/filter/page changes ---------- */
     useEffect(() => {
         if (mergeMode) {
             setSelectedCustomers([]);
@@ -101,6 +122,12 @@ export default function CustomerManagementPage() {
         }
     };
 
+    const handleSetMergeTarget = (target: Customer) => {
+        const other = selectedCustomers.find(c => c.uuid !== target.uuid)!;
+        setFieldResolutions(initResolutions(target, other));
+        setMergeTarget(target);
+    };
+
     const closeMergeModal = () => {
         setMergeModalOpen(false);
         setMergeTarget(null);
@@ -110,8 +137,25 @@ export default function CustomerManagementPage() {
         if (!mergeTarget) return;
         const mergeSource = selectedCustomers.find(c => c.uuid !== mergeTarget.uuid);
         if (!mergeSource) return;
+
+        const pick = <T,>(f: FieldSource, kept: T, deleted: T): T => f === 'kept' ? kept : deleted;
+        const resolvedWaiverMillis = pick(
+            fieldResolutions.showerWaiver,
+            mergeTarget.showerWaiverCompleted,
+            mergeSource.showerWaiverCompleted
+        );
+
         try {
-            await mergeCustomers.request({ fromCustomerUuid: mergeSource.uuid, toCustomerUuid: mergeTarget.uuid });
+            await mergeCustomers.request({
+                fromCustomerUuid: mergeSource.uuid,
+                toCustomerUuid: mergeTarget.uuid,
+                firstName: pick(fieldResolutions.firstName, mergeTarget.firstName, mergeSource.firstName),
+                lastName: pick(fieldResolutions.lastName, mergeTarget.lastName, mergeSource.lastName),
+                flagged: pick(fieldResolutions.flagged, mergeTarget.flagged, mergeSource.flagged),
+                obfuscateName: pick(fieldResolutions.obfuscateName, mergeTarget.obfuscatedName, mergeSource.obfuscatedName),
+                excludeFromMetrics: pick(fieldResolutions.excludeFromMetrics, mergeTarget.excludeFromMetrics, mergeSource.excludeFromMetrics),
+                ...(resolvedWaiverMillis ? { showerWaiverSigned: new Date(resolvedWaiverMillis).toISOString() } : {}),
+            });
             closeMergeModal();
             setMergeMode(false);
             setSelectedCustomers([]);
@@ -121,18 +165,66 @@ export default function CustomerManagementPage() {
         }
     };
 
+    const formatWaiver = (customer: Customer): string => {
+        if (!customer.showerWaiverCompleted) return 'No waiver';
+        const date = DateTime.fromMillis(customer.showerWaiverCompleted).toLocaleString(DateTime.DATE_MED);
+        return customer.waiverIsValid ? `Valid (${date})` : `Expired (${date})`;
+    };
+
+    const renderFieldRow = (
+        field: keyof FieldResolutions,
+        label: string,
+        keptVal: string,
+        deletedVal: string,
+        keptDisabled?: boolean,
+        deletedDisabled?: boolean,
+    ) => {
+        const same = keptVal === deletedVal;
+        return (
+            <Table.Tr key={field}>
+                <Table.Td><Text size="xs" fw={500}>{label}</Text></Table.Td>
+                {same ? (
+                    <Table.Td colSpan={2}>
+                        <Text size="xs" c="dimmed">{keptVal}</Text>
+                    </Table.Td>
+                ) : (
+                    <>
+                        <Table.Td>
+                            <Button
+                                size="compact-xs"
+                                variant={fieldResolutions[field] === 'kept' ? 'filled' : 'subtle'}
+                                color="green"
+                                disabled={keptDisabled}
+                                onClick={() => setFieldResolutions(r => ({ ...r, [field]: 'kept' as FieldSource }))}
+                            >
+                                {keptVal}
+                            </Button>
+                        </Table.Td>
+                        <Table.Td>
+                            <Button
+                                size="compact-xs"
+                                variant={fieldResolutions[field] === 'deleted' ? 'filled' : 'subtle'}
+                                color="green"
+                                disabled={deletedDisabled}
+                                onClick={() => setFieldResolutions(r => ({ ...r, [field]: 'deleted' as FieldSource }))}
+                            >
+                                {deletedVal}
+                            </Button>
+                        </Table.Td>
+                    </>
+                )}
+            </Table.Tr>
+        );
+    };
+
     /* ---------- table rows ---------- */
-    // Filter selectedCustomers to only include those visible on current page
-    const currentPageCustomerUuids = new Set(getCustomers.data?.content?.map(c => c.uuid) || []);
-    const visibleSelectedCustomers = selectedCustomers.filter(sc => currentPageCustomerUuids.has(sc.uuid));
-    
     const rows = getCustomers.data?.content?.map((c: Customer) => {
         const isSelected = selectedCustomers.some(sc => sc.uuid === c.uuid);
         return (
             <Table.Tr
                 key={c.uuid}
                 style={{ cursor: mergeMode ? 'default' : 'pointer', backgroundColor: isSelected ? '#f1f3f4' : undefined }}
-                onClick={(e) => {
+                onClick={() => {
                     if (!mergeMode) {
                         navigate(`/customer/${c.uuid}`);
                     }
@@ -231,6 +323,12 @@ export default function CustomerManagementPage() {
                 </Group>
             </Group>
 
+            {mergeMode && (
+                <Alert icon={<IconInfoCircle />} color="blue" variant="light" mx="xs" mb="xs" p="xs">
+                    <Text size="xs">Search by name to find duplicates. You can only select customers visible on the current page.</Text>
+                </Alert>
+            )}
+
             <Table>
                 <Table.Thead>
                     <Table.Tr>
@@ -276,13 +374,19 @@ export default function CustomerManagementPage() {
                                         <Stack gap="xs">
                                             <Text fw={600}>{customer.firstName} {customer.lastName}</Text>
                                             <Text size="xs" c="dimmed">Created: {DateTime.fromMillis(customer.created).toLocaleString(DateTime.DATETIME_SHORT)}</Text>
+                                            {customer.waiverIsValid && (
+                                                <Text size="xs" c="teal">Waiver: {formatWaiver(customer)}</Text>
+                                            )}
+                                            {customer.flagged && (
+                                                <Text size="xs" c="red">Flagged</Text>
+                                            )}
                                             <Button
                                                 leftSection={<IconCheck size={14} />}
                                                 variant="light"
                                                 color="green"
                                                 size="xs"
                                                 mt="xs"
-                                                onClick={() => setMergeTarget(customer)}
+                                                onClick={() => handleSetMergeTarget(customer)}
                                             >
                                                 Keep this customer
                                             </Button>
@@ -298,9 +402,6 @@ export default function CustomerManagementPage() {
                         const mergeSource = selectedCustomers.find(c => c.uuid !== mergeTarget.uuid)!;
                         return (
                             <>
-                                <Alert icon={<IconInfoCircle />} color="orange" title="Please confirm this action">
-                                    This cannot be undone. The deleted customer record will be permanently removed.
-                                </Alert>
                                 <Group grow align="stretch">
                                     <Card withBorder padding="md" style={{ borderColor: 'var(--mantine-color-green-5)' }}>
                                         <Stack gap="xs">
@@ -312,7 +413,6 @@ export default function CustomerManagementPage() {
                                             </Group>
                                             <Text fw={600}>{mergeTarget.firstName} {mergeTarget.lastName}</Text>
                                             <Text size="xs" c="dimmed">Created: {DateTime.fromMillis(mergeTarget.created).toLocaleString(DateTime.DATETIME_SHORT)}</Text>
-                                            <Text size="xs" c="dimmed">All orders and history will be merged into this record.</Text>
                                         </Stack>
                                     </Card>
                                     <Card withBorder padding="md" style={{ borderColor: 'var(--mantine-color-red-5)' }}>
@@ -325,10 +425,38 @@ export default function CustomerManagementPage() {
                                             </Group>
                                             <Text fw={600}>{mergeSource.firstName} {mergeSource.lastName}</Text>
                                             <Text size="xs" c="dimmed">Created: {DateTime.fromMillis(mergeSource.created).toLocaleString(DateTime.DATETIME_SHORT)}</Text>
-                                            <Text size="xs" c="dimmed">This record will be permanently deleted. Their orders and shower reservations will be transferred to the kept record.</Text>
                                         </Stack>
                                     </Card>
                                 </Group>
+
+                                <Divider label="Resolve properties for merged record" labelPosition="center" />
+
+                                <Table withColumnBorders withRowBorders fz="xs">
+                                    <Table.Thead>
+                                        <Table.Tr>
+                                            <Table.Th w={130}>Field</Table.Th>
+                                            <Table.Th>
+                                                <Text size="xs" c="green" fw={600}>{mergeTarget.firstName} {mergeTarget.lastName}</Text>
+                                            </Table.Th>
+                                            <Table.Th>
+                                                <Text size="xs" c="dimmed" fw={600}>{mergeSource.firstName} {mergeSource.lastName}</Text>
+                                            </Table.Th>
+                                        </Table.Tr>
+                                    </Table.Thead>
+                                    <Table.Tbody>
+                                        {renderFieldRow('firstName', 'First Name', mergeTarget.firstName, mergeSource.firstName)}
+                                        {renderFieldRow('lastName', 'Last Name', mergeTarget.lastName, mergeSource.lastName)}
+                                        {renderFieldRow('flagged', 'Flagged', mergeTarget.flagged ? 'Yes' : 'No', mergeSource.flagged ? 'Yes' : 'No')}
+                                        {renderFieldRow('showerWaiver', 'Shower Waiver', formatWaiver(mergeTarget), formatWaiver(mergeSource), false, !mergeSource.showerWaiverCompleted && !!mergeTarget.showerWaiverCompleted)}
+                                        {renderFieldRow('obfuscateName', 'Obfuscate Name', mergeTarget.obfuscatedName ? 'Yes' : 'No', mergeSource.obfuscatedName ? 'Yes' : 'No')}
+                                        {renderFieldRow('excludeFromMetrics', 'Excl. Metrics', mergeTarget.excludeFromMetrics ? 'Yes' : 'No', mergeSource.excludeFromMetrics ? 'Yes' : 'No')}
+                                    </Table.Tbody>
+                                </Table>
+
+                                <Alert icon={<IconInfoCircle />} color="orange" title="This cannot be undone">
+                                    The deleted record will be permanently removed. Orders and shower reservations will be transferred to the kept record.
+                                </Alert>
+
                                 <Group justify="flex-end" gap="sm">
                                     <Button variant="subtle" onClick={() => setMergeTarget(null)}>Back</Button>
                                     <Button variant="outline" onClick={closeMergeModal}>Cancel</Button>
