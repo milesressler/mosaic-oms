@@ -17,6 +17,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
@@ -89,7 +90,7 @@ public class AuditService {
     }
 
     private Map<String, String> customerStateMap(final CustomerEntity customer) {
-        final Map<String, String> state = new java.util.HashMap<>();
+        final Map<String, String> state = new HashMap<>();
         state.put("id", String.valueOf(customer.getId()));
         state.put("uuid", customer.getUuid());
         state.put("firstName", customer.getFirstName());
