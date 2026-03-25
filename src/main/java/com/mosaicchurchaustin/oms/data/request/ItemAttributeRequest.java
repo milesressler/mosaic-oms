@@ -15,6 +15,7 @@ public record ItemAttributeRequest(
         @NotNull ItemAttributeType attributeType,
         List<@NotBlank String> options,
         String groupName,
-        Integer groupOrder
+        Integer groupOrder,
+        Integer sortOrder
 ) {
 }

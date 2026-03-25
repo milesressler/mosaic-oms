@@ -28,6 +28,7 @@ public class AdminItemResponse {
                 .required(attribute.getRequired())
                 .groupName(attribute.getGroupName())
                 .groupOrder(attribute.getGroupOrder())
+                .sortOrder(attribute.getSortOrder())
                 .options(
                         attribute.getAttributeOptions().stream().map(option -> ItemAttributeOption.builder()
                                 .label(option.getLabel()).value(option.getValue()).available(ItemAvailability.AVAILABLE == option.getAvailability())
