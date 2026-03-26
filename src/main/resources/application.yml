@@ -71,8 +71,8 @@ mosaic:
   oms:
     readonly-datasource:
       url: jdbc:mysql://localhost:33060/mosaicoms?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
-      username: oms_readonly
-      password: oms_readonly_dev
+      username: oms_ai_agent
+      password: oms_ai_agent_dev
 management:
   info:
     env:

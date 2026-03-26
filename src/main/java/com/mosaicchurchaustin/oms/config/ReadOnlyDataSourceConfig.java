@@ -21,8 +21,8 @@ public class ReadOnlyDataSourceConfig {
             final DataSource primaryDataSource) {
 
         if (url.isBlank() || username.isBlank()) {
-            log.warn("No read-only datasource configured (DB_READONLY_URL / DB_READONLY_USERNAME not set). " +
-                     "AI queries will use the primary datasource — set up a read-only DB user for production.");
+            log.warn("No AI agent datasource configured (DB_READONLY_URL / DB_READONLY_USERNAME not set). " +
+                     "AI queries will use the primary datasource — set up the oms_ai_agent DB user for production.");
             return new JdbcTemplate(primaryDataSource);
         }
 

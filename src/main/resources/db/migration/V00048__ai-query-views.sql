@@ -1,15 +1,15 @@
 -- Views for the AI query feature.
--- The read-only DB user (oms_readonly) is granted SELECT on these views only.
+-- The read-only DB user (oms_ai_agent) is granted SELECT on these views only.
 -- Grants are managed via docker/mysql-init/01-readonly-user.sql (dev)
 -- and must be applied manually by a DBA in production:
 --
---   GRANT SELECT ON mosaicoms.v_order_summary        TO 'oms_readonly'@'%';
---   GRANT SELECT ON mosaicoms.v_order_items_detail   TO 'oms_readonly'@'%';
---   GRANT SELECT ON mosaicoms.v_items                TO 'oms_readonly'@'%';
---   GRANT SELECT ON mosaicoms.v_shower_activity      TO 'oms_readonly'@'%';
---   GRANT SELECT ON mosaicoms.v_process_timings      TO 'oms_readonly'@'%';
---   GRANT SELECT ON mosaicoms.v_daily_order_counts   TO 'oms_readonly'@'%';
---   GRANT SELECT ON mosaicoms.v_weekly_item_requests TO 'oms_readonly'@'%';
+--   GRANT SELECT ON mosaicoms.v_order_summary        TO 'oms_ai_agent'@'%';
+--   GRANT SELECT ON mosaicoms.v_order_items_detail   TO 'oms_ai_agent'@'%';
+--   GRANT SELECT ON mosaicoms.v_items                TO 'oms_ai_agent'@'%';
+--   GRANT SELECT ON mosaicoms.v_shower_activity      TO 'oms_ai_agent'@'%';
+--   GRANT SELECT ON mosaicoms.v_process_timings      TO 'oms_ai_agent'@'%';
+--   GRANT SELECT ON mosaicoms.v_daily_order_counts   TO 'oms_ai_agent'@'%';
+--   GRANT SELECT ON mosaicoms.v_weekly_item_requests TO 'oms_ai_agent'@'%';
 
 CREATE OR REPLACE VIEW v_order_summary AS
 SELECT

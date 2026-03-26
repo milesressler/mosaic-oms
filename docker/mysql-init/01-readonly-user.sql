@@ -84,14 +84,14 @@ FROM mosaicoms.weekly_item_requests_with_names;
 -- Read-only user — SELECT on views only, no base table access
 -- ---------------------------------------------------------------
 
-CREATE USER IF NOT EXISTS 'oms_readonly'@'%' IDENTIFIED BY 'oms_readonly_dev';
+CREATE USER IF NOT EXISTS 'oms_ai_agent'@'%' IDENTIFIED BY 'oms_ai_agent_dev';
 
-GRANT SELECT ON mosaicoms.v_order_summary        TO 'oms_readonly'@'%';
-GRANT SELECT ON mosaicoms.v_order_items_detail   TO 'oms_readonly'@'%';
-GRANT SELECT ON mosaicoms.v_items                TO 'oms_readonly'@'%';
-GRANT SELECT ON mosaicoms.v_shower_activity      TO 'oms_readonly'@'%';
-GRANT SELECT ON mosaicoms.v_process_timings      TO 'oms_readonly'@'%';
-GRANT SELECT ON mosaicoms.v_daily_order_counts   TO 'oms_readonly'@'%';
-GRANT SELECT ON mosaicoms.v_weekly_item_requests TO 'oms_readonly'@'%';
+GRANT SELECT ON mosaicoms.v_order_summary        TO 'oms_ai_agent'@'%';
+GRANT SELECT ON mosaicoms.v_order_items_detail   TO 'oms_ai_agent'@'%';
+GRANT SELECT ON mosaicoms.v_items                TO 'oms_ai_agent'@'%';
+GRANT SELECT ON mosaicoms.v_shower_activity      TO 'oms_ai_agent'@'%';
+GRANT SELECT ON mosaicoms.v_process_timings      TO 'oms_ai_agent'@'%';
+GRANT SELECT ON mosaicoms.v_daily_order_counts   TO 'oms_ai_agent'@'%';
+GRANT SELECT ON mosaicoms.v_weekly_item_requests TO 'oms_ai_agent'@'%';
 
 FLUSH PRIVILEGES;
