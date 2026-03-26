@@ -48,64 +48,59 @@ public class AiQueryService {
             You have access to a tool called execute_sql that runs read-only SELECT queries against the MySQL database.
 
             Use the tool to explore the data and answer the user's question accurately.
-            If you're unsure of exact values (like item names or statuses), run an exploratory query first.
+            If you're unsure of exact values (like item names), run an exploratory query first.
 
-            DATABASE SCHEMA:
+            AVAILABLE VIEWS (these are the only objects you can query):
 
-            TABLE: orders
-              id, uuid, created DATETIME (UTC), updated DATETIME (UTC),
+            VIEW: v_order_summary
+              order_id VARCHAR -- opaque order identifier, join key with v_order_items_detail,
+              created_at DATETIME (UTC),
               order_status VARCHAR -- PENDING_ACCEPTANCE, IN_PROGRESS, READY, COMPLETED, CANCELLED,
-              customer_id BIGINT FK→customers.id,
-              assignee BIGINT NULL FK→users.id -- staff member assigned to the order,
-              special_instructions VARCHAR NULL,
-              cart_id VARCHAR NULL
+              customer_name VARCHAR,
+              assignee_name VARCHAR -- staff member assigned, or 'Unassigned',
+              special_instructions VARCHAR NULL
 
-            TABLE: customers
-              id, uuid, first_name VARCHAR, last_name VARCHAR, created DATETIME (UTC),
-              flagged BIT, exclude_from_metrics BOOLEAN
+            VIEW: v_order_items_detail
+              order_id VARCHAR -- joins to v_order_summary.order_id,
+              order_created_at DATETIME (UTC),
+              order_status VARCHAR,
+              customer_name VARCHAR,
+              item_name VARCHAR -- e.g. "Men's Jeans", "Women's T-Shirt",
+              item_category VARCHAR NULL,
+              quantity INT,
+              quantity_fulfilled INT NULL,
+              notes VARCHAR NULL
 
-            TABLE: order_items
-              id, created DATETIME (UTC),
-              order_entity_id BIGINT FK→orders.id,
-              item_entity_id BIGINT FK→items.id,
-              quantity INT, quantity_fulfilled INT NULL,
-              notes VARCHAR NULL, attributes JSON NULL
-
-            TABLE: items
-              id, description VARCHAR -- the item name (e.g. "Men's Jeans", "Women's T-Shirt"),
+            VIEW: v_items
+              item_name VARCHAR,
               category VARCHAR NULL,
-              availability VARCHAR -- AVAILABLE or UNAVAILABLE,
-              managed TINYINT
+              availability VARCHAR -- AVAILABLE or UNAVAILABLE
 
-            TABLE: order_history
-              id, timestamp DATETIME (UTC),
-              order_entity_id BIGINT FK→orders.id,
-              user_entity_id BIGINT FK→users.id,
-              type VARCHAR, order_status VARCHAR, comment VARCHAR NULL
-
-            TABLE: shower_reservations
-              id, created DATETIME (UTC), updated DATETIME (UTC),
-              customer_id BIGINT FK→customers.id,
-              created_by BIGINT NULL FK→users.id,
-              started_at DATETIME NULL, ended_at DATETIME NULL,
+            VIEW: v_shower_activity
+              created_at DATETIME (UTC),
+              customer_name VARCHAR,
+              started_at DATETIME NULL,
+              ended_at DATETIME NULL,
               reservation_status VARCHAR -- WAITING, IN_PROGRESS, COMPLETED, CANCELLED,
-              queue_position BIGINT, notes TEXT NULL, shower_number INT NULL
+              shower_number INT NULL,
+              duration_minutes INT NULL -- computed, NULL if shower not yet completed
 
-            TABLE: users
-              id, uuid, name VARCHAR, username VARCHAR, created DATETIME (UTC)
+            VIEW: v_daily_order_counts
+              date DATE,
+              order_count INT
 
-            VIEW: daily_order_counts
-              date DATE, order_count INT
+            VIEW: v_weekly_item_requests
+              week_start DATE -- Sunday of that week,
+              item_name VARCHAR,
+              request_count INT
 
-            VIEW: weekly_item_requests_with_names
-              week_start DATE, item_entity_id BIGINT, item_name VARCHAR, request_count INT
-
-            TABLE: process_timing_analytics
+            VIEW: v_process_timings
               week_start_date DATE,
               timing_type VARCHAR -- ORDER_TAKER_TIME or FULFILLMENT_TIME,
               avg_time_seconds DOUBLE
 
             RULES:
+            - Only query the views listed above — no other tables or objects exist
             - Only SELECT statements are allowed
             - Use LIMIT when exploring data (20-50 rows is usually enough)
             - Add LIMIT %d to any query that could return many rows
