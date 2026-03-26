@@ -43,71 +43,44 @@ public class AiQueryService {
             .build();
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    private static final String SYSTEM_PROMPT = """
-            You are a data analyst assistant for a church street ministry order management system.
-            You have access to a tool called execute_sql that runs read-only SELECT queries against the MySQL database.
+    private static final String SYSTEM_PROMPT = buildSystemPrompt();
 
-            Use the tool to explore the data and answer the user's question accurately.
-            If you're unsure of exact values (like item names), run an exploratory query first.
+    private static String buildSystemPrompt() {
+        final StringBuilder sb = new StringBuilder("""
+                You are a data analyst assistant for a church street ministry order management system.
+                You have access to a tool called execute_sql that runs read-only SELECT queries against the MySQL database.
 
-            AVAILABLE VIEWS (these are the only objects you can query):
+                Use the tool to explore the data and answer the user's question accurately.
+                If you're unsure of exact values (like item names), run an exploratory query first.
 
-            VIEW: v_order_summary
-              order_id VARCHAR -- opaque order identifier, join key with v_order_items_detail,
-              created_at DATETIME (UTC),
-              order_status VARCHAR -- PENDING_ACCEPTANCE, IN_PROGRESS, READY, COMPLETED, CANCELLED,
-              customer_name VARCHAR,
-              assignee_name VARCHAR -- staff member assigned, or 'Unassigned',
-              special_instructions VARCHAR NULL
+                AVAILABLE VIEWS (these are the only objects you can query):
+                """);
 
-            VIEW: v_order_items_detail
-              order_id VARCHAR -- joins to v_order_summary.order_id,
-              order_created_at DATETIME (UTC),
-              order_status VARCHAR,
-              customer_name VARCHAR,
-              item_name VARCHAR -- e.g. "Men's Jeans", "Women's T-Shirt",
-              item_category VARCHAR NULL,
-              quantity INT,
-              quantity_fulfilled INT NULL,
-              notes VARCHAR NULL
+        for (final AiViewSchema view : AiViewSchema.values()) {
+            sb.append("\nVIEW: ").append(view.getViewName())
+              .append("  -- ").append(view.getPurpose()).append("\n");
+            for (final AiViewSchema.Column col : view.getColumns()) {
+                sb.append("  ").append(col.name())
+                  .append(" ").append(col.type())
+                  .append(" -- ").append(col.description())
+                  .append("\n");
+            }
+        }
 
-            VIEW: v_items
-              item_name VARCHAR,
-              category VARCHAR NULL,
-              availability VARCHAR -- AVAILABLE or UNAVAILABLE
+        sb.append("""
 
-            VIEW: v_shower_activity
-              created_at DATETIME (UTC),
-              customer_name VARCHAR,
-              started_at DATETIME NULL,
-              ended_at DATETIME NULL,
-              reservation_status VARCHAR -- WAITING, IN_PROGRESS, COMPLETED, CANCELLED,
-              shower_number INT NULL,
-              duration_minutes INT NULL -- computed, NULL if shower not yet completed
+                RULES:
+                - Only query the views listed above — no other tables or objects exist
+                - Only SELECT statements are allowed
+                - Use LIMIT when exploring data (20-50 rows is usually enough)
+                - Add LIMIT %d to any query that could return many rows
+                - Dates are UTC; use DATE() for date comparisons, NOW() for current time
+                - When looking up item names, use LIKE with %%%% for partial matching
+                - Provide a clear, concise answer once you have enough data
+                """.formatted(MAX_ROWS));
 
-            VIEW: v_daily_order_counts
-              date DATE,
-              order_count INT
-
-            VIEW: v_weekly_item_requests
-              week_start DATE -- Sunday of that week,
-              item_name VARCHAR,
-              request_count INT
-
-            VIEW: v_process_timings
-              week_start_date DATE,
-              timing_type VARCHAR -- ORDER_TAKER_TIME or FULFILLMENT_TIME,
-              avg_time_seconds DOUBLE
-
-            RULES:
-            - Only query the views listed above — no other tables or objects exist
-            - Only SELECT statements are allowed
-            - Use LIMIT when exploring data (20-50 rows is usually enough)
-            - Add LIMIT %d to any query that could return many rows
-            - Dates are UTC; use DATE() for date comparisons, NOW() for current time
-            - When looking up item names, use LIKE with %% for partial matching
-            - Provide a clear, concise answer once you have enough data
-            """.formatted(MAX_ROWS);
+        return sb.toString();
+    }
 
     private final AiQueryLogRepository aiQueryLogRepository;
 
