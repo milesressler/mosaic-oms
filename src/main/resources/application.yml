@@ -66,6 +66,13 @@ spring:
     generate-ddl: true
     hibernate:
       ddl-auto: validate
+
+mosaic:
+  oms:
+    readonly-datasource:
+      url: jdbc:mysql://localhost:33060/mosaicoms?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      username: oms_readonly
+      password: oms_readonly_dev
 management:
   info:
     env:
