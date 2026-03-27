@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, Link } from 'react-router-dom';
 import {
     Container,
     Title,
@@ -20,7 +20,8 @@ import {
     Progress,
     Tooltip,
 } from '@mantine/core';
-import { IconInfoCircle, IconShoppingCart, IconPackage, IconTrendingUp, IconChartLine, IconChartBar, IconChevronDown, IconChevronRight, IconDownload } from '@tabler/icons-react';
+import { useLocalStorage } from '@mantine/hooks';
+import { IconInfoCircle, IconShoppingCart, IconPackage, IconTrendingUp, IconChartLine, IconChartBar, IconChevronDown, IconChevronRight, IconDownload, IconSparkles } from '@tabler/icons-react';
 import { BarChart } from '@mantine/charts';
 import ItemSearch from 'src/components/common/ItemSearch';
 import DateRangeSelector, { useDateRangeState } from 'src/components/common/DateRangeSelector';
@@ -34,6 +35,7 @@ const ItemAnalysis: React.FC = () => {
     const [searchParams, setSearchParams] = useSearchParams();
     const [selectedItem, setSelectedItem] = useState<Item | null>(null);
     const [loading, setLoading] = useState(false);
+    const [aiPromoDismissed, setAiPromoDismissed] = useLocalStorage({ key: 'ai-query-promo-dismissed', defaultValue: false });
     
     // Chart state
     const [distributionMetric, setDistributionMetric] = useState<'requested' | 'fulfilled'>('requested');
@@ -450,6 +452,21 @@ const ItemAnalysis: React.FC = () => {
                         showRefreshButton={true}
                     />
                 </Group>
+                {!aiPromoDismissed && (
+                    <Alert
+                        icon={<IconSparkles size={16} />}
+                        color="violet"
+                        variant="light"
+                        withCloseButton
+                        onClose={() => setAiPromoDismissed(true)}
+                    >
+                        <Text size="sm">
+                            <strong>Did you know?</strong> You can ask questions about your data in plain English using{' '}
+                            <Link to="/admin/ai-query">AI Query</Link> — try <em>"Which items had the most unfulfilled requests?"</em>
+                        </Text>
+                    </Alert>
+                )}
+
                 <ItemSearch
                     onItemSelect={handleItemSelect}
                     placeholder="Search for an item to analyze..."

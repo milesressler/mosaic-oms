@@ -34,10 +34,17 @@ mosaic:
   oms:
     frontend:
       url: http://localhost:5173
+    readonly-datasource:
+      url: ${DB_READONLY_URL:}
+      username: ${DB_READONLY_USERNAME:}
+      password: ${DB_READONLY_PASSWORD:}
 
 posthog:
   api:
     projectId: 158863
+
+anthropic:
+  api-key: ${ANTHROPIC_API_KEY:}
 management:
   endpoints:
     web:
@@ -59,6 +66,13 @@ spring:
     generate-ddl: true
     hibernate:
       ddl-auto: validate
+
+mosaic:
+  oms:
+    readonly-datasource:
+      url: jdbc:mysql://localhost:33060/mosaicoms?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      username: oms_ai_agent
+      password: oms_ai_agent_dev
 management:
   info:
     env:
