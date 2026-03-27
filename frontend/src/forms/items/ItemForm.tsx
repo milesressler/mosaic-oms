@@ -1,5 +1,5 @@
 import { ActionIcon, Button, Group, Pill, PillsInput, Select, Stack, Switch, Text, TextInput, Card, Divider, rem } from "@mantine/core";
-import { IconPlus, IconX, IconFolder, IconGripVertical } from "@tabler/icons-react";
+import { IconX, IconFolder, IconArrowUp, IconArrowDown } from "@tabler/icons-react";
 import useApi from "src/hooks/useApi.tsx";
 import itemsApi from "src/services/itemsApi.tsx";
 import { AdminItem, Category, categoryDisplayNames, Item } from "src/models/types.tsx";
@@ -111,18 +111,20 @@ export function ItemForm({ onItemSave, item }: Props) {
     // Convert form data back to backend format
     const convertToBackendFormat = (values: FormOrderItem) => {
         const attributes: any[] = [];
-        
-        values.attributesAndGroups.forEach(item => {
+
+        values.attributesAndGroups.forEach((item, outerIndex) => {
             if (item.type === 'attribute') {
-                // Individual attribute
+                // Individual attribute - sortOrder is its position in the list
                 attributes.push({
                     label: item.attribute.label,
                     required: item.attribute.required,
                     attributeType: item.attribute.attributeType,
-                    options: item.attribute.attributeType === 'TEXT' ? [] : item.attribute.options
+                    options: item.attribute.attributeType === 'TEXT' ? [] : item.attribute.options,
+                    sortOrder: outerIndex + 1
                 });
             } else {
-                // Group - convert each attribute with groupName and groupOrder
+                // Group - all attrs in the group share the same sortOrder (group position),
+                // and groupOrder distinguishes their position within the group
                 item.group.attributes.forEach((attr, index) => {
                     attributes.push({
                         label: attr.label,
@@ -130,7 +132,8 @@ export function ItemForm({ onItemSave, item }: Props) {
                         attributeType: attr.attributeType,
                         options: attr.attributeType === 'TEXT' ? [] : attr.options,
                         groupName: item.group.name,
-                        groupOrder: index + 1
+                        groupOrder: index + 1,
+                        sortOrder: outerIndex + 1
                     });
                 });
             }
@@ -237,6 +240,22 @@ export function ItemForm({ onItemSave, item }: Props) {
                     </Stack>
                     
                     {form.values.attributesAndGroups.map((item, index) => {
+                        const totalItems = form.values.attributesAndGroups.length;
+                        const moveUp = () => {
+                            if (index > 0) {
+                                const items = [...form.values.attributesAndGroups];
+                                [items[index - 1], items[index]] = [items[index], items[index - 1]];
+                                form.setFieldValue("attributesAndGroups", items);
+                            }
+                        };
+                        const moveDown = () => {
+                            if (index < totalItems - 1) {
+                                const items = [...form.values.attributesAndGroups];
+                                [items[index], items[index + 1]] = [items[index + 1], items[index]];
+                                form.setFieldValue("attributesAndGroups", items);
+                            }
+                        };
+
                         if (item.type === 'attribute') {
                             return (
                                 <div
@@ -252,15 +271,35 @@ export function ItemForm({ onItemSave, item }: Props) {
                                     <Stack gap="sm">
                                         <Group justify="space-between" align="center">
                                             <Text size="sm" fw={500} c="dimmed">Attribute</Text>
-                                            <ActionIcon
-                                                color="red"
-                                                variant="light"
-                                                size="sm"
-                                                onClick={() => form.removeListItem("attributesAndGroups", index)}
-                                                title="Remove Attribute"
-                                            >
-                                                <IconX size={14} />
-                                            </ActionIcon>
+                                            <Group gap={4}>
+                                                <ActionIcon
+                                                    variant="subtle"
+                                                    size="sm"
+                                                    onClick={moveUp}
+                                                    disabled={index === 0}
+                                                    title="Move Up"
+                                                >
+                                                    <IconArrowUp size={14} />
+                                                </ActionIcon>
+                                                <ActionIcon
+                                                    variant="subtle"
+                                                    size="sm"
+                                                    onClick={moveDown}
+                                                    disabled={index === totalItems - 1}
+                                                    title="Move Down"
+                                                >
+                                                    <IconArrowDown size={14} />
+                                                </ActionIcon>
+                                                <ActionIcon
+                                                    color="red"
+                                                    variant="light"
+                                                    size="sm"
+                                                    onClick={() => form.removeListItem("attributesAndGroups", index)}
+                                                    title="Remove Attribute"
+                                                >
+                                                    <IconX size={14} />
+                                                </ActionIcon>
+                                            </Group>
                                         </Group>
                                         <TextInput
                                             size={'lg'}
@@ -359,15 +398,35 @@ export function ItemForm({ onItemSave, item }: Props) {
                                                 <IconFolder size={20} color="#6c757d" />
                                                 <Text size="sm" fw={500} c="dimmed">Attribute Group</Text>
                                             </Group>
-                                            <ActionIcon
-                                                color="red"
-                                                variant="light"
-                                                size="sm"
-                                                onClick={() => form.removeListItem("attributesAndGroups", index)}
-                                                title="Remove Group"
-                                            >
-                                                <IconX size={14} />
-                                            </ActionIcon>
+                                            <Group gap={4}>
+                                                <ActionIcon
+                                                    variant="subtle"
+                                                    size="sm"
+                                                    onClick={moveUp}
+                                                    disabled={index === 0}
+                                                    title="Move Up"
+                                                >
+                                                    <IconArrowUp size={14} />
+                                                </ActionIcon>
+                                                <ActionIcon
+                                                    variant="subtle"
+                                                    size="sm"
+                                                    onClick={moveDown}
+                                                    disabled={index === totalItems - 1}
+                                                    title="Move Down"
+                                                >
+                                                    <IconArrowDown size={14} />
+                                                </ActionIcon>
+                                                <ActionIcon
+                                                    color="red"
+                                                    variant="light"
+                                                    size="sm"
+                                                    onClick={() => form.removeListItem("attributesAndGroups", index)}
+                                                    title="Remove Group"
+                                                >
+                                                    <IconX size={14} />
+                                                </ActionIcon>
+                                            </Group>
                                         </Group>
                                         <TextInput
                                             size={'lg'}

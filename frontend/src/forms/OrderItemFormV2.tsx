@@ -59,13 +59,13 @@ export function OrderItemFormv2({formItem,  onSave, onCancel}: OrderItemFormProp
             return acc;
         }, {} as Record<string, typeof attributes>);
         
-        // Sort each group by groupOrder, then by key as fallback
+        // Sort each group by groupOrder; for ungrouped, preserve server-side sortOrder
         Object.values(groups).forEach(group => {
             group.sort((a, b) => {
                 if (a.groupOrder !== undefined && b.groupOrder !== undefined) {
                     return a.groupOrder - b.groupOrder;
                 }
-                return a.key.localeCompare(b.key);
+                return (a.sortOrder ?? 0) - (b.sortOrder ?? 0);
             });
         });
         
