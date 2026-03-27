@@ -57,6 +57,9 @@ export function NavbarNested() {
                                 link: childRoute.path,
                                 key: childRoute.key,
                                 onClick: childRoute.onClick, // pass down onClick if defined
+                                rightSection: childRoute.badge
+                                    ? <Badge size="xs" color="violet" variant="light">{childRoute.badge}</Badge>
+                                    : undefined,
                             })),
                     };
                 } else {

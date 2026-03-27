@@ -11,7 +11,7 @@
 -- Views
 -- ---------------------------------------------------------------
 
--- One row per order with status and assignee (no PII)
+-- One row per order with status and assignee (no PII; test customers excluded)
 CREATE OR REPLACE VIEW mosaicoms.v_order_summary AS
 SELECT
     o.id                           AS order_db_id,
@@ -21,9 +21,11 @@ SELECT
     COALESCE(u.name, 'Unassigned') AS assignee_name,
     o.special_instructions
 FROM mosaicoms.orders o
-LEFT JOIN mosaicoms.users u ON u.id = o.assignee;
+JOIN mosaicoms.customers c ON c.id = o.customer_id
+LEFT JOIN mosaicoms.users u ON u.id = o.assignee
+WHERE c.exclude_from_metrics = 0;
 
--- One row per line item pre-joined with order info (no PII)
+-- One row per line item pre-joined with order info (no PII; test customers excluded)
 CREATE OR REPLACE VIEW mosaicoms.v_order_items_detail AS
 SELECT
     o.id                   AS order_db_id,
@@ -39,8 +41,10 @@ SELECT
     oi.notes,
     oi.attributes
 FROM mosaicoms.order_items oi
-JOIN mosaicoms.orders o ON o.id = oi.order_entity_id
-JOIN mosaicoms.items i  ON i.id = oi.item_entity_id;
+JOIN mosaicoms.orders o    ON o.id = oi.order_entity_id
+JOIN mosaicoms.customers c ON c.id = o.customer_id
+JOIN mosaicoms.items i     ON i.id = oi.item_entity_id
+WHERE c.exclude_from_metrics = 0;
 
 -- Managed item catalog only (managed=1 filters out ad-hoc items)
 CREATE OR REPLACE VIEW mosaicoms.v_items AS
@@ -54,7 +58,7 @@ SELECT
 FROM mosaicoms.items i
 WHERE i.managed = 1;
 
--- Shower reservation activity (no PII)
+-- Shower reservation activity (no PII; test customers excluded)
 CREATE OR REPLACE VIEW mosaicoms.v_shower_activity AS
 SELECT
     sr.created                                         AS created_at,
@@ -63,7 +67,9 @@ SELECT
     sr.reservation_status,
     sr.shower_number,
     TIMESTAMPDIFF(MINUTE, sr.started_at, sr.ended_at) AS duration_minutes
-FROM mosaicoms.shower_reservations sr;
+FROM mosaicoms.shower_reservations sr
+JOIN mosaicoms.customers c ON c.id = sr.customer_id
+WHERE c.exclude_from_metrics = 0;
 
 -- Process timing analytics (week-over-week taker/fulfillment times)
 CREATE OR REPLACE VIEW mosaicoms.v_process_timings AS
@@ -80,7 +86,7 @@ CREATE OR REPLACE VIEW mosaicoms.v_weekly_item_requests AS
 SELECT week_start, item_name, request_count
 FROM mosaicoms.weekly_item_requests_with_names;
 
--- Staff/volunteer users (no sensitive auth data)
+-- Staff/volunteer user accounts
 CREATE OR REPLACE VIEW mosaicoms.v_users AS
 SELECT
     u.id,
@@ -91,7 +97,7 @@ SELECT
     u.created
 FROM mosaicoms.users u;
 
--- Order status change history joined with order and user info
+-- Order status change audit trail (test customers excluded)
 CREATE OR REPLACE VIEW mosaicoms.v_order_history AS
 SELECT
     oh.id,
@@ -105,7 +111,9 @@ SELECT
     oh.comment,
     oh.user_entity_id AS user_id
 FROM mosaicoms.order_history oh
-JOIN mosaicoms.orders o ON o.id = oh.order_entity_id;
+JOIN mosaicoms.orders o    ON o.id = oh.order_entity_id
+JOIN mosaicoms.customers c ON c.id = o.customer_id
+WHERE c.exclude_from_metrics = 0;
 
 -- Item attribute definitions (size, color, etc. selectors for each item)
 CREATE OR REPLACE VIEW mosaicoms.v_item_attributes AS

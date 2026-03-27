@@ -17,7 +17,7 @@ public enum AiViewSchema {
 
     V_ORDER_SUMMARY(
             "v_order_summary",
-            "One row per order. Use for order counts, status breakdowns, and assignee queries.",
+            "One row per order. Test/excluded customers are already filtered out. Use for order counts, status breakdowns, and assignee queries.",
             List.of(
                     col("order_db_id",         "BIGINT",   "Numeric primary key — use for JOINs to v_order_history"),
                     col("order_id",            "VARCHAR",  "Opaque UUID — join key to v_order_items_detail"),
@@ -30,7 +30,7 @@ public enum AiViewSchema {
 
     V_ORDER_ITEMS_DETAIL(
             "v_order_items_detail",
-            "One row per line item. Use for item-level analysis, fulfillment rates, and item-by-customer queries.",
+            "One row per line item. Test/excluded customers are already filtered out. Use for item-level analysis, fulfillment rates, and item-by-customer queries.",
             List.of(
                     col("order_db_id",        "BIGINT",   "Numeric order primary key — joins to v_order_summary.order_db_id and v_order_history.order_db_id"),
                     col("order_id",           "VARCHAR",  "Joins to v_order_summary.order_id"),
@@ -62,7 +62,7 @@ public enum AiViewSchema {
 
     V_SHOWER_ACTIVITY(
             "v_shower_activity",
-            "Shower reservation activity. Use for shower usage counts, wait times, and duration analysis.",
+            "Shower reservation activity. Test/excluded customers are already filtered out. Use for shower usage counts, wait times, and duration analysis.",
             List.of(
                     col("created_at",         "DATETIME", "When the reservation was created (UTC)"),
                     col("started_at",         "DATETIME", "When the shower session began; NULL if not yet started"),
@@ -117,7 +117,7 @@ public enum AiViewSchema {
 
     V_ORDER_HISTORY(
             "v_order_history",
-            "Order status change audit trail. Use to analyze when orders transitioned between statuses and who made the change.",
+            "Order status change audit trail. Test/excluded customers are already filtered out. Use to analyze when orders transitioned between statuses and who made the change.",
             List.of(
                     col("id",                    "BIGINT",   "Primary key of the history event"),
                     col("order_db_id",           "BIGINT",   "Joins to v_order_summary.order_db_id"),

@@ -247,6 +247,7 @@ const routes = [
                 element: AiQueryPage,
                 title: 'AI Query',
                 icon: IconSparkles,
+                badge: 'Beta',
                 showInNavBar: true,
             },
             {

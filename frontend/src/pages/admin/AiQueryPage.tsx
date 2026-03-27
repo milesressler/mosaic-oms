@@ -1,5 +1,7 @@
 import {
     ActionIcon,
+    Alert,
+    Badge,
     Box,
     Button,
     Group,
@@ -9,7 +11,7 @@ import {
     Textarea,
     Tooltip,
 } from "@mantine/core";
-import { IconTrash } from "@tabler/icons-react";
+import { IconInfoCircle, IconTrash } from "@tabler/icons-react";
 import { useRef, useEffect, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -44,23 +46,22 @@ export default function AiQueryPage() {
 
     return (
         <Stack gap="md" m="xs" style={{ maxWidth: 800 }}>
-            <Group justify="space-between">
-                <Box>
-                    <Text size="xl" fw={700}>AI Data Query</Text>
+            <Group align="flex-start">
+                <Box style={{ flex: 1 }}>
+                    <Group gap="xs" align="center">
+                        <Text size="xl" fw={700}>AI Data Query</Text>
+                        <Badge color="violet" variant="light" size="sm">Beta</Badge>
+                    </Group>
                     <Text size="sm" c="dimmed">Ask questions about the data in plain English.</Text>
                 </Box>
-                {conversation.length > 0 && (
-                    <Tooltip label="Clear conversation">
-                        <ActionIcon
-                            variant="subtle"
-                            color="gray"
-                            onClick={() => setConversation([])}
-                        >
-                            <IconTrash size={16} />
-                        </ActionIcon>
-                    </Tooltip>
-                )}
             </Group>
+
+            <Alert icon={<IconInfoCircle size={16} />} color="gray" variant="light" p="xs">
+                <Text size="xs" c="dimmed">
+                    AI-generated answers may not always be accurate. Verify important figures directly in the data.
+                    Test customers are excluded from all results.
+                </Text>
+            </Alert>
 
             {conversation.map((turn, i) => (
                 <Stack key={i} gap="xs">
@@ -114,6 +115,18 @@ export default function AiQueryPage() {
                     {conversation.length === 0 ? "Ask" : "Follow up"}
                 </Button>
                 <Text size="xs" c="dimmed">Cmd/Ctrl + Enter</Text>
+                {conversation.length > 0 && (
+                    <Tooltip label="Clear conversation">
+                        <ActionIcon
+                            variant="subtle"
+                            color="gray"
+                            ml="auto"
+                            onClick={() => setConversation([])}
+                        >
+                            <IconTrash size={16} />
+                        </ActionIcon>
+                    </Tooltip>
+                )}
             </Group>
         </Stack>
     );
