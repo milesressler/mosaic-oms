@@ -6,7 +6,7 @@ import java.util.List;
  * Single source of truth for the AI agent's view of the database.
  *
  * Each constant describes one view the oms_ai_agent user can access.
- * - viewName   matches the SQL view name in V00048__ai-query-views.sql
+ * - viewName   matches the SQL view name in V00049__ai-query-views.sql
  * - purpose    is a one-line description sent to the AI in the system prompt
  * - columns    are sent as the schema; the name must exactly match the DB column
  *
