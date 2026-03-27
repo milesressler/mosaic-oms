@@ -19,34 +19,37 @@ const GroupedAttributeBadges = ({ attrs, itemAttributes }: Props) => {
 
     const pairs: { name: string; value: string }[] = Array.isArray(attrs)
         ? attrs
-        : Object.entries(attrs).map(([name, value]) => ({ 
-            name, 
-            value: typeof value === 'string' ? value : value.displayValue || value.value 
+        : Object.entries(attrs).map(([name, value]) => ({
+            name,
+            value: typeof value === 'string' ? value : value.displayValue || value.value
         }));
 
-    // Create a map of attribute key to its definition
-    const attrDefMap = itemAttributes.reduce((acc, def) => {
-        acc[def.key] = def;
-        return acc;
-    }, {} as Record<string, ItemAttribute>);
+    // Build display list ordered by itemAttributes (which are pre-sorted by sortOrder from the backend)
+    // This ensures the display order matches the order configured in item management
+    type DisplayEntry = { name: string; value: string; label: string; groupName: string; groupOrder: number; sortOrder: number };
+    const pairMap = pairs.reduce((acc, p) => { acc[p.name] = p.value; return acc; }, {} as Record<string, string>);
 
-    // Group attributes by groupName
-    const grouped = pairs.reduce((acc, pair) => {
-        const attrDef = attrDefMap[pair.name];
-        const groupName = attrDef?.groupName || '__ungrouped__';
-        
-        if (!acc[groupName]) {
-            acc[groupName] = [];
+    const orderedEntries: DisplayEntry[] = itemAttributes
+        .filter(def => pairMap[def.key] !== undefined)
+        .map(def => ({
+            name: def.key,
+            value: pairMap[def.key],
+            label: def.label,
+            groupName: def.groupName || '__ungrouped__',
+            groupOrder: def.groupOrder ?? 0,
+            sortOrder: def.sortOrder ?? 0,
+        }));
+
+    // Group while preserving insertion order (which is already sorted by sortOrder)
+    const grouped = orderedEntries.reduce((acc, entry) => {
+        if (!acc[entry.groupName]) {
+            acc[entry.groupName] = [];
         }
-        acc[groupName].push({
-            ...pair,
-            label: attrDef?.label || pair.name,
-            groupOrder: attrDef?.groupOrder || 0
-        });
+        acc[entry.groupName].push(entry);
         return acc;
-    }, {} as Record<string, Array<{name: string, value: string, label: string, groupOrder: number}>>);
+    }, {} as Record<string, DisplayEntry[]>);
 
-    // Sort each group by groupOrder
+    // Within each group sort by groupOrder
     Object.values(grouped).forEach(group => {
         group.sort((a, b) => a.groupOrder - b.groupOrder);
     });

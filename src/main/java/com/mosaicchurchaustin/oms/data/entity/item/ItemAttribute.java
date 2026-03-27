@@ -85,6 +85,14 @@ public class ItemAttribute extends BaseEntity {
     @Setter
     Integer groupOrder;
 
+    /**
+     * Display order of this attribute (or group) within the item.
+     * Attributes with the same sortOrder belong to the same group; within a group, groupOrder distinguishes position.
+     */
+    @Column(name = "sort_order")
+    @Setter
+    Integer sortOrder;
+
     @OneToMany(mappedBy = "itemAttribute", fetch = FetchType.EAGER, cascade = CascadeType.REMOVE)
     @BatchSize(size = 100)
     @ToString.Exclude
