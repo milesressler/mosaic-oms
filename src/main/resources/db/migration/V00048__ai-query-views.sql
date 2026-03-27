@@ -15,7 +15,7 @@
 --   GRANT SELECT ON mosaicoms.v_item_attributes        TO 'oms_ai_agent'@'%';
 --   GRANT SELECT ON mosaicoms.v_item_attribute_options TO 'oms_ai_agent'@'%';
 
--- One row per order with status and assignee (no PII)
+-- One row per order with status and assignee (no PII; test customers excluded)
 CREATE OR REPLACE VIEW v_order_summary AS
 SELECT
     o.id                           AS order_db_id,
@@ -25,9 +25,11 @@ SELECT
     COALESCE(u.name, 'Unassigned') AS assignee_name,
     o.special_instructions
 FROM orders o
-LEFT JOIN users u ON u.id = o.assignee;
+JOIN customers c ON c.id = o.customer_id
+LEFT JOIN users u ON u.id = o.assignee
+WHERE c.exclude_from_metrics = 0;
 
--- One row per line item pre-joined with order info (no PII)
+-- One row per line item pre-joined with order info (no PII; test customers excluded)
 CREATE OR REPLACE VIEW v_order_items_detail AS
 SELECT
     o.id                   AS order_db_id,
@@ -43,8 +45,10 @@ SELECT
     oi.notes,
     oi.attributes
 FROM order_items oi
-JOIN orders o ON o.id = oi.order_entity_id
-JOIN items i  ON i.id = oi.item_entity_id;
+JOIN orders o    ON o.id = oi.order_entity_id
+JOIN customers c ON c.id = o.customer_id
+JOIN items i     ON i.id = oi.item_entity_id
+WHERE c.exclude_from_metrics = 0;
 
 -- Managed item catalog only (managed=1 filters out ad-hoc items)
 CREATE OR REPLACE VIEW v_items AS
@@ -58,7 +62,7 @@ SELECT
 FROM items i
 WHERE i.managed = 1;
 
--- Shower reservation activity (no PII)
+-- Shower reservation activity (no PII; test customers excluded)
 CREATE OR REPLACE VIEW v_shower_activity AS
 SELECT
     sr.created                                         AS created_at,
@@ -67,7 +71,9 @@ SELECT
     sr.reservation_status,
     sr.shower_number,
     TIMESTAMPDIFF(MINUTE, sr.started_at, sr.ended_at) AS duration_minutes
-FROM shower_reservations sr;
+FROM shower_reservations sr
+JOIN customers c ON c.id = sr.customer_id
+WHERE c.exclude_from_metrics = 0;
 
 -- Process timing analytics (week-over-week taker/fulfillment times)
 CREATE OR REPLACE VIEW v_process_timings AS
@@ -84,7 +90,7 @@ CREATE OR REPLACE VIEW v_weekly_item_requests AS
 SELECT week_start, item_name, request_count
 FROM weekly_item_requests_with_names;
 
--- Staff/volunteer users (no sensitive auth data)
+-- Staff/volunteer user accounts
 CREATE OR REPLACE VIEW v_users AS
 SELECT
     u.id,
@@ -95,12 +101,12 @@ SELECT
     u.created
 FROM users u;
 
--- Order status change history joined with order and user info
+-- Order status change audit trail (test customers excluded)
 CREATE OR REPLACE VIEW v_order_history AS
 SELECT
     oh.id,
-    o.id            AS order_db_id,
-    o.uuid          AS order_id,
+    o.id              AS order_db_id,
+    o.uuid            AS order_id,
     oh.timestamp,
     oh.type,
     oh.order_status,
@@ -109,7 +115,9 @@ SELECT
     oh.comment,
     oh.user_entity_id AS user_id
 FROM order_history oh
-JOIN orders o ON o.id = oh.order_entity_id;
+JOIN orders o    ON o.id = oh.order_entity_id
+JOIN customers c ON c.id = o.customer_id
+WHERE c.exclude_from_metrics = 0;
 
 -- Item attribute definitions (size, color, etc. selectors for each item)
 CREATE OR REPLACE VIEW v_item_attributes AS
