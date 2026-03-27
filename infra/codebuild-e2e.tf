@@ -3,7 +3,7 @@
 # Runs Playwright E2E tests against portal.mosaicchurchaustin.com on a schedule:
 #
 #   • Saturday night  – cron(0 3 ? * SUN *) = 03:00 UTC Sun ≈ 9-10 PM CT Sat
-#   • Sunday morning  – cron(0 14 ? * SUN *) = 14:00 UTC Sun ≈ 8-9 AM CT Sun
+#   • Sunday morning  – cron(0 12 ? * SUN *) = 12:00 UTC Sun ≈ 6-7 AM CT Sun
 #
 # Both windows fall inside the ECS up-time (service is running 12:05 UTC – 05:00 UTC).
 #
@@ -205,8 +205,8 @@ resource "aws_cloudwatch_event_target" "e2e_saturday_night" {
 # Sunday morning  (14:00 UTC Sunday  = ~9 AM CT Sunday)
 resource "aws_cloudwatch_event_rule" "e2e_sunday_morning" {
   name                = "mosaic-oms-e2e-sunday-morning"
-  description         = "Trigger E2E tests Sunday morning (~9 AM CT) after overnight startup"
-  schedule_expression = "cron(0 14 ? * SUN *)"
+  description         = "Trigger E2E tests Sunday morning (~7 AM CT) after overnight startup"
+  schedule_expression = "cron(0 12 ? * SUN *)"
 }
 
 resource "aws_cloudwatch_event_target" "e2e_sunday_morning" {
