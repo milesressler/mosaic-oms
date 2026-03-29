@@ -24,7 +24,9 @@ export const columns: ColumnConfig[] = [
     { label: '#', sortField: 'id', views: [
         OrdersView.DEFAULT] },
     { label: 'Customer', sortField: 'customer.lastName', views:
-            [OrdersView.DEFAULT, OrdersView.FILLER, OrdersView.DISTRIBUTOR ]},
+            [OrdersView.DEFAULT, OrdersView.DISTRIBUTOR ]},
+    { label: 'Customer', id: 'order-customer', sortField: 'customer.lastName', views:
+            [OrdersView.FILLER] },
     { label: 'Created', sortField: 'created', views: [
         OrdersView.DEFAULT, OrdersView.FILLER, OrdersView.RUNNER, OrdersView.DISTRIBUTOR] },
     { label: 'Updated', sortField: 'updated', views: [] },

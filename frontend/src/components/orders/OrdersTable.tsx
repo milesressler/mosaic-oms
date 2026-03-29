@@ -215,7 +215,7 @@ export function OrdersTable({
                 const key = column.id ?? column.label;
                 const assigned = ((order as OrderDetails)?.assignee);
              return (
-                <Table.Td key={key} colSpan={index === visibleColumns.length - 1 ? 2 : 1}>
+                <Table.Td key={key} colSpan={index === visibleColumns.length - 1 && showProgressIndicator && autoRefresh ? 2 : 1}>
                     {key === 'assigned' &&
                         <UserAvatar lastInitial user={assigned ? assigned : {name: "Unassigned"}}/>
                     }
@@ -233,6 +233,10 @@ export function OrdersTable({
                         <UserAvatar user={order.lastStatusChange?.user}/>
                   }
                     {key === 'Customer' && `${order.customer?.firstName || ''} ${order.customer?.lastName || ''}`.trim()}
+                    {key === 'order-customer' && <>
+                        <Text size={'xs'} c={'dimmed'}>#{order.id}</Text>
+                        <Text size={'sm'}>{`${order.customer?.firstName || ''} ${order.customer?.lastName || ''}`.trim()}</Text>
+                    </>}
                 </Table.Td>
             )})}
         </Table.Tr>
