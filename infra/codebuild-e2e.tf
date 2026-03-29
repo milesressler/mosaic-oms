@@ -193,6 +193,7 @@ resource "aws_cloudwatch_event_rule" "e2e_saturday_night" {
   name                = "mosaic-oms-e2e-saturday-night"
   description         = "Trigger E2E tests Saturday night (~10 PM CT) before overnight shutdown"
   schedule_expression = "cron(0 3 ? * SUN *)"
+  state               = "DISABLED"
 }
 
 resource "aws_cloudwatch_event_target" "e2e_saturday_night" {
@@ -207,6 +208,7 @@ resource "aws_cloudwatch_event_rule" "e2e_sunday_morning" {
   name                = "mosaic-oms-e2e-sunday-morning"
   description         = "Trigger E2E tests Sunday morning (~7 AM CT) after overnight startup"
   schedule_expression = "cron(0 12 ? * SUN *)"
+  state               = "DISABLED"
 }
 
 resource "aws_cloudwatch_event_target" "e2e_sunday_morning" {
