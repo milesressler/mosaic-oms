@@ -41,12 +41,38 @@ test.describe('Order Lifecycle', () => {
 
     test('creates, accepts, packs, delivers and completes an order end-to-end', async ({ page }) => {
 
-        // ── Step 1: Create order (Order Taker) ───────────────────────────────
+        // ── Service window setup ──────────────────────────────────────────────
         await gotoAndSettle(page, '/dashboard/taker');
+
+        // Wait for the features context to resolve — either the alert or any switch thumb will appear
+        const closedAlert = page.getByText('Orders are currently closed');
+        await Promise.race([
+            closedAlert.waitFor({ state: 'visible', timeout: 10000 }),
+            page.locator('.mantine-Switch-thumb').first().waitFor({ state: 'visible', timeout: 10000 }),
+        ]);
+        const originalOrdersOpen = !(await closedAlert.isVisible());
+
+        if (!originalOrdersOpen) {
+            await Promise.all([
+                page.waitForResponse(
+                    (r: Response) =>
+                        r.request().method() === 'PUT' &&
+                        r.url().includes('/api/feature/orders') &&
+                        r.status() === 200,
+                    { timeout: 10000 }
+                ),
+                page.getByRole('alert', { name: 'Orders are currently closed' }).locator('.mantine-Switch-thumb').click(),
+            ]);
+            console.log('Service window opened for test run.');
+        }
+
+        try {
+
+        // ── Step 1: Create order (Order Taker) ───────────────────────────────
 
         const cfg: OrderConfig = {
             customer: 'MosaicOMS TestCustomer',
-            selections: [{ category: 'gear', items: ['tent'] }],
+            selections: [{ category: 'gear', items: ['Backpack'] }],
             instructions: '#Automated lifecycle test – do not fill#',
         };
 
@@ -143,5 +169,25 @@ test.describe('Order Lifecycle', () => {
         const completeBody = await completeRespPromise;
         expect(completeBody.orderStatus).toBe('COMPLETED');
         console.log('Order completed. Lifecycle test passed ✓');
+
+        } finally {
+            if (!originalOrdersOpen) {
+                await gotoAndSettle(page, '/dashboard/taker');
+                // Orders are now open — the switch is a standalone OrdersOpenSwitch in the form (not inside the closed alert)
+                const ordersOpenSwitch = page.locator('.mantine-Switch-root', { hasText: 'Orders Open' }).locator('.mantine-Switch-thumb');
+                await ordersOpenSwitch.waitFor({ state: 'visible', timeout: 10000 });
+                await Promise.all([
+                    page.waitForResponse(
+                        (r: Response) =>
+                            r.request().method() === 'PUT' &&
+                            r.url().includes('/api/feature/orders') &&
+                            r.status() === 200,
+                        { timeout: 10000 }
+                    ),
+                    ordersOpenSwitch.click(),
+                ]);
+                console.log('Service window restored to closed.');
+            }
+        }
     });
 });
