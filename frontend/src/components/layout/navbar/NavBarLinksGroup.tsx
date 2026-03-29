@@ -40,7 +40,10 @@ export function LinksGroup({ onClick, icon: Icon, rightSection, label, initially
         <Link onClick={link.onClick} className={classes.link} key={link.key} to={link.link}
               data-active={link.key === activeRoute.key || undefined}
         >
-            {link.label}
+            <Group justify='space-between'>
+                <span>{link.label}</span>
+                {link.rightSection}
+            </Group>
         </Link>
     ));
 

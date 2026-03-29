@@ -8,10 +8,13 @@ import {
     LoadingOverlay,
     Select,
     SimpleGrid,
+    Text,
     Title,
 } from '@mantine/core';
 import {DatePickerInput} from '@mantine/dates';
-import {IconUsers, IconTruck, IconPackage, IconTrendingUp} from '@tabler/icons-react';
+import {useLocalStorage} from '@mantine/hooks';
+import {IconUsers, IconTruck, IconPackage, IconTrendingUp, IconSparkles} from '@tabler/icons-react';
+import {Link} from 'react-router-dom';
 import useApi from 'src/hooks/useApi';
 import reportsApi from 'src/services/reportsApi';
 import SystemOverviewWidget from 'src/components/reports/widgets/SystemOverviewWidget';
@@ -23,6 +26,7 @@ import ProcessTimesWidget from 'src/components/reports/widgets/ProcessTimesWidge
 
 const SystemReports: React.FC = () => {
     const [dateRange, setDateRange] = useState<string>('6weeks');
+    const [aiPromoDismissed, setAiPromoDismissed] = useLocalStorage({ key: 'ai-query-promo-dismissed', defaultValue: false });
     const [customDateRange, setCustomDateRange] = useState<[Date | null, Date | null]>([null, null]);
     
     const systemMetricsApi = useApi(reportsApi.getSystemMetrics);
@@ -133,6 +137,22 @@ const SystemReports: React.FC = () => {
                     </Button>
                 </Group>
             </Group>
+
+            {!aiPromoDismissed && (
+                <Alert
+                    icon={<IconSparkles size={16} />}
+                    color="violet"
+                    variant="light"
+                    withCloseButton
+                    onClose={() => setAiPromoDismissed(true)}
+                    mb="md"
+                >
+                    <Text size="sm">
+                        <strong>Did you know?</strong> You can ask questions about your data in plain English using{' '}
+                        <Link to="/admin/ai-query">AI Query</Link> — try <em>"What were the most requested items last month?"</em>
+                    </Text>
+                </Alert>
+            )}
 
             {/* Custom Date Range (only when needed) */}
             {dateRange === 'custom' && (

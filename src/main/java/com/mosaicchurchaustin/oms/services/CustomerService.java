@@ -11,6 +11,7 @@ import com.mosaicchurchaustin.oms.exception.InvalidRequestException;
 import com.mosaicchurchaustin.oms.repositories.CustomerRepository;
 import com.mosaicchurchaustin.oms.repositories.OrderRepository;
 import com.mosaicchurchaustin.oms.repositories.ShowerReservationRepository;
+import com.mosaicchurchaustin.oms.services.audit.AuditService;
 import com.mosaicchurchaustin.oms.services.common.CustomerResolver;
 import com.mosaicchurchaustin.oms.specifications.CustomerSpecification;
 import jakarta.transaction.Transactional;
@@ -37,6 +38,9 @@ public class CustomerService {
 
     @Autowired
     ShowerReservationRepository showerReservationRepository;
+
+    @Autowired
+    AuditService auditService;
 
     @Transactional
     public List<CustomerSearchProjection> searchCustomers(final String inputName) {
@@ -95,10 +99,19 @@ public class CustomerService {
                 .orElseThrow(() -> new EntityNotFoundException(CustomerEntity.ENTITY_TYPE, request.toCustomerUuid()));
 
         long ordersTransferred = orderRepository.updateCustomerForAllOrders(fromCustomer.getId(), toCustomer.getId());
-        
+
         long showerReservationsTransferred = showerReservationRepository.updateCustomerForAllReservations(fromCustomer.getId(), toCustomer.getId());
 
+        Optional.ofNullable(request.firstName()).ifPresent(toCustomer::setFirstName);
+        Optional.ofNullable(request.lastName()).ifPresent(toCustomer::setLastName);
+        Optional.ofNullable(request.flagged()).ifPresent(toCustomer::setFlagged);
+        Optional.ofNullable(request.obfuscateName()).ifPresent(toCustomer::setObfuscateName);
+        Optional.ofNullable(request.excludeFromMetrics()).ifPresent(toCustomer::setExcludeFromMetrics);
+        Optional.ofNullable(request.showerWaiverSigned()).map(OffsetDateTime::toInstant).ifPresent(toCustomer::setShowerWaiverCompleted);
+        customerRepository.save(toCustomer);
+
         customerRepository.delete(fromCustomer);
+        auditService.logCustomerMerge(fromCustomer, toCustomer);
 
         return MergeCustomerResponse.builder()
                 .mergedToCustomerUuid(request.toCustomerUuid())
