@@ -37,6 +37,8 @@ public class AiQueryService {
     private static final String MODEL = "claude-haiku-4-5-20251001";
     private static final int MAX_ROWS = 200;
     private static final int MAX_ITERATIONS = 8;
+    private static final int MAX_RESULT_CHARS = 3000;
+    private static final int MAX_HISTORY_TURNS = 3;
 
     private final OkHttpClient okHttpClient = new OkHttpClient.Builder()
             .callTimeout(120, TimeUnit.SECONDS)
@@ -77,6 +79,8 @@ public class AiQueryService {
                 - Dates are UTC; use DATE() for date comparisons, NOW() for current time
                 - When looking up item names, use LIKE with %%%% for partial matching
                 - Provide a clear, concise answer once you have enough data
+                - DATA AVAILABILITY: Service data begins June 2025. Queries for dates before June 2025 will return no results.
+                - TOKEN EFFICIENCY: Minimize the number of queries and data returned. Use aggregations (COUNT, SUM, AVG, GROUP BY) instead of fetching raw rows whenever possible. Prefer the pre-aggregated views (v_daily_order_counts, v_weekly_item_requests, v_process_timings) over scanning v_order_summary or v_order_items_detail for trend questions. Stop querying as soon as you have enough data to answer — do not run exploratory queries when the answer is already known.
                 """.formatted(MAX_ROWS));
 
         return sb.toString();
@@ -127,7 +131,10 @@ public class AiQueryService {
         final ArrayNode messages = objectMapper.createArrayNode();
 
         if (history != null) {
-            for (final AiQueryRequest.ConversationTurn turn : history) {
+            final List<AiQueryRequest.ConversationTurn> trimmedHistory = history.size() > MAX_HISTORY_TURNS
+                    ? history.subList(history.size() - MAX_HISTORY_TURNS, history.size())
+                    : history;
+            for (final AiQueryRequest.ConversationTurn turn : trimmedHistory) {
                 final ObjectNode prevUser = messages.addObject();
                 prevUser.put("role", "user");
                 prevUser.put("content", turn.getQuestion());
@@ -206,6 +213,10 @@ public class AiQueryService {
                     .map(col -> row.get(col) == null ? "NULL" : String.valueOf(row.get(col)))
                     .collect(Collectors.joining(" | ")))
               .append("\n");
+            if (sb.length() > MAX_RESULT_CHARS) {
+                sb.append("[TRUNCATED — add LIMIT or use aggregation to reduce output]");
+                return sb.toString();
+            }
         }
         sb.append("(").append(results.size()).append(" rows)");
         return sb.toString();
@@ -215,7 +226,14 @@ public class AiQueryService {
         final ObjectNode requestBody = objectMapper.createObjectNode();
         requestBody.put("model", MODEL);
         requestBody.put("max_tokens", 2048);
-        requestBody.put("system", SYSTEM_PROMPT);
+
+        // Use a system array with cache_control so the static schema is cached across calls
+        final ArrayNode systemArray = requestBody.putArray("system");
+        final ObjectNode systemBlock = systemArray.addObject();
+        systemBlock.put("type", "text");
+        systemBlock.put("text", SYSTEM_PROMPT);
+        systemBlock.putObject("cache_control").put("type", "ephemeral");
+
         requestBody.set("tools", buildToolDefinition());
         requestBody.set("messages", messages);
 
