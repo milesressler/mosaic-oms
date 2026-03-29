@@ -356,6 +356,7 @@ export function ItemForm({ onItemSave, item }: Props) {
                                                     ))}
                                                     <PillsInput.Field
                                                         placeholder="Type option and press Enter"
+                                                        enterKeyHint="enter"
                                                         onKeyDown={(event) => {
                                                             if (event.key === "Enter") {
                                                                 event.preventDefault();
@@ -364,6 +365,11 @@ export function ItemForm({ onItemSave, item }: Props) {
                                                                     form.insertListItem(`attributesAndGroups.${index}.attribute.options`, value);
                                                                     event.currentTarget.value = "";
                                                                 }
+                                                            }
+                                                        }}
+                                                        onKeyUp={(event) => {
+                                                            if (event.key === "Enter") {
+                                                                event.preventDefault();
                                                             }
                                                         }}
                                                     />
@@ -518,6 +524,7 @@ export function ItemForm({ onItemSave, item }: Props) {
                                                                 ))}
                                                                 <PillsInput.Field
                                                                     placeholder="Type option and press Enter"
+                                                                    enterKeyHint="enter"
                                                                     onKeyDown={(event) => {
                                                                         if (event.key === "Enter") {
                                                                             event.preventDefault();
@@ -526,6 +533,11 @@ export function ItemForm({ onItemSave, item }: Props) {
                                                                                 form.insertListItem(`attributesAndGroups.${index}.group.attributes.${attrIndex}.options`, value);
                                                                                 event.currentTarget.value = "";
                                                                             }
+                                                                        }
+                                                                    }}
+                                                                    onKeyUp={(event) => {
+                                                                        if (event.key === "Enter") {
+                                                                            event.preventDefault();
                                                                         }
                                                                     }}
                                                                 />
