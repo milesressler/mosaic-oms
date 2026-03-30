@@ -62,6 +62,7 @@ export function RunnerDashboard() {
                 forceRefresh={forceRefreshTable}
                 selectedOrderIds={selectedOrders}
                 maxNumberOfRecords={20}
+                disableSorting={true}
             />
             <Box pos={'absolute'} bottom={20} right={20}>
                 <QrScannerButton

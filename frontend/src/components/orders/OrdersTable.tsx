@@ -227,7 +227,7 @@ export function OrdersTable({
                     </>}
                     {key === 'Updated' && <Text c={'dimmed'}>{DateTime.fromISO(order.lastStatusChange?.timestamp).toRelative()}</Text>}
                     {key === 'Status' && <div>
-                        <StatusBadge variant={'outline'} orderStatus={order.orderStatus} />
+                        <StatusBadge size='xs' variant={'outline'} orderStatus={order.orderStatus} />
                         <Text c={'dimmed'} size={'xs'}>{DateTime.fromISO(order.lastStatusChange?.timestamp).toRelative()}</Text>
                     </div>}
                     {key === 'filler' &&
