@@ -23,5 +23,12 @@ dist-ssr
 *.sln
 *.sw?
 
-# E2E test data
+# E2E test data (auth tokens + ephemeral run state)
 e2e/data/local-storage.json
+e2e/data/qa-storage.json
+e2e/data/prod-storage.json
+e2e/data/created-order-ids.txt
+
+# Playwright output
+test-results/
+playwright-report/

@@ -1,0 +1,50 @@
+version: 0.2
+
+# ── E2E test buildspec ────────────────────────────────────────────────────────
+# Used by the mosaic-oms-e2e-tests CodeBuild project.
+# Credentials are injected from Secrets Manager; see infra/codebuild-e2e.tf.
+# ─────────────────────────────────────────────────────────────────────────────
+
+env:
+  git-credential-helper: yes
+  # AUTH0_TEST_USER and AUTH0_TEST_PW are injected via the CodeBuild project's
+  # environment_variable blocks (type = SECRETS_MANAGER) – not declared here so
+  # that local/ad-hoc runs can still export them from the shell.
+
+phases:
+  install:
+    runtime-versions:
+      nodejs: 20
+    commands:
+      - cd frontend
+      - npm ci
+      # Install Chromium + OS dependencies required by Playwright
+      - npx playwright install chromium --with-deps
+
+  pre_build:
+    commands:
+      - cd frontend
+      - echo "Recording fresh prod auth session..."
+      # Writes e2e/data/prod-storage.json using AUTH0_TEST_USER / AUTH0_TEST_PW
+      - RECORD=true npx playwright test e2e/login-record.spec.ts --project=prod
+
+  build:
+    commands:
+      - cd frontend
+      - npm run test:prod
+
+reports:
+  # CodeBuild will display per-test pass/fail in the console and Build Report.
+  e2e-test-results:
+    files:
+      - "test-results/e2e-results.xml"
+    base-directory: frontend
+    file-format: JUNITXML
+    success-on-empty: true
+
+artifacts:
+  # Playwright HTML report and videos-on-failure are stored as build artifacts.
+  files:
+    - "frontend/playwright-report/**/*"
+    - "frontend/test-results/**/*"
+  discard-paths: no

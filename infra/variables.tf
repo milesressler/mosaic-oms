@@ -7,3 +7,8 @@ variable "task_definition_arn" {
   description = "Task definition for ECS service"
   type        = string
 }
+
+variable "e2e_alert_email" {
+  description = "Email address to notify when scheduled E2E tests fail"
+  type        = string
+}

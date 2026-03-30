@@ -1,6 +1,7 @@
 import { Page } from '@playwright/test';
-import { appendFileSync } from 'fs';
-import {fileURLToPath} from "url";
+import { appendFileSync, mkdirSync } from 'fs';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
 
 export type Selection = {
     category: string;
@@ -56,6 +57,7 @@ export async function createOrder(
 
     // 6) Persist for teardown
     const filePath = fileURLToPath(new URL('../data/created-order-ids.txt', import.meta.url));
+    mkdirSync(dirname(filePath), { recursive: true });
     appendFileSync(filePath, `${id},${uuid}\n`);
 
     return { id, uuid };
