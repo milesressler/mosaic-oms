@@ -208,6 +208,7 @@ export function OrdersTable({
     const rows = orders?.map((order: Order) => (
         <Table.Tr  style={{cursor: onSelectRow ? 'pointer' : ''}}
                    key={order.uuid}
+                   data-order-id={order.id}
                    bg={selectedOrderIds && selectedOrderIds.indexOf(order.id) != -1 ? '#F3f3f3' : ""}
                    onClick={() => onSelectRow && onSelectRow(order)}
         >

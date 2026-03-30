@@ -25,6 +25,10 @@ function storageStateOrEmpty(relPath: string) {
 export default defineConfig({
     testDir: 'e2e',
     timeout: 15000,
+    // In CI (CodeBuild) also emit JUnit XML so the build report shows per-test results.
+    reporter: process.env.CI
+        ? [['list'], ['junit', { outputFile: 'test-results/e2e-results.xml' }]]
+        : [['list']],
     projects: [
         {
             name: 'local',

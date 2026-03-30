@@ -24,6 +24,9 @@ resource "aws_ecs_service" "mosaic" {
   scheduling_strategy     = "REPLICA"
   task_definition = var.task_definition_arn
 
+  lifecycle {
+    ignore_changes = [task_definition]
+  }
 
   capacity_provider_strategy {
     capacity_provider = "FARGATE"
