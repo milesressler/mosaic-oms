@@ -94,7 +94,7 @@ export function OrdersTable({
     const [activePage, setActivePage] = useState(0);
     const [reverseSortDirection, setReverseSortDirection] = useState(false);
 
-    const visibleColumns = columns.filter(column => column.views?.includes(view) || column.views?.includes(OrdersView.DEFAULT));
+    const visibleColumns = columns.filter(column => column.views?.includes(view));
 
     const refreshOrders: () => void = () => {
         let params: any = {
@@ -216,7 +216,7 @@ export function OrdersTable({
                 const key = column.id ?? column.label;
                 const assigned = ((order as OrderDetails)?.assignee);
              return (
-                <Table.Td key={key} colSpan={index === visibleColumns.length - 1 ? 2 : 1}>
+                <Table.Td key={key} colSpan={index === 0 && showProgressIndicator && autoRefresh ? 2 : 1}>
                     {key === 'assigned' &&
                         <UserAvatar lastInitial user={assigned ? assigned : {name: "Unassigned"}}/>
                     }
@@ -227,13 +227,17 @@ export function OrdersTable({
                     </>}
                     {key === 'Updated' && <Text c={'dimmed'}>{DateTime.fromISO(order.lastStatusChange?.timestamp).toRelative()}</Text>}
                     {key === 'Status' && <div>
-                        <StatusBadge variant={'outline'} orderStatus={order.orderStatus} />
+                        <StatusBadge size='xs' variant={'outline'} orderStatus={order.orderStatus} />
                         <Text c={'dimmed'} size={'xs'}>{DateTime.fromISO(order.lastStatusChange?.timestamp).toRelative()}</Text>
                     </div>}
                     {key === 'filler' &&
                         <UserAvatar user={order.lastStatusChange?.user}/>
                   }
                     {key === 'Customer' && `${order.customer?.firstName || ''} ${order.customer?.lastName || ''}`.trim()}
+                    {key === 'order-customer' && <>
+                        <Text size={'xs'} c={'dimmed'}>#{order.id}</Text>
+                        <Text size={'sm'}>{`${order.customer?.firstName || ''} ${order.customer?.lastName || ''}`.trim()}</Text>
+                    </>}
                 </Table.Td>
             )})}
         </Table.Tr>
@@ -244,6 +248,16 @@ export function OrdersTable({
             <Table style={{ position: 'relative' }}>
                 <Table.Thead>
                     <Table.Tr>
+                        { showProgressIndicator && autoRefresh &&
+                            <Table.Th>
+                                <RefreshIndicator
+                                    progress={progress}
+                                    onRefresh={handleManualRefresh}
+                                    showSecondsRemaining={showSecondsRemaining}
+                                    refreshInterval={refreshInterval}
+                                />
+                            </Table.Th>
+                        }
                         {visibleColumns.map((column: ColumnConfig) => (
                             <Th
                                 sortingEnabled={!disableSorting}
@@ -254,16 +268,6 @@ export function OrdersTable({
                                 {column.label}
                             </Th>
                         ))}
-                        { showProgressIndicator && autoRefresh &&
-                            <Table.Th>
-                                <RefreshIndicator 
-                                    progress={progress}
-                                    onRefresh={handleManualRefresh}
-                                    showSecondsRemaining={showSecondsRemaining}
-                                    refreshInterval={refreshInterval}
-                                />
-                            </Table.Th>
-                        }
                     </Table.Tr>
                 </Table.Thead>
                 <Table.Tbody>

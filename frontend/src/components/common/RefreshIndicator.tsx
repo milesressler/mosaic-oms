@@ -48,7 +48,7 @@ export function RefreshIndicator({
     };
     
     return (
-        <Group justify="flex-end">
+        <Group justify="flex-start">
             <Tooltip label="Click to refresh now" position="top">
                 <UnstyledButton
                     onClick={onRefresh}

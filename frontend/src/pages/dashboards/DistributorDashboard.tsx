@@ -53,6 +53,7 @@ export function DistributorDashboard() {
                 forceRefresh={forceRefreshTable}
                 selectedOrderIds={id ? [+id] : null}
                 maxNumberOfRecords={20}
+                disableSorting={true}
             />
             <Box pos={'absolute'} bottom={20} right={20}>
                 <QrScannerButton label={''} onOrderScanned={(order: {id: number, uuid: string}) => {
