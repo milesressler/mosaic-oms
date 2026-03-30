@@ -1,75 +1,16 @@
-import { test, expect, Page, Response } from '@playwright/test';
+import { expect } from '@playwright/test';
+import { test } from './utils/fixtures';
+import { gotoAndSettle, waitForStateChange } from './utils/pageHelper';
 import { createOrder, OrderConfig } from './utils/orderHelper';
-
-// ── helpers ──────────────────────────────────────────────────────────────────
-
-/**
- * Wait for a PUT to /api/order/<uuid>/state/<status> and return the parsed body.
- */
-async function waitForStateChange(
-    page: Page,
-    uuid: string,
-    expectedStatus: string,
-    timeout = 15000
-): Promise<Record<string, unknown>> {
-    const resp = await page.waitForResponse(
-        (r: Response) =>
-            r.request().method() === 'PUT' &&
-            r.url().includes(`/api/order/${uuid}/state/${expectedStatus}`) &&
-            r.status() === 200,
-        { timeout }
-    );
-    return resp.json();
-}
-
-/**
- * Navigate to a URL and wait until the network is idle enough that the
- * page content has rendered (avoids flaky checks on empty pages).
- */
-async function gotoAndSettle(page: Page, path: string) {
-    await page.goto(path);
-    await page.waitForLoadState('networkidle', { timeout: 15000 }).catch(() => {
-        // networkidle can be unreliable on websocket-heavy pages; continue anyway
-    });
-}
-
-// ── test ─────────────────────────────────────────────────────────────────────
 
 test.describe('Order Lifecycle', () => {
     // Full lifecycle takes many round-trips; give it plenty of room.
     test.setTimeout(120_000);
 
-    test('creates, accepts, packs, delivers and completes an order end-to-end', async ({ page }) => {
-
-        // ── Service window setup ──────────────────────────────────────────────
-        await gotoAndSettle(page, '/dashboard/taker');
-
-        // Wait for the features context to resolve — either the alert or any switch thumb will appear
-        const closedAlert = page.getByText('Orders are currently closed');
-        await Promise.race([
-            closedAlert.waitFor({ state: 'visible', timeout: 10000 }),
-            page.locator('.mantine-Switch-thumb').first().waitFor({ state: 'visible', timeout: 10000 }),
-        ]);
-        const originalOrdersOpen = !(await closedAlert.isVisible());
-
-        if (!originalOrdersOpen) {
-            await Promise.all([
-                page.waitForResponse(
-                    (r: Response) =>
-                        r.request().method() === 'PUT' &&
-                        r.url().includes('/api/feature/orders') &&
-                        r.status() === 200,
-                    { timeout: 10000 }
-                ),
-                page.getByRole('alert', { name: 'Orders are currently closed' }).locator('.mantine-Switch-thumb').click(),
-            ]);
-            console.log('Service window opened for test run.');
-        }
-
-        try {
+    test('creates, accepts, packs, delivers and completes an order end-to-end',
+        async ({ page, ordersOpen }) => {
 
         // ── Step 1: Create order (Order Taker) ───────────────────────────────
-
         const cfg: OrderConfig = {
             customer: 'MosaicOMS TestCustomer',
             selections: [{ category: 'gear', items: ['Backpack'] }],
@@ -81,7 +22,6 @@ test.describe('Order Lifecycle', () => {
         console.log(`Created order id=${id} uuid=${uuid}`);
 
         // ── Step 2: Accept order (Order Filler) ──────────────────────────────
-        // Navigate directly to the filler order URL so the modal opens.
         await gotoAndSettle(page, `/dashboard/filler/order/${id}`);
 
         const acceptBtn = page.getByRole('button', { name: 'Accept Order' });
@@ -98,34 +38,31 @@ test.describe('Order Lifecycle', () => {
         await packAllBtn.waitFor({ state: 'visible', timeout: 15000 });
         await packAllBtn.click();
 
-        // "Pack All" sets hasStateChanged=true → button switches to "Save Progress".
+        // "Pack All" sets hasStateChanged=true → button switches to "Save Progress"
         const saveProgressBtn = page.getByRole('button', { name: 'Save Progress' });
         await saveProgressBtn.waitFor({ state: 'visible', timeout: 5000 });
 
         await Promise.all([
             page.waitForResponse(
-                (r: Response) =>
-                    r.request().method() === 'PUT' &&
-                    r.url().includes('/api/orderitem/quantity/bulk') &&
-                    r.status() === 200,
+                r => r.request().method() === 'PUT' &&
+                     r.url().includes('/api/orderitem/quantity/bulk') &&
+                     r.status() === 200,
                 { timeout: 10000 }
             ),
             saveProgressBtn.click(),
         ]);
 
-        // After save, hasStateChanged=false → "Done Packing" reappears.
+        // After save, hasStateChanged=false → "Done Packing" reappears
         const donePackingBtn = page.getByRole('button', { name: 'Done Packing' });
         await donePackingBtn.waitFor({ state: 'visible', timeout: 10000 });
         await donePackingBtn.click();
 
-        // "Done Packing" always opens the "Place in Wagon" modal.
-        // The PACKED API call fires after confirming the modal.
+        // "Done Packing" opens the "Place in Wagon" confirmation modal
         const placeInWagonBtn = page.getByRole('button', { name: 'Place in Wagon' });
         await placeInWagonBtn.waitFor({ state: 'visible', timeout: 10000 });
 
         const packRespPromise = waitForStateChange(page, uuid, 'PACKED');
         await placeInWagonBtn.click();
-
         const packBody = await packRespPromise;
         expect(packBody.orderStatus).toBe('PACKED');
         console.log('Order packed.');
@@ -135,25 +72,23 @@ test.describe('Order Lifecycle', () => {
 
         const orderRow = page.locator(`tr[data-order-id="${id}"]`);
         await orderRow.waitFor({ state: 'visible', timeout: 15000 });
-        await orderRow.click(); // toggles selection
+        await orderRow.click();
 
         const deliverBtn = page.getByRole('button', { name: 'Mark Selected as Delivered' });
         await deliverBtn.waitFor({ state: 'visible', timeout: 5000 });
 
         const [deliverResp] = await Promise.all([
             page.waitForResponse(
-                (r: Response) =>
-                    r.request().method() === 'PUT' &&
-                    r.url().includes('/api/order/bulk/state/READY_FOR_CUSTOMER_PICKUP') &&
-                    r.status() === 200,
+                r => r.request().method() === 'PUT' &&
+                     r.url().includes('/api/order/bulk/state/READY_FOR_CUSTOMER_PICKUP') &&
+                     r.status() === 200,
                 { timeout: 10000 }
             ),
             deliverBtn.click(),
         ]);
         const deliverBody = await deliverResp.json() as Record<string, unknown>[];
-        // Bulk endpoint returns an array; verify our order is in it.
         const deliveredOrder = Array.isArray(deliverBody)
-            ? deliverBody.find((o) => (o as { uuid: string }).uuid === uuid)
+            ? deliverBody.find(o => (o as { uuid: string }).uuid === uuid)
             : deliverBody;
         expect(deliveredOrder).toBeTruthy();
         console.log('Order marked as delivered.');
@@ -169,25 +104,5 @@ test.describe('Order Lifecycle', () => {
         const completeBody = await completeRespPromise;
         expect(completeBody.orderStatus).toBe('COMPLETED');
         console.log('Order completed. Lifecycle test passed ✓');
-
-        } finally {
-            if (!originalOrdersOpen) {
-                await gotoAndSettle(page, '/dashboard/taker');
-                // Orders are now open — the switch is a standalone OrdersOpenSwitch in the form (not inside the closed alert)
-                const ordersOpenSwitch = page.locator('.mantine-Switch-root', { hasText: 'Orders Open' }).locator('.mantine-Switch-thumb');
-                await ordersOpenSwitch.waitFor({ state: 'visible', timeout: 10000 });
-                await Promise.all([
-                    page.waitForResponse(
-                        (r: Response) =>
-                            r.request().method() === 'PUT' &&
-                            r.url().includes('/api/feature/orders') &&
-                            r.status() === 200,
-                        { timeout: 10000 }
-                    ),
-                    ordersOpenSwitch.click(),
-                ]);
-                console.log('Service window restored to closed.');
-            }
-        }
     });
 });

@@ -13,7 +13,7 @@ async function globalTeardown() {
     if (!activeEnv) throw new Error('No LOCAL_URL, QA_URL or PROD_URL defined');
 
     const baseURL     = process.env[`${activeEnv.toUpperCase()}_URL`]!;
-    const storageFile = `${activeEnv}-storage.json`;
+    const storageFile = fileURLToPath(new URL(`../e2e/data/${activeEnv}-storage.json`, import.meta.url));
 
     // 2) Read the file of created IDs
     // 2) Read your CSV file
