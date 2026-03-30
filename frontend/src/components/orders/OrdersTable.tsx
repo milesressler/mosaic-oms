@@ -216,7 +216,7 @@ export function OrdersTable({
                 const key = column.id ?? column.label;
                 const assigned = ((order as OrderDetails)?.assignee);
              return (
-                <Table.Td key={key} colSpan={index === visibleColumns.length - 1 && showProgressIndicator && autoRefresh ? 2 : 1}>
+                <Table.Td key={key} colSpan={index === 0 && showProgressIndicator && autoRefresh ? 2 : 1}>
                     {key === 'assigned' &&
                         <UserAvatar lastInitial user={assigned ? assigned : {name: "Unassigned"}}/>
                     }
@@ -248,6 +248,16 @@ export function OrdersTable({
             <Table style={{ position: 'relative' }}>
                 <Table.Thead>
                     <Table.Tr>
+                        { showProgressIndicator && autoRefresh &&
+                            <Table.Th>
+                                <RefreshIndicator
+                                    progress={progress}
+                                    onRefresh={handleManualRefresh}
+                                    showSecondsRemaining={showSecondsRemaining}
+                                    refreshInterval={refreshInterval}
+                                />
+                            </Table.Th>
+                        }
                         {visibleColumns.map((column: ColumnConfig) => (
                             <Th
                                 sortingEnabled={!disableSorting}
@@ -258,16 +268,6 @@ export function OrdersTable({
                                 {column.label}
                             </Th>
                         ))}
-                        { showProgressIndicator && autoRefresh &&
-                            <Table.Th>
-                                <RefreshIndicator 
-                                    progress={progress}
-                                    onRefresh={handleManualRefresh}
-                                    showSecondsRemaining={showSecondsRemaining}
-                                    refreshInterval={refreshInterval}
-                                />
-                            </Table.Th>
-                        }
                     </Table.Tr>
                 </Table.Thead>
                 <Table.Tbody>
