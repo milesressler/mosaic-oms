@@ -94,7 +94,7 @@ export function OrdersTable({
     const [activePage, setActivePage] = useState(0);
     const [reverseSortDirection, setReverseSortDirection] = useState(false);
 
-    const visibleColumns = columns.filter(column => column.views?.includes(view) || column.views?.includes(OrdersView.DEFAULT));
+    const visibleColumns = columns.filter(column => column.views?.includes(view));
 
     const refreshOrders: () => void = () => {
         let params: any = {

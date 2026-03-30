@@ -22,9 +22,9 @@ export const columns: ColumnConfig[] = [
     { label: 'Status', sortField: 'orderStatus', views: [
             OrdersView.ADMIN, OrdersView.FILLER, OrdersView.DISTRIBUTOR] },
     { label: '#', sortField: 'id', views: [
-        OrdersView.DEFAULT] },
+        OrdersView.DEFAULT, OrdersView.RUNNER] },
     { label: 'Customer', sortField: 'customer.lastName', views:
-            [OrdersView.DEFAULT, OrdersView.DISTRIBUTOR ]},
+            [OrdersView.DEFAULT, OrdersView.DISTRIBUTOR, OrdersView.RUNNER ]},
     { label: 'Customer', id: 'order-customer', sortField: 'customer.lastName', views:
             [OrdersView.FILLER] },
     { label: 'Created', sortField: 'created', views: [
