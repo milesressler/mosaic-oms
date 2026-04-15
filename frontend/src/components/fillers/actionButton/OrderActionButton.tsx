@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import {ActionIcon, Button, Group, Menu, rem, useMantineTheme} from '@mantine/core';
-import {IconArrowBack, IconCheckbox, IconChevronDown, IconNotes, IconPrinter, IconTrash} from '@tabler/icons-react';
+import {IconArrowBack, IconChevronDown, IconNotes, IconTrash} from '@tabler/icons-react';
 import classes from './filler-order-action-button.module.css';
 import {OrderDetails, OrderStatus} from "src/models/types.tsx";
 import {useAuth0} from "@auth0/auth0-react";
@@ -58,11 +58,6 @@ export function OrderActionButton({ loading, order, onStateChange, toggleAssigne
 
     if (order?.orderStatus !== OrderStatus.COMPLETED) {
         options.push(
-            {
-                label: "Close Order",
-                icon: IconCheckbox,
-                action: () => onStateChange(OrderStatus.COMPLETED)
-            },
             {
                 label: "Cancel Order",
                 icon: IconTrash,

@@ -70,10 +70,6 @@ export default function OrderDetailsPage() {
         order && updateOrder.request(order.uuid, OrderStatus.CANCELLED)
     }
 
-    const complete = () => {
-        order && updateOrder.request(order.uuid, OrderStatus.COMPLETED);
-    }
-
     const reopen = (status: OrderStatus) => {
         order && updateOrder.request(order.uuid, status);
     }
@@ -166,7 +162,6 @@ export default function OrderDetailsPage() {
                             </Menu.Target>
                             <Menu.Dropdown>
                                 <Menu.Item onClick={cancel} disabled={canReopen}>Cancel</Menu.Item>
-                                <Menu.Item onClick={complete} disabled={canReopen}>Close Order</Menu.Item>
                                 <Menu.Item disabled={!canReopen} onClick={() => setReopenModalOpened(true)}>Reopen Order</Menu.Item>
                                 <Menu.Item disabled={!canEdit} onClick={edit}>Edit</Menu.Item>
                                 <Menu.Item disabled={!canPrint} onClick={reprint}>Print Label</Menu.Item>
