@@ -6,6 +6,7 @@ import {OrderDetails, OrderStatus} from "src/models/types.tsx";
 import {useAuth0} from "@auth0/auth0-react";
 import {useFeatures} from "src/context/FeaturesContext.tsx";
 import RequestInfoModal from "src/components/fillers/RequestInfoModal.tsx";
+import ReopenOrderModal from "src/components/fillers/ReopenOrderModal.tsx";
 
 interface OrderActionButtonProps {
     loading?: boolean,
@@ -16,6 +17,7 @@ interface OrderActionButtonProps {
 
 export function OrderActionButton({ loading, order, onStateChange, toggleAssigned }: OrderActionButtonProps) {
     const [requestInfoModalOpened, setRequestInfoModalOpened] = useState(false);
+    const [reopenModalOpened, setReopenModalOpened] = useState(false);
 
     const theme = useMantineTheme();
     const {user} = useAuth0();
@@ -45,7 +47,7 @@ export function OrderActionButton({ loading, order, onStateChange, toggleAssigne
                 </>
             case OrderStatus.COMPLETED:
                 return <>
-                    <Button style={buttonStyle} loading={loading} color="orange" leftSection={<IconArrowBack size={16}/>} onClick={() => onStateChange(OrderStatus.PENDING_ACCEPTANCE)}>Reopen Order</Button>
+                    <Button style={buttonStyle} loading={loading} color="orange" leftSection={<IconArrowBack size={16}/>} onClick={() => setReopenModalOpened(true)}>Reopen Order</Button>
                 </>
             default:
                 return <Button style={buttonStyle} loading={loading} onClick={toggleAssigned} >{assignedToMe ? "Unassign" : "Assign to Me"}</Button>
@@ -57,7 +59,7 @@ export function OrderActionButton({ loading, order, onStateChange, toggleAssigne
     if (order?.orderStatus !== OrderStatus.COMPLETED) {
         options.push(
             {
-                label: "Complete",
+                label: "Close Order",
                 icon: IconCheckbox,
                 action: () => onStateChange(OrderStatus.COMPLETED)
             },
@@ -126,6 +128,13 @@ export function OrderActionButton({ loading, order, onStateChange, toggleAssigne
                 onClose={() => setRequestInfoModalOpened(false)}
                 onConfirm={handleRequestInfo}
                 orderNumber={order?.id}
+            />
+            <ReopenOrderModal
+                opened={reopenModalOpened}
+                onClose={() => setReopenModalOpened(false)}
+                onConfirm={(status) => onStateChange(status)}
+                orderNumber={order?.id}
+                history={order?.history ?? []}
             />
         </>
     );

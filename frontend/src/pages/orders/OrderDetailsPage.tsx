@@ -1,9 +1,10 @@
-import {useEffect} from 'react';
+import {useEffect, useState} from 'react';
 import {Link, useNavigate, useParams} from 'react-router-dom';
 import useApi from 'src/hooks/useApi';
 import ordersApi from 'src/services/ordersApi';
 import {DateTime} from 'luxon';
 import { notifications } from '@mantine/notifications';
+import ReopenOrderModal from 'src/components/fillers/ReopenOrderModal.tsx';
 
 import {
     Avatar,
@@ -52,6 +53,7 @@ export default function OrderDetailsPage() {
     const updateOrder = useApi(ordersApi.updateOrderStatus);
     const navigate = useNavigate();
     const theme = useMantineTheme();
+    const [reopenModalOpened, setReopenModalOpened] = useState(false);
 
     useEffect(() => {
         if (id) {
@@ -72,8 +74,8 @@ export default function OrderDetailsPage() {
         order && updateOrder.request(order.uuid, OrderStatus.COMPLETED);
     }
 
-    const reopen = () => {
-        order && updateOrder.request(order.uuid, OrderStatus.PENDING_ACCEPTANCE);
+    const reopen = (status: OrderStatus) => {
+        order && updateOrder.request(order.uuid, status);
     }
 
     const edit = () => {
@@ -136,6 +138,7 @@ export default function OrderDetailsPage() {
     const fillPercentage = totalItems > 0 ? Math.round((filledItems / totalItems) * 100) : 0;
 
     return (
+        <>
         <Container size="lg" py="xs">
             {/* Mobile-first Header Card */}
             <Card shadow="sm" padding="lg" radius="md" mb="md">
@@ -163,8 +166,8 @@ export default function OrderDetailsPage() {
                             </Menu.Target>
                             <Menu.Dropdown>
                                 <Menu.Item onClick={cancel} disabled={canReopen}>Cancel</Menu.Item>
-                                <Menu.Item onClick={complete} disabled={canReopen}>Mark Complete</Menu.Item>
-                                <Menu.Item disabled={!canReopen} onClick={reopen}>Reopen Order</Menu.Item>
+                                <Menu.Item onClick={complete} disabled={canReopen}>Close Order</Menu.Item>
+                                <Menu.Item disabled={!canReopen} onClick={() => setReopenModalOpened(true)}>Reopen Order</Menu.Item>
                                 <Menu.Item disabled={!canEdit} onClick={edit}>Edit</Menu.Item>
                                 <Menu.Item disabled={!canPrint} onClick={reprint}>Print Label</Menu.Item>
                                 <Menu.Item disabled={!canPrint} onClick={previewLabel}>Preview completed label</Menu.Item>
@@ -438,5 +441,14 @@ export default function OrderDetailsPage() {
                 </Timeline>
             </Card>
         </Container>
+
+        <ReopenOrderModal
+            opened={reopenModalOpened}
+            onClose={() => setReopenModalOpened(false)}
+            onConfirm={reopen}
+            orderNumber={order?.id}
+            history={order?.history ?? []}
+        />
+        </>
     );
 }
