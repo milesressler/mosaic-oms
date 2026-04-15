@@ -1,9 +1,10 @@
-import {useEffect} from 'react';
+import {useEffect, useState} from 'react';
 import {Link, useNavigate, useParams} from 'react-router-dom';
 import useApi from 'src/hooks/useApi';
 import ordersApi from 'src/services/ordersApi';
 import {DateTime} from 'luxon';
 import { notifications } from '@mantine/notifications';
+import ReopenOrderModal from 'src/components/fillers/ReopenOrderModal.tsx';
 
 import {
     Avatar,
@@ -22,7 +23,7 @@ import {
 } from '@mantine/core';
 import {Category, categoryDisplayNames, OrderStatus} from "src/models/types.tsx";
 import UserAvatar from 'src/components/common/userAvatar/UserAvatar';
-import {IconArrowRight, IconCalendar, IconChevronDown, IconNotes, IconPackage, IconTrash, IconCheck, IconArrowLeft, IconEdit, IconPrinter} from '@tabler/icons-react';
+import {IconArrowRight, IconCalendar, IconChevronDown, IconNotes, IconPackage, IconTrash, IconArrowLeft, IconEdit, IconPrinter} from '@tabler/icons-react';
 import React from 'react';
 import {statusDisplay} from "src/utils/StatusUtils.tsx";
 import GroupedAttributeBadges from 'src/components/common/items/GroupedAttributeBadges';
@@ -45,6 +46,7 @@ export default function OrderDetailsPageOld() {
     const updateOrder = useApi(ordersApi.updateOrderStatus);
     const navigate = useNavigate();
     const theme = useMantineTheme();
+    const [reopenModalOpened, setReopenModalOpened] = useState(false);
 
     useEffect(() => {
         if (id) {
@@ -56,6 +58,7 @@ export default function OrderDetailsPageOld() {
     const canEdit = order && [OrderStatus.PENDING_ACCEPTANCE, OrderStatus.NEEDS_INFO].indexOf(order.orderStatus) !== -1;
     const canPrint = order && [OrderStatus.PACKED, OrderStatus.IN_TRANSIT].indexOf(order.orderStatus) !== -1;
     const canReturn = OrderStatus.PACKED === order?.orderStatus;
+    const canReopen = order?.orderStatus === OrderStatus.COMPLETED;
 
     const cancel = () => {
         order && updateOrder.request(order.uuid, OrderStatus.CANCELLED)
@@ -65,8 +68,8 @@ export default function OrderDetailsPageOld() {
         order && updateOrder.request(order.uuid, OrderStatus.ACCEPTED)
     }
 
-    const complete = () => {
-        order && updateOrder.request(order.uuid, OrderStatus.COMPLETED);
+    const reopen = (status: OrderStatus) => {
+        order && updateOrder.request(order.uuid, status);
     }
 
     const edit = () => {
@@ -127,6 +130,7 @@ export default function OrderDetailsPageOld() {
     }, {});
 
     return (
+        <>
         <Container size="md" py="lg">
             {/* Header */}
             <Group justify="space-between" align="flex-end">
@@ -139,9 +143,9 @@ export default function OrderDetailsPageOld() {
                         <Button size="sm" rightSection={<IconChevronDown size={14} />}>Actions</Button>
                     </Menu.Target>
                     <Menu.Dropdown>
-                        <Menu.Item leftSection={<IconTrash size={16} />} onClick={cancel}>Cancel</Menu.Item>
-                        <Menu.Item leftSection={<IconCheck size={16} />} onClick={complete}>Mark Complete</Menu.Item>
-                        <Menu.Item leftSection={<IconArrowLeft size={16} />}  disabled={!canReturn} onClick={returnToFiller}>Return to Filler</Menu.Item>
+                        <Menu.Item leftSection={<IconTrash size={16} />} disabled={canReopen} onClick={cancel}>Cancel</Menu.Item>
+                        <Menu.Item leftSection={<IconArrowLeft size={16} />} disabled={!canReopen} onClick={() => setReopenModalOpened(true)}>Reopen Order</Menu.Item>
+                        <Menu.Item leftSection={<IconArrowLeft size={16} />} disabled={!canReturn} onClick={returnToFiller}>Return to Filler</Menu.Item>
                         <Menu.Item leftSection={<IconEdit size={16} />} disabled={!canEdit} onClick={edit}>Edit</Menu.Item>
                         <Menu.Item leftSection={<IconPrinter size={16} />} disabled={!canPrint} onClick={reprint}>Print Completed Label</Menu.Item>
                         <Menu.Item leftSection={<IconPrinter size={16} />} onClick={previewLabel}>Preview Completed Label</Menu.Item>
@@ -320,5 +324,14 @@ export default function OrderDetailsPageOld() {
                 })}
             </Timeline>
         </Container>
+
+        <ReopenOrderModal
+            opened={reopenModalOpened}
+            onClose={() => setReopenModalOpened(false)}
+            onConfirm={reopen}
+            orderNumber={order?.id}
+            previousStatus={order?.lastStatusChange?.previousStatus}
+        />
+        </>
     );
 }

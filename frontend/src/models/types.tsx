@@ -51,6 +51,7 @@ export interface OrderDetails extends Order {
         user: string;
         assigneeExt: string
         status: OrderStatus;
+        previousStatus?: OrderStatus;
         timestamp: string;
     };
     specialInstructions: string;
