@@ -129,7 +129,7 @@ export function OrderActionButton({ loading, order, onStateChange, toggleAssigne
                 onClose={() => setReopenModalOpened(false)}
                 onConfirm={(status) => onStateChange(status)}
                 orderNumber={order?.id}
-                history={order?.history ?? []}
+                previousStatus={order?.lastStatusChange?.previousStatus}
             />
         </>
     );

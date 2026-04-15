@@ -1,6 +1,6 @@
 import { Modal, Select, Button, Group, Stack, Text } from '@mantine/core';
 import { useEffect, useState } from 'react';
-import { OrderDetails, OrderStatus } from 'src/models/types.tsx';
+import { OrderStatus } from 'src/models/types.tsx';
 import { statusDisplay } from 'src/utils/StatusUtils.tsx';
 
 interface ReopenOrderModalProps {
@@ -8,7 +8,7 @@ interface ReopenOrderModalProps {
     onClose: () => void;
     onConfirm: (status: OrderStatus) => void;
     orderNumber?: number;
-    history: OrderDetails['history'];
+    previousStatus?: OrderStatus;
 }
 
 const REOPENABLE_STATUSES: OrderStatus[] = [
@@ -21,21 +21,15 @@ const REOPENABLE_STATUSES: OrderStatus[] = [
     OrderStatus.READY_FOR_CUSTOMER_PICKUP,
 ];
 
-function getPreviousStatus(history: OrderDetails['history']): OrderStatus {
-    return [...history]
-        .reverse()
-        .find(e => e.status !== OrderStatus.COMPLETED)
-        ?.status ?? OrderStatus.PENDING_ACCEPTANCE;
-}
-
-export default function ReopenOrderModal({ opened, onClose, onConfirm, orderNumber, history }: ReopenOrderModalProps) {
-    const [selectedStatus, setSelectedStatus] = useState<OrderStatus>(() => getPreviousStatus(history));
+export default function ReopenOrderModal({ opened, onClose, onConfirm, orderNumber, previousStatus }: ReopenOrderModalProps) {
+    const defaultStatus = previousStatus ?? OrderStatus.PENDING_ACCEPTANCE;
+    const [selectedStatus, setSelectedStatus] = useState<OrderStatus>(defaultStatus);
 
     useEffect(() => {
         if (opened) {
-            setSelectedStatus(getPreviousStatus(history));
+            setSelectedStatus(previousStatus ?? OrderStatus.PENDING_ACCEPTANCE);
         }
-    }, [opened]);
+    }, [opened, previousStatus]);
 
     const statusOptions = REOPENABLE_STATUSES.map(s => ({
         value: s,

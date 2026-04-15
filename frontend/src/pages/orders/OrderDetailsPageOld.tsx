@@ -330,7 +330,7 @@ export default function OrderDetailsPageOld() {
             onClose={() => setReopenModalOpened(false)}
             onConfirm={reopen}
             orderNumber={order?.id}
-            history={order?.history ?? []}
+            previousStatus={order?.lastStatusChange?.previousStatus}
         />
         </>
     );
