@@ -62,6 +62,7 @@ export default function OrderDetailsPage() {
     const order = getOrder.data;
     const canEdit = order && [OrderStatus.PENDING_ACCEPTANCE, OrderStatus.NEEDS_INFO].indexOf(order.orderStatus) !== -1;
     const canPrint = order && [OrderStatus.PACKED, OrderStatus.IN_TRANSIT].indexOf(order.orderStatus) !== -1;
+    const canReopen = order?.orderStatus === OrderStatus.COMPLETED;
 
     const cancel = () => {
         order && updateOrder.request(order.uuid, OrderStatus.CANCELLED)
@@ -69,6 +70,10 @@ export default function OrderDetailsPage() {
 
     const complete = () => {
         order && updateOrder.request(order.uuid, OrderStatus.COMPLETED);
+    }
+
+    const reopen = () => {
+        order && updateOrder.request(order.uuid, OrderStatus.PENDING_ACCEPTANCE);
     }
 
     const edit = () => {
@@ -157,8 +162,9 @@ export default function OrderDetailsPage() {
                                 </ActionIcon>
                             </Menu.Target>
                             <Menu.Dropdown>
-                                <Menu.Item onClick={cancel}>Cancel</Menu.Item>
-                                <Menu.Item onClick={complete}>Mark Complete</Menu.Item>
+                                <Menu.Item onClick={cancel} disabled={canReopen}>Cancel</Menu.Item>
+                                <Menu.Item onClick={complete} disabled={canReopen}>Mark Complete</Menu.Item>
+                                <Menu.Item disabled={!canReopen} onClick={reopen}>Reopen Order</Menu.Item>
                                 <Menu.Item disabled={!canEdit} onClick={edit}>Edit</Menu.Item>
                                 <Menu.Item disabled={!canPrint} onClick={reprint}>Print Label</Menu.Item>
                                 <Menu.Item disabled={!canPrint} onClick={previewLabel}>Preview completed label</Menu.Item>
@@ -198,7 +204,7 @@ export default function OrderDetailsPage() {
                     {/* Key Info Grid */}
                     <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="md">
                         <Group gap="xs">
-                            <IconCalendar size={16} color={.colors.gray[6]} />
+                            <IconCalendar size={16} color={theme.colors.gray[6]} />
                             <Box>
                                 <Text size="xs" c="dimmed" tt="uppercase" fw={600}>
                                     Created
