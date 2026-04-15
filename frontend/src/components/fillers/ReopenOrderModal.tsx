@@ -1,6 +1,6 @@
 import { Modal, Select, Button, Group, Stack, Text } from '@mantine/core';
 import { useEffect, useState } from 'react';
-import { OrderDetails, OrderStatus, HistoryEventType } from 'src/models/types.tsx';
+import { OrderDetails, OrderStatus } from 'src/models/types.tsx';
 import { statusDisplay } from 'src/utils/StatusUtils.tsx';
 
 interface ReopenOrderModalProps {
@@ -24,7 +24,7 @@ const REOPENABLE_STATUSES: OrderStatus[] = [
 function getPreviousStatus(history: OrderDetails['history']): OrderStatus {
     return [...history]
         .reverse()
-        .find(e => e.eventType === HistoryEventType.STATUS_CHANGE && e.status !== OrderStatus.COMPLETED)
+        .find(e => e.status !== OrderStatus.COMPLETED)
         ?.status ?? OrderStatus.PENDING_ACCEPTANCE;
 }
 
