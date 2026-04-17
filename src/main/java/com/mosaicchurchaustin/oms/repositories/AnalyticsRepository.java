@@ -169,7 +169,13 @@ public interface AnalyticsRepository extends JpaRepository<OrderEntity, Long> {
         SELECT
             ws.week_start,
             COALESCE(SUM(oi.quantity), 0) as total_items,
-            COALESCE(SUM(CASE WHEN oi.quantity_fulfilled = 1 THEN oi.quantity ELSE 0 END), 0) as filled_items,
+            COALESCE(SUM(CASE WHEN oi.quantity_fulfilled = 1 THEN oi.quantity ELSE 0 END), 0)
+                + COALESCE((
+                    SELECT SUM(ois.quantity)
+                    FROM order_item_substitution ois
+                    INNER JOIN order_items oi2 ON ois.order_item_id = oi2.id
+                    WHERE oi2.order_entity_id = cor.id
+                ), 0) as filled_items,
             COALESCE(SUM(CASE WHEN oi.quantity_fulfilled = 0 OR oi.quantity_fulfilled IS NULL THEN oi.quantity ELSE 0 END), 0) as unfilled_items
         FROM week_series ws
         LEFT JOIN completed_orders_in_range cor ON cor.week_start = ws.week_start

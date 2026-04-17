@@ -4,10 +4,13 @@ import com.mosaicchurchaustin.oms.data.entity.BaseEntity;
 import com.mosaicchurchaustin.oms.data.entity.item.ItemEntity;
 import com.mosaicchurchaustin.oms.data.entity.order.attributes.AttributeValue;
 import com.mosaicchurchaustin.oms.support.converters.ItemAttributeJsonConverter;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -16,6 +19,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 @Entity
@@ -55,6 +60,13 @@ public class OrderItemEntity extends BaseEntity {
     @Column(name = "quantity_fulfilled")
     Integer quantityFulfilled;
 
+    @OneToMany(mappedBy = "orderItem", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+    @ToString.Exclude
+    @Builder.Default
+    List<OrderItemSubstitutionEntity> substitutions = new ArrayList<>();
 
-
+    public int getTotalHandled() {
+        final int subTotal = substitutions.stream().mapToInt(OrderItemSubstitutionEntity::getQuantity).sum();
+        return (quantityFulfilled != null ? quantityFulfilled : 0) + subTotal;
+    }
 }

@@ -3,9 +3,11 @@ package com.mosaicchurchaustin.oms.data.response;
 
 import com.mosaicchurchaustin.oms.data.entity.item.ItemCategory;
 import com.mosaicchurchaustin.oms.data.entity.order.OrderItemEntity;
+import com.mosaicchurchaustin.oms.data.entity.order.attributes.StringAttribute;
 import lombok.Builder;
 import lombok.Getter;
 
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -16,11 +18,14 @@ public class OrderItemResponse {
     private ItemCategory category;
     private Integer quantityRequested;
     private Integer quantityFulfilled;
+    private Integer totalHandled;
+    private boolean substituted;
     private String notes;
     private Long id;
     private SuggestedItemResponse item;
     private Map<String, AttributeDisplay> attributes;
-    
+    private List<OrderItemSubstitutionResponse> substitutions;
+
     @Builder
     @Getter
     public static class AttributeDisplay {
@@ -29,32 +34,35 @@ public class OrderItemResponse {
     }
 
     public static OrderItemResponse from(final OrderItemEntity orderItemEntity) {
+        final List<OrderItemSubstitutionResponse> subs = orderItemEntity.getSubstitutions().stream()
+                .map(OrderItemSubstitutionResponse::from)
+                .collect(Collectors.toList());
+
         return OrderItemResponse.builder()
                 .description(orderItemEntity.getItemEntity().getDescription())
                 .category(orderItemEntity.getItemEntity().getCategory())
                 .quantityFulfilled(orderItemEntity.getQuantityFulfilled())
                 .quantityRequested(orderItemEntity.getQuantity())
+                .totalHandled(orderItemEntity.getTotalHandled())
+                .substituted(!subs.isEmpty())
                 .notes(orderItemEntity.getNotes())
                 .id(orderItemEntity.getId())
                 .item(SuggestedItemResponse.from(orderItemEntity.getItemEntity()))
+                .substitutions(subs)
                 .attributes(orderItemEntity.getAttributes().entrySet().stream()
                         .collect(Collectors.toMap(
                                 Map.Entry::getKey,
                                 entry -> {
-                                    var attributeValue = entry.getValue();
-                                    
-                                    // Check if it's a StringAttribute with both values
-                                    if (attributeValue instanceof com.mosaicchurchaustin.oms.data.entity.order.attributes.StringAttribute stringAttr) {
-                                        // For now, use the same pattern until Lombok rebuilds
-                                        String displayVal = stringAttr.toString(); // This uses our custom toString() method
+                                    final var attributeValue = entry.getValue();
+
+                                    if (attributeValue instanceof StringAttribute stringAttr) {
                                         return AttributeDisplay.builder()
                                                 .value(stringAttr.getValue())
-                                                .displayValue(displayVal)
+                                                .displayValue(stringAttr.toString())
                                                 .build();
                                     }
-                                    
-                                    // Fallback for other attribute types or legacy data
-                                    String storedValue = attributeValue.toString();
+
+                                    final String storedValue = attributeValue.toString();
                                     return AttributeDisplay.builder()
                                             .value(storedValue)
                                             .displayValue(storedValue)
@@ -62,6 +70,5 @@ public class OrderItemResponse {
                                 }
                         )))
                 .build();
-
     }
 }
