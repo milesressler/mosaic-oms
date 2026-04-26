@@ -12,7 +12,8 @@ import {
   TextInput,
 } from '@mantine/core';
 import { IconMessageCircle, IconX, IconUsers, IconSearch } from '@tabler/icons-react';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, Fragment } from 'react';
+import { DateTime } from 'luxon';
 import { useAuth0 } from '@auth0/auth0-react';
 import chatApi from 'src/services/chatApi';
 import { ChatMessageResponse, ChatParticipant } from 'src/models/chat';
@@ -134,19 +135,40 @@ export default function
 
   // WebSocket subscriptions are now handled by ChatContext
 
+  const formatDateLabel = (timestamp: string): string => {
+    const dt = DateTime.fromISO(timestamp);
+    const now = DateTime.now();
+    if (dt.hasSame(now, 'day')) return 'Today';
+    if (dt.hasSame(now.minus({ days: 1 }), 'day')) return 'Yesterday';
+    if (dt.year === now.year) return dt.toFormat('MMMM d');
+    return dt.toFormat('MMMM d, yyyy');
+  };
+
   const renderMessage = (message: ChatMessageResponse, index: number) => {
     const isOwnMessage = message.sender.externalId === user?.sub;
-    
+    const prevMessage = index > 0 ? messages[index - 1] : undefined;
+    const currentDay = DateTime.fromISO(message.createdAt).startOf('day');
+    const prevDay = prevMessage ? DateTime.fromISO(prevMessage.createdAt).startOf('day') : null;
+    const showDateSeparator = !prevDay || !currentDay.equals(prevDay);
+
     return (
-      <MessageBubble
-        key={message.id}
-        message={message}
-        isOwnMessage={isOwnMessage}
-        messages={messages}
-        index={index}
-        isGlobalChat={activeTab === 'global'}
-        currentUserExternalId={user?.sub}
-      />
+      <Fragment key={message.id}>
+        {showDateSeparator && (
+          <Divider
+            label={<Text size="xs" c="dimmed">{formatDateLabel(message.createdAt)}</Text>}
+            labelPosition="center"
+            my="sm"
+          />
+        )}
+        <MessageBubble
+          message={message}
+          isOwnMessage={isOwnMessage}
+          messages={messages}
+          index={index}
+          isGlobalChat={activeTab === 'global'}
+          currentUserExternalId={user?.sub}
+        />
+      </Fragment>
     );
   };
 
