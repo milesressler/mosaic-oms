@@ -1,86 +1,63 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Database parameters from compose.yaml
-MYSQL_IMAGE="mysql:latest"
+MYSQL_IMAGE="mysql:8.0"
 DB_NAME="mosaicoms"
-DB_USER="mosaic-oms-api"
-DB_PASS="Uwv1cTzGs0ReGO5A"
-DB_ROOT_PASS="xiOrJxAjFDhP8aZkUFFjToyOr9g="
-DB_PORT="33060"
 
 usage() {
   cat <<EOF
-Usage: $0 <command> [options]
+Usage: $0 \\
+  --src-host <host> --src-user <user> --src-pass <pass> \\
+  --dst-host <host> --dst-user <user> --dst-pass <pass>
 
-Commands:
-  dump    [file]    Dump the database to a SQL file (default: mosaicoms_<timestamp>.sql)
-  restore <file>    Restore the database from a SQL file
-
-Examples:
-  $0 dump
-  $0 dump backup.sql
-  $0 restore backup.sql
+All flags are required. Connects to both RDS instances via Docker
+and pipes mysqldump output directly into the destination database.
 EOF
   exit 1
 }
 
-cmd_dump() {
-  local outfile="${1:-mosaicoms_$(date +%Y%m%d_%H%M%S).sql}"
+SRC_HOST="" SRC_USER="" SRC_PASS=""
+DST_HOST="" DST_USER="" DST_PASS=""
 
-  echo "Dumping '${DB_NAME}' -> ${outfile} ..."
-  docker run --rm \
-    --network host \
-    "$MYSQL_IMAGE" \
-    mysqldump \
-      --host=127.0.0.1 \
-      --port="$DB_PORT" \
-      --user="$DB_USER" \
-      --password="$DB_PASS" \
-      --single-transaction \
-      --routines \
-      --triggers \
-      --add-drop-table \
-      "$DB_NAME" > "$outfile"
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --src-host) SRC_HOST="$2"; shift 2 ;;
+    --src-user) SRC_USER="$2"; shift 2 ;;
+    --src-pass) SRC_PASS="$2"; shift 2 ;;
+    --dst-host) DST_HOST="$2"; shift 2 ;;
+    --dst-user) DST_USER="$2"; shift 2 ;;
+    --dst-pass) DST_PASS="$2"; shift 2 ;;
+    *) echo "Unknown argument: $1"; usage ;;
+  esac
+done
 
-  echo "Dump complete: $outfile ($(du -sh "$outfile" | cut -f1))"
-}
+for var in SRC_HOST SRC_USER SRC_PASS DST_HOST DST_USER DST_PASS; do
+  [[ -n "${!var}" ]] || { echo "Missing --$(echo "$var" | tr '[:upper:]' '[:lower:]' | tr '_' '-')"; usage; }
+done
 
-cmd_restore() {
-  local infile="${1:-}"
-  if [[ -z "$infile" ]]; then
-    echo "Error: restore requires a file argument."
-    usage
-  fi
+echo "Source:      ${SRC_HOST}/${DB_NAME}"
+echo "Destination: ${DST_HOST}/${DB_NAME}"
+echo ""
+echo "WARNING: All data in '${DB_NAME}' on the destination will be replaced."
+read -r -p "Continue? [y/N] " confirm
+[[ "$confirm" =~ ^[Yy]$ ]] || { echo "Aborted."; exit 0; }
 
-  if [[ ! -f "$infile" ]]; then
-    echo "Error: file not found: $infile"
-    exit 1
-  fi
+echo "Migrating..."
+docker run --rm "$MYSQL_IMAGE" \
+  mysqldump \
+    --host="$SRC_HOST" \
+    --user="$SRC_USER" \
+    --password="$SRC_PASS" \
+    --single-transaction \
+    --routines \
+    --triggers \
+    --add-drop-table \
+    "$DB_NAME" \
+| docker run --rm -i "$MYSQL_IMAGE" \
+  mysql \
+    --host="$DST_HOST" \
+    --user="$DST_USER" \
+    --password="$DST_PASS" \
+    "$DB_NAME"
 
-  echo "Restoring '${DB_NAME}' from ${infile} ..."
-  echo "WARNING: This will drop and recreate all tables in '${DB_NAME}'."
-  read -r -p "Continue? [y/N] " confirm
-  if [[ ! "$confirm" =~ ^[Yy]$ ]]; then
-    echo "Aborted."
-    exit 0
-  fi
-
-  docker run --rm -i \
-    --network host \
-    "$MYSQL_IMAGE" \
-    mysql \
-      --host=127.0.0.1 \
-      --port="$DB_PORT" \
-      --user="root" \
-      --password="$DB_ROOT_PASS" \
-      "$DB_NAME" < "$infile"
-
-  echo "Restore complete."
-}
-
-case "${1:-}" in
-  dump)    cmd_dump    "${2:-}" ;;
-  restore) cmd_restore "${2:-}" ;;
-  *)       usage ;;
-esac
+echo "Migration complete."
