@@ -2,14 +2,12 @@
 set -euo pipefail
 
 # Database parameters from compose.yaml
-COMPOSE_SERVICE="mysql"
+MYSQL_IMAGE="mysql:latest"
 DB_NAME="mosaicoms"
 DB_USER="mosaic-oms-api"
 DB_PASS="Uwv1cTzGs0ReGO5A"
 DB_ROOT_PASS="xiOrJxAjFDhP8aZkUFFjToyOr9g="
-
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+DB_PORT="33060"
 
 usage() {
   cat <<EOF
@@ -27,22 +25,16 @@ EOF
   exit 1
 }
 
-check_container_running() {
-  if ! docker compose -f "$PROJECT_ROOT/compose.yaml" ps --services --filter status=running 2>/dev/null | grep -q "^${COMPOSE_SERVICE}$"; then
-    echo "Error: Docker Compose service '${COMPOSE_SERVICE}' is not running."
-    echo "Start it with: docker compose up -d"
-    exit 1
-  fi
-}
-
 cmd_dump() {
-  local outfile="${1:-${PROJECT_ROOT}/mosaicoms_$(date +%Y%m%d_%H%M%S).sql}"
-
-  check_container_running
+  local outfile="${1:-mosaicoms_$(date +%Y%m%d_%H%M%S).sql}"
 
   echo "Dumping '${DB_NAME}' -> ${outfile} ..."
-  docker compose -f "$PROJECT_ROOT/compose.yaml" exec -T "$COMPOSE_SERVICE" \
+  docker run --rm \
+    --network host \
+    "$MYSQL_IMAGE" \
     mysqldump \
+      --host=127.0.0.1 \
+      --port="$DB_PORT" \
       --user="$DB_USER" \
       --password="$DB_PASS" \
       --single-transaction \
@@ -66,8 +58,6 @@ cmd_restore() {
     exit 1
   fi
 
-  check_container_running
-
   echo "Restoring '${DB_NAME}' from ${infile} ..."
   echo "WARNING: This will drop and recreate all tables in '${DB_NAME}'."
   read -r -p "Continue? [y/N] " confirm
@@ -76,8 +66,12 @@ cmd_restore() {
     exit 0
   fi
 
-  docker compose -f "$PROJECT_ROOT/compose.yaml" exec -T "$COMPOSE_SERVICE" \
+  docker run --rm -i \
+    --network host \
+    "$MYSQL_IMAGE" \
     mysql \
+      --host=127.0.0.1 \
+      --port="$DB_PORT" \
       --user="root" \
       --password="$DB_ROOT_PASS" \
       "$DB_NAME" < "$infile"
