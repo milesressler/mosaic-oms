@@ -2,7 +2,7 @@ import {Order, OrderDetails, OrderNotification, OrderStatus} from "src/models/ty
 import useApi from "src/hooks/useApi.tsx";
 import ordersApi from "src/services/ordersApi.tsx";
 import {useEffect, useState} from "react";
-import {useDisclosure, useInterval} from "@mantine/hooks";
+import {useInterval} from "@mantine/hooks";
 import {
     Center,
     Group,
@@ -21,7 +21,6 @@ import {ColumnConfig, columns, OrdersView} from "src/components/orders/OrdersTab
 import groupmeImage from "src/assets/groupme_icon.png";
 import UserAvatar from "src/components/common/userAvatar/UserAvatar.tsx";
 import {useSubscription} from "react-stomp-hooks";
-import {AssigneeAvatar} from "src/components/orders/AssigneeAvatar.tsx";
 import {RefreshIndicator} from "src/components/common/RefreshIndicator.tsx";
 
 interface ThProps {

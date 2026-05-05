@@ -1,8 +1,8 @@
-import {Order, OrderDetails} from "src/models/types.tsx";
-import {useEffect, useState} from "react";
+import {Order} from "src/models/types.tsx";
+import {useEffect} from "react";
 import useApi from "src/hooks/useApi.tsx";
 import ordersApi from "src/services/ordersApi.tsx";
-import {Button, Divider, Group, Text, Title} from "@mantine/core";
+import {Button, Divider, Group, Text} from "@mantine/core";
 interface AssignedOrderSectionProps {
     order: Order;
 }

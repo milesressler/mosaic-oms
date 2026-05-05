@@ -6,7 +6,7 @@ import {
     Button,
     Card, DEFAULT_THEME,
     Group,
-    LoadingOverlay, Pill,
+    LoadingOverlay,
     Stack,
     Stepper, Switch,
     Text,

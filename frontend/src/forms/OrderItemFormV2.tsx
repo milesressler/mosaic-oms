@@ -1,4 +1,4 @@
-import {Button, Group, Stack, Textarea, Text, Select, MultiSelect, Box, Card, TextInput} from "@mantine/core";
+import {Button, Group, Stack, Textarea, Text, Select, MultiSelect, Card, TextInput} from "@mantine/core";
 import React, {useState} from "react";
 import {AttributeValue, FormOrderItem, SingleValueAttribute} from "src/models/forms.tsx";
 
@@ -81,7 +81,7 @@ export function OrderItemFormv2({formItem,  onSave, onCancel}: OrderItemFormProp
                 size={'lg'}
                 value={draftItem?.attributes?.[attribute.key]?.value ?? ''}
                 onChange={(val) => handleAttributeSelect(attribute.key, val)}
-                data={attribute.options.map(o => ({
+                data={attribute.options.map((o: { value: string; label: string; available: boolean }) => ({
                     value: o.value,
                     label: o.label,
                     disabled: !o.available
@@ -104,7 +104,7 @@ export function OrderItemFormv2({formItem,  onSave, onCancel}: OrderItemFormProp
                 required={attribute.required}
                 size={'lg'}
                 // value={[]}
-                data={attribute.options.map(o => ({
+                data={attribute.options.map((o: { value: string; label: string; available: boolean }) => ({
                     value: o.value,
                     label: o.label,
                     disabled: !o.available

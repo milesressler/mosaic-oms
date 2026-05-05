@@ -38,8 +38,8 @@ export const AddToShowerQueueModal = ({ opened, onClose, onSuccess }: Props) => 
             lastName: "",
         },
         validate: {
-            firstName: (value) => (value.trim() ? null : "First name is required"),
-            lastName: (value) => (value.trim() ? null : "Last name is required"),
+            firstName: (value: string) => (value.trim() ? null : "First name is required"),
+            lastName: (value: string) => (value.trim() ? null : "Last name is required"),
         },
     });
 

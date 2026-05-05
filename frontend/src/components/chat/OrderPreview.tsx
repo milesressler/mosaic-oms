@@ -1,4 +1,4 @@
-import { Paper, Text, Group, Badge, Stack } from '@mantine/core';
+import { Paper, Text, Badge } from '@mantine/core';
 import { IconPackage } from '@tabler/icons-react';
 import { useNavigate } from 'react-router-dom';
 import { OrderDetails } from 'src/models/types';

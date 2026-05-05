@@ -3,7 +3,7 @@ import { IconX, IconFolder, IconArrowUp, IconArrowDown } from "@tabler/icons-rea
 import useApi from "src/hooks/useApi.tsx";
 import itemsApi from "src/services/itemsApi.tsx";
 import { AdminItem, Category, categoryDisplayNames, Item } from "src/models/types.tsx";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useForm } from "@mantine/form";
 
 interface AttributeForm {

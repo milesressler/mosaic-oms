@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Autocomplete, Group, Text } from '@mantine/core';
 import { IconSearch } from '@tabler/icons-react';
 import useApi from 'src/hooks/useApi';

@@ -8,7 +8,7 @@ interface ItemFulfillmentWidgetProps {
     loading?: boolean;
 }
 
-const ItemFulfillmentWidget: React.FC<ItemFulfillmentWidgetProps> = ({ data, loading }) => {
+const ItemFulfillmentWidget: React.FC<ItemFulfillmentWidgetProps> = ({ data }) => {
     if (!data || data.length === 0) {
         return null;
     }

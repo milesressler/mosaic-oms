@@ -36,14 +36,6 @@ const AdminOrdersPage = () => {
     const getOrders = useApi(ordersApi.getOrdersWithDetails);
     const [searchParams, setSearchParams] = useSearchParams();
 
-    // Role action options
-    const roleActionOptions = [
-        { value: 'created', label: 'Created' },
-        { value: 'packed', label: 'Packed' },
-        { value: 'transported', label: 'Transported' },
-        { value: 'distributed', label: 'Distributed' },
-    ];
-
     // Get page from URL or default to 1
     const customerUuidFilter = searchParams.get('customerUuid') || null;
     const page = Number(searchParams.get("page")) || 1;

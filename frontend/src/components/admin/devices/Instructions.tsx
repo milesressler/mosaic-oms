@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { List, Code, Button, Text } from "@mantine/core";
+import { useEffect } from "react";
+import { List, Text } from "@mantine/core";
 import {Link} from "react-router-dom";
 
 function Instructions() {
@@ -15,13 +15,9 @@ Exec=chromium-browser --kiosk --noerrdialogs --disable-session-crashed-bubble --
 GNOME-Autostart-enabled=true
 `;
 
-    const [downloadUrl, setDownloadUrl] = useState("");
-
-    // Create a blob URL for the downloadable file
     useEffect(() => {
         const blob = new Blob([fileContent], { type: "text/plain" });
         const url = URL.createObjectURL(blob);
-        setDownloadUrl(url);
         return () => URL.revokeObjectURL(url);
     }, [fileContent]);
 

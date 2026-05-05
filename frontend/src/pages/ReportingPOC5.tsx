@@ -1,43 +1,29 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {
     Container,
     Title,
-    Select,
     Group,
     Card,
     Text,
     Badge,
-    Button,
     Grid,
     Stack,
     Paper,
-    RingProgress,
     SimpleGrid,
     Alert,
-    Tabs,
     Table,
     Progress,
-    ActionIcon,
-    Tooltip,
-    Center,
-    Box,
 } from '@mantine/core';
-import { DatePickerInput } from '@mantine/dates';
-import { AreaChart, BarChart, LineChart, DonutChart, ScatterChart } from '@mantine/charts';
+import { BarChart } from '@mantine/charts';
 import { 
     IconUsers, 
-    IconClock,
     IconTrendingUp,
     IconTrendingDown,
     IconAlertTriangle,
     IconCheck,
-    IconInfoCircle,
     IconTarget,
     IconActivity,
     IconCalendarEvent,
-    IconChartDots,
-    IconReportAnalytics,
-    IconZoomIn
 } from '@tabler/icons-react';
 
 // Predictive analytics mock data

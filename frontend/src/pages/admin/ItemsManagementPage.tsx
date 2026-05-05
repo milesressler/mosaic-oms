@@ -78,7 +78,7 @@ export function ItemsManagementPage() {
 
 
 
-    const handleItemSave = (item: Item) => {
+    const handleItemSave = () => {
         setEditingItem(null);
         refreshData();
     }

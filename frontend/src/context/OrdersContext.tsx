@@ -1,7 +1,5 @@
 import {Order, OrderNotification} from "src/models/types.tsx";
 import React, {createContext, ReactNode, useContext, useState} from "react";
-import useApi from "src/hooks/useApi.tsx";
-import ordersApi from "src/services/ordersApi.tsx";
 import {useSubscription} from "react-stomp-hooks";
 import {DateTime} from "luxon";
 
@@ -25,7 +23,6 @@ interface props {
 
 // Create the provider component
 export const OrdersProvider: React.FC<{ children: ReactNode }> = ({ children }: props) => {
-    const defaultOrderApi = useApi(ordersApi.getOrders);
     const [ orders, setOrders ] = useState<Order[]>([]);
 
     // const x = useNot

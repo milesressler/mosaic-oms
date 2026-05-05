@@ -9,7 +9,7 @@ import {CustomerSearchResult} from "src/models/types.tsx";
 
 interface props {
     onSelect?: (customer: CustomerSearchResult) => void;
-    onSelectCreate?: (firstName: string, lastName: string) => void;
+    onSelectCreate?: (first: string, last: string) => void;
 }
 
 const CustomerSearch  = ({onSelect, onSelectCreate}: props) => {

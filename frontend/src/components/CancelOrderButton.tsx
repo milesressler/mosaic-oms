@@ -10,7 +10,7 @@ const CancelOrderButton = ({ onCancel }: any) => {
         },
     });
 
-    const handleCancel = (values) => {
+    const handleCancel = (values: { comment: string }) => {
         // Call the onCancel function passed as a prop with the comment
         onCancel(values.comment);
         // Close the modal

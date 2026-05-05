@@ -62,18 +62,6 @@ export function DateRangeSelector({
         ];
     };
 
-    // Helper function to convert current state to API params
-    const getDateRangeParams = (): DateRangeParams => {
-        const params: DateRangeParams = { range: dateRange };
-        
-        if (dateRange === 'custom' && customDateRange[0] && customDateRange[1]) {
-            params.startDate = customDateRange[0].toISOString().split('T')[0];
-            params.endDate = customDateRange[1].toISOString().split('T')[0];
-        }
-        
-        return params;
-    };
-
     return (
         <>
             <Group align="flex-end">

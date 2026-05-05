@@ -8,12 +8,12 @@ interface OrderCreationPatternsWidgetProps {
     loading?: boolean;
 }
 
-const OrderCreationPatternsWidget: React.FC<OrderCreationPatternsWidgetProps> = ({ data, loading }) => {
+const OrderCreationPatternsWidget: React.FC<OrderCreationPatternsWidgetProps> = ({ data }) => {
     if (!data || Object.keys(data).length === 0) {
         return null;
     }
 
-    const { chartData, chartSeries, isMonthlyView } = useMemo(() => {
+    const { chartData, chartSeries } = useMemo(() => {
         const timeSlots = Object.keys(data).sort((a, b) => {
             // Parse time strings like "9:00-9:10" and sort by start time
             const timeA = a.split('-')[0];
@@ -104,7 +104,7 @@ const OrderCreationPatternsWidget: React.FC<OrderCreationPatternsWidgetProps> = 
     }
 
     // Helper function to format weekly data as-is
-    function formatWeeklyData(data: OrderCreationPatterns, timeSlots: string[], dates: string[]) {
+    function formatWeeklyData(data: OrderCreationPatterns, timeSlots: string[], _dates: string[]) {
         const result: Record<string, Record<string, number>> = {};
         
         timeSlots.forEach(timeSlot => {

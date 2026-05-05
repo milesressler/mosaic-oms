@@ -13,6 +13,7 @@ const getCustomer = (uuid: string) =>
 const updateCustomer = (uuid: string,  body: {
     showerWaiverSigned?: Date,
     flagged?: boolean,
+    excludeFromMetrics?: boolean,
     obfuscateName?: boolean,
     firstName?: string,
     lastName?: string,

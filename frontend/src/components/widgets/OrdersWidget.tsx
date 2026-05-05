@@ -8,7 +8,7 @@ import { OrderStatus } from "src/models/types.tsx";
 
 const OrdersWidget = () => {
     const getOrdersApi = useApi(ordersApi.getOrdersDashboardViewKiosk);
-    const [counter, setCounter] = useState(0);
+    const [, setCounter] = useState(0);
 
     const refreshInterval = 30000;
     const refreshPercent = refreshInterval / 100;

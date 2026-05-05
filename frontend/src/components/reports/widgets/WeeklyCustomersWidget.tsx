@@ -8,7 +8,7 @@ interface WeeklyCustomersWidgetProps {
     loading?: boolean;
 }
 
-const WeeklyCustomersWidget: React.FC<WeeklyCustomersWidgetProps> = ({ data, loading }) => {
+const WeeklyCustomersWidget: React.FC<WeeklyCustomersWidgetProps> = ({ data }) => {
     if (!data || data.length === 0) {
         return null;
     }

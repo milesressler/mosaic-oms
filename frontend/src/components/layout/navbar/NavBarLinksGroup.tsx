@@ -17,7 +17,7 @@ interface LinksGroupProps {
     link?: string; // New prop for the group's link
 }
 
-export function LinksGroup({ onClick, icon: Icon, rightSection, label, initiallyOpened, links, link }: LinksGroupProps) {
+export function LinksGroup({ onClick, icon: Icon, rightSection, label, initiallyOpened: _initiallyOpened, links, link }: LinksGroupProps) {
     const location = useLocation();
 
 

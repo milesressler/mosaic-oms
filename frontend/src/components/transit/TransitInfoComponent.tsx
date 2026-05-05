@@ -31,7 +31,7 @@ export function TransitInfoComponent({ transitInfo }: TransitInfoComponentProps)
 
         return () => clearInterval(interval);
     }, []);
-    const { hasArrived, diffInMinutes, arrivalTime } = getArrivalData(
+    const { hasArrived, diffInMinutes } = getArrivalData(
         transitInfo.nextArrivalTime,
         currentTime
     );

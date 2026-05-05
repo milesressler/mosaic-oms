@@ -53,7 +53,7 @@ export function OrderTakerDashboard() {
                     } else if (def.type === 'MULTI_SELECT') {
                         attributes[key] = {
                             type:   'multi',
-                            values: rawValue.split(',').map(v => v?.trim()),
+                            values: rawValue.split(',').map((v: string) => v?.trim()),
                         };
                     } else if (def.type === 'TEXT') {
                         attributes[key] = {

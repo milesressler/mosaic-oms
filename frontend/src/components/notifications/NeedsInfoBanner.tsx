@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Alert, Button, Text, Group, Badge, Stack } from '@mantine/core';
-import {IconAlertTriangle, IconBasketSearch, IconQuestionMark, IconSpeakerphone, IconUser} from '@tabler/icons-react';
+import { Alert, Button, Group, Stack } from '@mantine/core';
+import {IconAlertTriangle, IconSpeakerphone} from '@tabler/icons-react';
 import { Link } from 'react-router-dom';
 import { OrderStatus } from 'src/models/types';
 import useApi from 'src/hooks/useApi';

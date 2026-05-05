@@ -11,7 +11,6 @@ import {
     Progress
 } from '@mantine/core';
 import {
-    IconPrinter,
     IconSquare,
     IconCheckbox
 } from '@tabler/icons-react';

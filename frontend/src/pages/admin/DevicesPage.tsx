@@ -96,7 +96,7 @@ const DevicesPage = () => {
             expiration: undefined as Date | undefined,
         },
         validate: {
-            name: (value) => (value.trim().length === 0 ? "Name is required" : null),
+            name: (value: string) => (value.trim().length === 0 ? "Name is required" : null),
             // No validation for expiration because it's optional
         },
     });
@@ -208,7 +208,7 @@ const DevicesPage = () => {
                                                     labels: { confirm: 'Delete', cancel: 'Cancel' },
                                                     confirmProps: { color: 'red' },
                                                     onConfirm: () => {
-                                                        deleteApi.request(device.uuid).then(getDevicesApi.request);
+                                                        deleteApi.request(device.uuid).then(() => getDevicesApi.request);
                                                     },
                                                 })
                                             }

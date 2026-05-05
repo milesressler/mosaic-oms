@@ -301,46 +301,6 @@ const ItemAnalysis: React.FC = () => {
             .sort((a: any, b: any) => new Date(a.weekStart).getTime() - new Date(b.weekStart).getTime());
     };
 
-    // Mock nested breakdown data for drill-down
-    const mockNestedBreakdownData = {
-        size: {
-            'Size 32': { 
-                total: 67, filled: 57, fillRate: 85,
-                breakdown: { color: { 'Blue': 35, 'Black': 20, 'Dark Wash': 12 } }
-            },
-            'Size 30': { 
-                total: 45, filled: 35, fillRate: 78,
-                breakdown: { color: { 'Blue': 23, 'Black': 14, 'Dark Wash': 8 } }
-            },
-            'Size 34': { 
-                total: 38, filled: 35, fillRate: 92,
-                breakdown: { color: { 'Blue': 20, 'Black': 12, 'Dark Wash': 6 } }
-            },
-            'Size 28': { 
-                total: 32, filled: 28, fillRate: 88,
-                breakdown: { color: { 'Blue': 17, 'Black': 10, 'Dark Wash': 5 } }
-            },
-            'Size 36': { 
-                total: 25, filled: 18, fillRate: 72,
-                breakdown: { color: { 'Blue': 13, 'Black': 8, 'Dark Wash': 4 } }
-            }
-        },
-        color: {
-            'Blue': { 
-                total: 142, filled: 118, fillRate: 83,
-                breakdown: { size: { 'Size 32': 35, 'Size 30': 23, 'Size 34': 20, 'Size 28': 17, 'Size 36': 13 } }
-            },
-            'Black': { 
-                total: 78, filled: 65, fillRate: 83,
-                breakdown: { size: { 'Size 32': 20, 'Size 30': 14, 'Size 34': 12, 'Size 28': 10, 'Size 36': 8 } }
-            },
-            'Dark Wash': { 
-                total: 47, filled: 40, fillRate: 85,
-                breakdown: { size: { 'Size 32': 12, 'Size 30': 8, 'Size 34': 6, 'Size 28': 5, 'Size 36': 4 } }
-            }
-        }
-    };
-    
     // Get label for an attribute key: use item_attributes label if key matches, else capitalize key
     const getAttributeLabel = (key: string): string => {
         const match = itemDetailsApi.data?.attributes?.find(attr => attr.key === key);
