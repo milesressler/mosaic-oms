@@ -11,7 +11,7 @@ const getCustomer = (uuid: string) =>
     client.get<Customer>(`/customer/${uuid}`);
 
 const updateCustomer = (uuid: string,  body: {
-    showerWaiverSigned?: Date,
+    showerWaiverSigned?: string | null,
     flagged?: boolean,
     excludeFromMetrics?: boolean,
     obfuscateName?: boolean,
