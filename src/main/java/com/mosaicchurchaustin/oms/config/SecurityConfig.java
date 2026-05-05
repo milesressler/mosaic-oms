@@ -44,7 +44,6 @@ public class SecurityConfig {
     @Autowired
     DeviceService deviceService;
 
-    @Autowired
     @Bean
     public AuthenticationManager authenticationManager(
             final AuthenticationConfiguration authenticationConfiguration) throws Exception {

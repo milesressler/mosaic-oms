@@ -1,0 +1,1 @@
+ALTER TABLE audit_log MODIFY COLUMN additional_info LONGTEXT;
