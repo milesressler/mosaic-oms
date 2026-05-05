@@ -744,7 +744,7 @@ const ItemAnalysis: React.FC = () => {
                                                     </Group>
                                                     
                                                     {secondaryBreakdownAttribute && expandedRows.includes(key) && (
-                                                        <Collapse in={expandedRows.includes(key)}>
+                                                        <Collapse expanded={expandedRows.includes(key)}>
                                                             <Stack gap="xs" pl="xl" pt="xs">
                                                                 {Object.entries(data.breakdown[secondaryBreakdownAttribute] || {}).map(([subKey, subValue]) => (
                                                                     <Group key={subKey} justify="space-between" p="xs" style={{ 

@@ -141,7 +141,7 @@ export function ItemSelection ({currentSelection, onItemSelectionChange}: props)
             {/* Scrollable content */}
             <ScrollArea style={{ flex: 1 }} w="100%">
                 <Box px="sm" pb="md">
-                    <Grid gutter="xs">
+                    <Grid gap="xs">
                         {selectedCategory &&
                             suggestedItemsApi.data &&
                             suggestedItemsApi.data[selectedCategory]

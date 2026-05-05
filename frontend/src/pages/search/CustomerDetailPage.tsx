@@ -36,7 +36,7 @@ const CustomerDetailPage = () => {
     const [customer, setCustomer] = useState<Customer|null>(null);
 
     const [isEditingWaiver, setIsEditingWaiver] = useState(false);
-    const [waiverDate, setWaiverDate] = useState<Date>(new Date());
+    const [waiverDate, setWaiverDate] = useState<string | null>(null);
     const navigate = useNavigate();
 
     const [isEditingName, setIsEditingName] = useState(false);
@@ -86,7 +86,7 @@ const CustomerDetailPage = () => {
 
     const handleStartEdit = () => {
         setIsEditingWaiver(true);
-        setWaiverDate(new Date()); // default to today
+        setWaiverDate(new Date().toISOString().split('T')[0]); // default to today
     };
 
     const handleCancelEdit = () => {
@@ -94,7 +94,7 @@ const CustomerDetailPage = () => {
     };
 
     const handleSaveWaiver = () => {
-        updateCustomerRequest.request(uuid!, {showerWaiverSigned: waiverDate});
+        updateCustomerRequest.request(uuid!, {showerWaiverSigned: waiverDate ? new Date(waiverDate + 'T00:00:00').toISOString() : null});
         setIsEditingWaiver(false);
     };
 
@@ -156,7 +156,7 @@ const CustomerDetailPage = () => {
 
     return (
         <Stack gap="md" px="xs" m={'xs'}>
-            <Grid gutter="md" pos={'relative'}>
+            <Grid gap="md" pos={'relative'}>
                 <LoadingOverlay visible={updateCustomerRequest.loading} />
 
                 <Grid.Col span={{ base: 12, md: 6 }}>
@@ -227,7 +227,7 @@ const CustomerDetailPage = () => {
                         </Group>
 
                         <Divider my={'xs'}/>
-                        <Grid gutter="xs" align="center">
+                        <Grid gap="xs" align="center">
                             <Grid.Col span={6}>
                                 <Text size="sm" fw={500}>
                                     First Seen

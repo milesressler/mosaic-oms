@@ -93,7 +93,7 @@ const DevicesPage = () => {
     const form = useForm({
         initialValues: {
             name: "",
-            expiration: undefined as Date | undefined,
+            expiration: undefined as string | undefined,
         },
         validate: {
             name: (value: string) => (value.trim().length === 0 ? "Name is required" : null),
@@ -113,14 +113,14 @@ const DevicesPage = () => {
     }, [getDevicesApi.data]);
 
     // Handle device creation
-    const handleSubmit = async (values: { name: string; expiration?: Date }) => {
+    const handleSubmit = async (values: { name: string; expiration?: string }) => {
         const now = new Date();
-        if (values.expiration && values.expiration.getTime() <= now.getTime()) {
+        if (values.expiration && new Date(values.expiration).getTime() <= now.getTime()) {
             form.setFieldError("expiration", "Expiration must be in the future");
             return;
         }
         // Convert expiration to ISO string if provided; otherwise send null
-        const expirationIso = values.expiration ? values.expiration.toISOString() : null;
+        const expirationIso = values.expiration ? new Date(values.expiration + 'T00:00:00').toISOString() : null;
         createDeviceApi.request(values.name, expirationIso);
     };
 

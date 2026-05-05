@@ -29,7 +29,7 @@ export const AddToShowerQueueModal = ({ opened, onClose, onSuccess }: Props) => 
 
     const [activeStep, setActiveStep] = useState(0);
     const [selectedCustomer, setSelectedCustomer] = useState<ShowerCustomer | null>(null);
-    const [waiverDate, setWaiverDate] = useState<Date | null>(null);
+    const [waiverDate, setWaiverDate] = useState<string | null>(null);
     const [isCreatingCustomer, setIsCreatingCustomer] = useState(false);
 
     const form = useForm({
@@ -73,12 +73,12 @@ export const AddToShowerQueueModal = ({ opened, onClose, onSuccess }: Props) => 
     const handleSaveWaiver = async () => {
         if (!selectedCustomer || !waiverDate) return;
         const updated = await updateCustomerApi.request(selectedCustomer.uuid, {
-            showerWaiverSigned: waiverDate,
+            showerWaiverSigned: waiverDate ? new Date(waiverDate + 'T00:00:00').toISOString() : null,
         });
         if (updated) {
             setSelectedCustomer({
                 ...selectedCustomer,
-                showerWaiverCompleted: waiverDate.toISOString(),
+                showerWaiverCompleted: waiverDate ?? undefined,
             });
             setActiveStep(2);
         }

@@ -27,7 +27,7 @@ import ProcessTimesWidget from 'src/components/reports/widgets/ProcessTimesWidge
 const SystemReports: React.FC = () => {
     const [dateRange, setDateRange] = useState<string>('6weeks');
     const [aiPromoDismissed, setAiPromoDismissed] = useLocalStorage({ key: 'ai-query-promo-dismissed', defaultValue: false });
-    const [customDateRange, setCustomDateRange] = useState<[Date | null, Date | null]>([null, null]);
+    const [customDateRange, setCustomDateRange] = useState<[string | null, string | null]>([null, null]);
     
     const systemMetricsApi = useApi(reportsApi.getSystemMetrics);
     const weeklyCustomersApi = useApi(reportsApi.getWeeklyCustomersServed);
@@ -41,8 +41,8 @@ const SystemReports: React.FC = () => {
         const params: any = { range: dateRange };
         
         if (dateRange === 'custom' && customDateRange[0] && customDateRange[1]) {
-            params.startDate = customDateRange[0].toISOString().split('T')[0];
-            params.endDate = customDateRange[1].toISOString().split('T')[0];
+            params.startDate = customDateRange[0];
+            params.endDate = customDateRange[1];
         }
         
         systemMetricsApi.request(params);
@@ -94,8 +94,8 @@ const SystemReports: React.FC = () => {
         const params: any = { range: dateRange };
         
         if (dateRange === 'custom' && customDateRange[0] && customDateRange[1]) {
-            params.startDate = customDateRange[0].toISOString().split('T')[0];
-            params.endDate = customDateRange[1].toISOString().split('T')[0];
+            params.startDate = customDateRange[0];
+            params.endDate = customDateRange[1];
         }
         
         systemMetricsApi.request(params);

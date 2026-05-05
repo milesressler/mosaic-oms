@@ -133,6 +133,13 @@ npm run test:qa                     # Playwright tests (QA)
 npm run test:prod                   # Playwright tests (production)
 ```
 
+### Android Emulator Testing
+Vite binds to all interfaces (`host: true` in vite.config.ts), but Auth0 requires a secure origin so you can't use `10.0.2.2:5173` directly. Instead, use `adb reverse` to forward the emulator's localhost to the host machine:
+```bash
+~/Library/Android/sdk/platform-tools/adb reverse tcp:5173 tcp:5173
+```
+Then access the app at `http://localhost:5173` inside the emulator.
+
 ### Database
 - Local: MySQL via Docker Compose on port 33060
 - Migrations: Flyway (`src/main/resources/db/migration/`) - Currently ~40 migration files

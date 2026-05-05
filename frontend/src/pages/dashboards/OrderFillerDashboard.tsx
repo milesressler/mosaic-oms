@@ -58,7 +58,7 @@ export function OrderFillerDashboard() {
             {
                 !featuresLoading && !ordersOpen && <OrdersClosedAlert/>
             }
-            <Grid gutter={0}>
+            <Grid gap={0}>
                 <OrdersTable
                     statusFilter={[OrderStatus.ACCEPTED, OrderStatus.PENDING_ACCEPTANCE, OrderStatus.PACKING]}
                     view={OrdersView.FILLER}

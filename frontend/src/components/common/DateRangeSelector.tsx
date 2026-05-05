@@ -10,9 +10,9 @@ export interface DateRangeParams {
 
 interface DateRangeSelectorProps {
     dateRange: string;
-    customDateRange: [Date | null, Date | null];
+    customDateRange: [string | null, string | null];
     onDateRangeChange: (range: string) => void;
-    onCustomDateRangeChange: (dates: [Date | null, Date | null]) => void;
+    onCustomDateRangeChange: (dates: [string | null, string | null]) => void;
     onRefresh?: () => void;
     showRefreshButton?: boolean;
 }
@@ -101,14 +101,14 @@ export { DateRangeSelector as default };
 // Helper hook for managing date range state
 export function useDateRangeState(defaultRange: string = '6weeks') {
     const [dateRange, setDateRange] = React.useState<string>(defaultRange);
-    const [customDateRange, setCustomDateRange] = React.useState<[Date | null, Date | null]>([null, null]);
-    
+    const [customDateRange, setCustomDateRange] = React.useState<[string | null, string | null]>([null, null]);
+
     const getDateRangeParams = (): DateRangeParams => {
         const params: DateRangeParams = { range: dateRange };
-        
+
         if (dateRange === 'custom' && customDateRange[0] && customDateRange[1]) {
-            params.startDate = customDateRange[0].toISOString().split('T')[0];
-            params.endDate = customDateRange[1].toISOString().split('T')[0];
+            params.startDate = customDateRange[0];
+            params.endDate = customDateRange[1];
         }
         
         return params;
