@@ -126,9 +126,9 @@ export function ItemSelection ({currentSelection, onItemSelectionChange}: props)
                 background: 'white', // to cover what's underneath
                 paddingBottom: 8
             }}>
-                <ScrollArea scrollbarSize={6} type="scroll" offsetScrollbars >
+                <ScrollArea scrollbarSize={6} type="scroll" offsetScrollbars>
                     <SegmentedControl
-                        fullWidth
+                        style={{ minWidth: '100%' }}
                         value={selectedCategory || undefined}
                         onChange={(val) => setSelectedCategory(val)}
                         data={Object.values(Category).map((category) => ({
