@@ -29,7 +29,7 @@ import {
     IconDeviceMobile,
     IconDeviceLaptop,
     IconTrash,
-    IconDeviceDesktop, IconAlertTriangle,
+    IconDeviceDesktop, IconAlertTriangle, IconRefresh,
 } from "@tabler/icons-react";
 import { Device } from "src/models/types.tsx";
 import {DateTime} from "luxon";
@@ -236,22 +236,30 @@ const DevicesPage = () => {
                                     <Group
                                         gap="xs"
                                         mb="xs"
-                                        title={device.expiration ? new Date(device.expiration).toLocaleString() : ""}
+                                        title={device.autoRenew ? "Auto-renewing every 364 days" : (device.expiration ? new Date(device.expiration).toLocaleString() : "")}
                                     >
-                                        <Text size="xs" c="dimmed">
-                                            {device.expiration
-                                                ? `Expires ${DateTime.fromISO(device.expiration).toRelative()}`
-                                                : "No expiration"}
-                                        </Text>
-                                        {device.expiration && (() => {
-                                            const expirationDate = DateTime.fromISO(device.expiration);
-                                            const diffInDays = expirationDate.diffNow("days").days;
-                                            // Only show the warning if the expiration is in the future and within 7 days.
-                                            if (diffInDays > 0 && diffInDays < 7) {
-                                                return <IconAlertTriangle size={16} color="orange" />;
-                                            }
-                                            return null;
-                                        })()}
+                                        {device.autoRenew ? (
+                                            <>
+                                                <IconRefresh size={14} color="gray" />
+                                                <Text size="xs" c="dimmed">Auto-renewing</Text>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <Text size="xs" c="dimmed">
+                                                    {device.expiration
+                                                        ? `Expires ${DateTime.fromISO(device.expiration).toRelative()}`
+                                                        : "No expiration"}
+                                                </Text>
+                                                {device.expiration && (() => {
+                                                    const expirationDate = DateTime.fromISO(device.expiration);
+                                                    const diffInDays = expirationDate.diffNow("days").days;
+                                                    if (diffInDays > 0 && diffInDays < 7) {
+                                                        return <IconAlertTriangle size={16} color="orange" />;
+                                                    }
+                                                    return null;
+                                                })()}
+                                            </>
+                                        )}
                                     </Group>
                                     <Divider my="0" />
 
