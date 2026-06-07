@@ -15,11 +15,14 @@ import org.springframework.stereotype.Service;
 
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Optional;
 import java.util.UUID;
 
 @Service
 public class DeviceService {
+
+    public static final long DEVICE_EXPIRATION_REFRESH_DAYS = 364;
 
     @Autowired
     private DeviceRepository deviceRepository;
@@ -83,5 +86,10 @@ public class DeviceService {
     public Optional<DeviceEntity> validateDeviceToken(final String token) {
         final String hashed = getSha256hex(token);
         return deviceRepository.findByHashedToken(hashed);
+    }
+
+    public DeviceEntity refreshDeviceExpiration(final DeviceEntity device) {
+        device.setExpiration(Instant.now().plus(DEVICE_EXPIRATION_REFRESH_DAYS, ChronoUnit.DAYS));
+        return deviceRepository.save(device);
     }
 }
