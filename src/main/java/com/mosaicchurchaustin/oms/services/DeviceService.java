@@ -55,6 +55,9 @@ public class DeviceService {
         if (request.expireAt() != null) {
             final var expireAtCalendar = Instant.ofEpochMilli(request.expireAt().toEpochSecond() * 1000);
             device.setExpiration(expireAtCalendar);
+        } else {
+            device.setAutoRenew(true);
+            device.setExpiration(Instant.now().plus(DEVICE_EXPIRATION_REFRESH_DAYS, ChronoUnit.DAYS));
         }
 
         device.setRawToken(UUID.randomUUID().toString());

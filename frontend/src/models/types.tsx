@@ -252,6 +252,7 @@ export interface FeatureConfig {
 export interface Device extends BaseObject{
     userAgent?: string,
     name: string,
+    autoRenew?: boolean,
     expiration?: string,
     lastAccessed?: string,
 }

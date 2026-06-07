@@ -46,4 +46,7 @@ public class DeviceEntity extends BaseUuidEntity {
 
     @Column(name = "expiration")
     Instant expiration;
+
+    @Column(name = "auto_renew")
+    boolean autoRenew;
 }

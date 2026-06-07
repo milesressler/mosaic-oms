@@ -46,8 +46,8 @@ public class DeviceTokenAuthenticationFilter extends OncePerRequestFilter {
                             DeviceEntity device = deviceOpt.get();
                             deviceService.updateDeviceAccess(device.getUuid());
 
-                            // Refresh cookie if expiration is within 30 days
-                            if (device.getExpiration() != null) {
+                            // Auto-renewing devices: refresh cookie when within 30 days of expiration
+                            if (device.isAutoRenew() && device.getExpiration() != null) {
                                 final Instant thirtyDaysFromNow = Instant.now().plus(30, ChronoUnit.DAYS);
                                 if (device.getExpiration().isBefore(thirtyDaysFromNow)) {
                                     device = deviceService.refreshDeviceExpiration(device);
