@@ -45,6 +45,10 @@ posthog:
 
 anthropic:
   api-key: ${ANTHROPIC_API_KEY:}
+
+slack:
+  webhook:
+    bugs: ${SLACK_WEBHOOK_BUGS:}
 management:
   endpoints:
     web:
