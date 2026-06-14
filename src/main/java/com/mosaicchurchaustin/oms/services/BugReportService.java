@@ -1,5 +1,6 @@
 package com.mosaicchurchaustin.oms.services;
 
+import com.mosaicchurchaustin.oms.client.GitHubIssueClient;
 import com.mosaicchurchaustin.oms.client.SlackWebhookClient;
 import com.mosaicchurchaustin.oms.data.entity.BaseUuidEntity;
 import com.mosaicchurchaustin.oms.data.entity.BugReportEntity;
@@ -44,6 +45,9 @@ public class BugReportService {
     @Autowired
     SlackWebhookClient slackWebhookClient;
 
+    @Autowired
+    GitHubIssueClient gitHubIssueClient;
+
     @Transactional
     public BugReportResponse createBugReport(final CreateBugReportRequest request) {
         final UserEntity reporter = userService.currentUser();
@@ -62,11 +66,20 @@ public class BugReportService {
             Instant.now().plus(Duration.ofSeconds(10))
         );
 
+        final String adminUrl = frontendUrl + "/admin/bugs";
+
         slackWebhookClient.postBugReport(
             reporter.getName(),
             savedBugReport.getTitle(),
             savedBugReport.getDescription(),
-            frontendUrl + "/admin/bugs"
+            adminUrl
+        );
+
+        gitHubIssueClient.createBugReportIssue(
+            savedBugReport.getTitle(),
+            savedBugReport.getDescription(),
+            reporter.getName(),
+            adminUrl
         );
 
         return BugReportResponse.from(savedBugReport);

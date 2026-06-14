@@ -1,0 +1,32 @@
+name: Claude Auto-Fix Bug Report
+
+on:
+  issues:
+    types: [opened]
+
+jobs:
+  auto-fix:
+    # Only run for issues auto-created from the OMS bug report system
+    if: contains(github.event.issue.body, '<!-- mosaic-oms-bug-report -->')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+    steps:
+      - uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          prompt: |
+            A user submitted this bug report from the Mosaic OMS application (a Spring Boot + React order management system for a street ministry).
+
+            Review the bug report in this issue, then:
+
+            1. Explore the codebase to find the likely root cause
+            2. Assess the complexity of the fix:
+               - **Small or Medium** (a few files, clear root cause, no schema changes needed): implement the fix and open a pull request targeting the `main` branch
+               - **Large or Unclear** (touches many systems, requires architectural changes, ambiguous root cause, or needs a DB migration you're not confident about): post a comment on this issue summarizing what you found and what a developer should investigate — do NOT attempt a fix
+            3. If you open a PR, keep it focused and minimal — do not refactor surrounding code
+
+            The stack: Java 17 / Spring Boot 3 backend in `src/main/java/`, React 18 / TypeScript frontend in `frontend/src/`. DB migrations are in `src/main/resources/db/migration/` (Flyway).
+          claude_args: "--max-turns 20"

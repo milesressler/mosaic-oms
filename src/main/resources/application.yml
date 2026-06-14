@@ -49,6 +49,13 @@ anthropic:
 slack:
   webhook:
     bugs: ${SLACK_WEBHOOK_BUGS:}
+
+github:
+  api:
+    token: ${GITHUB_TOKEN:}
+  repo: milesressler/mosaic-oms
+  auto-issue:
+    enabled: ${GITHUB_AUTO_ISSUE_ENABLED:false}
 management:
   endpoints:
     web:
