@@ -12,6 +12,7 @@ public record DeviceResponse(
         String uuid,
         String name,
         String userAgent,
+        boolean autoRenew,
         OffsetDateTime expiration,
         OffsetDateTime lastAccessed
 ) {
@@ -19,7 +20,8 @@ public record DeviceResponse(
         final DeviceResponse.DeviceResponseBuilder builder = DeviceResponse.builder()
                 .uuid(entity.getUuid())
                 .userAgent(entity.getUserAgent())
-                .name(entity.getName());
+                .name(entity.getName())
+                .autoRenew(entity.isAutoRenew());
 
         Optional.ofNullable(entity.getExpiration()).map(expiration -> expiration.atOffset(ZoneOffset.UTC)).ifPresent(builder::expiration);
         Optional.ofNullable(entity.getLastAccessed()).map(lastAccess -> lastAccess.atOffset(ZoneOffset.UTC)).ifPresent(builder::lastAccessed);

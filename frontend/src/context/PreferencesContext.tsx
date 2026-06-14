@@ -19,7 +19,7 @@ export const PreferencesProvider: React.FC<{ children: ReactNode }> = ({ childre
 
     const [notificationsEnabled, setNotificationsEnabled] = useLocalStorage({
         key: 'notificationsEnabled',
-        defaultValue: true,
+        defaultValue: false,
     });
 
         return (

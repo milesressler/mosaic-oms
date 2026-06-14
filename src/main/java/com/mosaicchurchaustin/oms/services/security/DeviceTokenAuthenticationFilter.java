@@ -16,6 +16,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Optional;
 
@@ -41,11 +43,28 @@ public class DeviceTokenAuthenticationFilter extends OncePerRequestFilter {
                         // Validate the device token using your service.
                         final Optional<DeviceEntity> deviceOpt = deviceService.validateDeviceToken(deviceToken);
                         if (deviceOpt.isPresent()) {
-                            deviceService.updateDeviceAccess(deviceOpt.get().getUuid());
+                            DeviceEntity device = deviceOpt.get();
+                            deviceService.updateDeviceAccess(device.getUuid());
+
+                            // Auto-renewing devices: refresh cookie when within 30 days of expiration
+                            if (device.isAutoRenew() && device.getExpiration() != null) {
+                                final Instant thirtyDaysFromNow = Instant.now().plus(30, ChronoUnit.DAYS);
+                                if (device.getExpiration().isBefore(thirtyDaysFromNow)) {
+                                    device = deviceService.refreshDeviceExpiration(device);
+                                    final Cookie refreshedCookie = new Cookie("DEVICE_TOKEN", cookie.getValue());
+                                    refreshedCookie.setHttpOnly(true);
+                                    refreshedCookie.setSecure(true);
+                                    refreshedCookie.setPath("/");
+                                    final long diffInMillis = device.getExpiration().toEpochMilli() - Instant.now().toEpochMilli();
+                                    refreshedCookie.setMaxAge((int) (diffInMillis / 1000));
+                                    response.addCookie(refreshedCookie);
+                                }
+                            }
+
                             // Create an Authentication token with KIOSK authority
                             final List<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority(MosaicAuthority.KIOSK.getAuthority()));
                             final UsernamePasswordAuthenticationToken authToken =
-                                    new UsernamePasswordAuthenticationToken(deviceOpt.get(), null, authorities);
+                                    new UsernamePasswordAuthenticationToken(device, null, authorities);
                             SecurityContextHolder.getContext().setAuthentication(authToken);
                         }
                     }

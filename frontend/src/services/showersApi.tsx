@@ -10,7 +10,7 @@ const getShowerQueue = () =>
 
 // GET /reservations/shower/queue
 const getPublicShowerQueue = () =>
-    client.get<ShowerQueueResponse>("/reservations/shower/public");
+    client.get<ShowerQueueResponse>("/reservations/shower/public", { withCredentials: true });
 
 // GET /reservations/shower
 const getAllReservations = (params?: object) =>
