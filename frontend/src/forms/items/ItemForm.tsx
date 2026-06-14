@@ -1,5 +1,5 @@
-import { ActionIcon, Button, Group, Pill, PillsInput, Select, Stack, Switch, Text, TextInput, Card, Divider, rem } from "@mantine/core";
-import { IconX, IconFolder, IconArrowUp, IconArrowDown } from "@tabler/icons-react";
+import { ActionIcon, Alert, Button, Group, Pill, PillsInput, Select, Stack, Switch, Text, TextInput, Card, Divider, rem } from "@mantine/core";
+import { IconX, IconFolder, IconArrowUp, IconArrowDown, IconAlertCircle, IconTableImport } from "@tabler/icons-react";
 import useApi from "src/hooks/useApi.tsx";
 import itemsApi from "src/services/itemsApi.tsx";
 import { AdminItem, Category, categoryDisplayNames, Item } from "src/models/types.tsx";
@@ -578,8 +578,24 @@ export function ItemForm({ onItemSave, item }: Props) {
                     })}
                 </Stack>
 
-                <Button 
-                    type="submit" 
+                {(createApi.error || updateApi.error) && (
+                    <Alert color="red" icon={<IconAlertCircle size={16} />} title="Error">
+                        {createApi.error?.toLowerCase().includes('already exists') ? (
+                            <Stack gap={4}>
+                                <Text size="sm">This item already exists.</Text>
+                                <Text size="sm">
+                                    If it&apos;s not visible in the list, it may be an unmanaged item. Enable{' '}
+                                    <strong>Show Unmanaged Items</strong> and look for the{' '}
+                                    <IconTableImport size={14} style={{ verticalAlign: 'middle' }} /> icon to add it to managed inventory.
+                                </Text>
+                            </Stack>
+                        ) : (
+                            <Text size="sm">{createApi.error || updateApi.error}</Text>
+                        )}
+                    </Alert>
+                )}
+                <Button
+                    type="submit"
                     loading={createApi.loading || updateApi.loading}
                     size="md"
                     fullWidth
