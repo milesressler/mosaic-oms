@@ -1,5 +1,5 @@
-import { ActionIcon, Button, Group, Pill, PillsInput, Select, Stack, Switch, Text, TextInput, Card, Divider, rem } from "@mantine/core";
-import { IconX, IconFolder, IconArrowUp, IconArrowDown } from "@tabler/icons-react";
+import { ActionIcon, Alert, Button, Group, Pill, PillsInput, Select, Stack, Switch, Text, TextInput, Card, Divider, rem } from "@mantine/core";
+import { IconX, IconFolder, IconArrowUp, IconArrowDown, IconAlertCircle } from "@tabler/icons-react";
 import useApi from "src/hooks/useApi.tsx";
 import itemsApi from "src/services/itemsApi.tsx";
 import { AdminItem, Category, categoryDisplayNames, Item } from "src/models/types.tsx";
@@ -38,7 +38,7 @@ interface Props {
 
 
 export function ItemForm({ onItemSave, item }: Props) {
-    const createApi = useApi(itemsApi.createItem);
+    const createApi = useApi(itemsApi.createAdminItem);
     const updateApi = useApi(itemsApi.updateAdminItem);
 
     // Convert existing attributes to new format
@@ -147,8 +147,8 @@ export function ItemForm({ onItemSave, item }: Props) {
 
     const handleSubmit = async (values: FormOrderItem) => {
         const backendData = convertToBackendFormat(values);
-        
-        if (!item?.description) {
+
+        if (!item?.id) {
             createApi.request(backendData);
         } else {
             updateApi.request(item.id, backendData);
@@ -206,12 +206,13 @@ export function ItemForm({ onItemSave, item }: Props) {
                         <Text fw={500}>Attributes</Text>
                         <Group gap="xs" style={{ flexWrap: 'wrap' }}>
                             <Button
+                                type="button"
                                 variant="outline"
                                 size="sm"
                                 style={{ flex: '1 1 auto', minWidth: rem(120) }}
                                 onClick={() =>
-                                    form.insertListItem("attributesAndGroups", { 
-                                        type: 'attribute', 
+                                    form.insertListItem("attributesAndGroups", {
+                                        type: 'attribute',
                                         attribute: { label: "", options: [], required: false, attributeType: 'SINGLE_SELECT' }
                                     })
                                 }
@@ -219,17 +220,18 @@ export function ItemForm({ onItemSave, item }: Props) {
                                 Add Attribute
                             </Button>
                             <Button
+                                type="button"
                                 variant="outline"
                                 size="sm"
                                 leftSection={<IconFolder size={16} />}
                                 style={{ flex: '1 1 auto', minWidth: rem(150) }}
                                 onClick={() =>
-                                    form.insertListItem("attributesAndGroups", { 
-                                        type: 'group', 
-                                        group: { 
-                                            id: `group-${Date.now()}`, 
-                                            name: "", 
-                                            attributes: [] 
+                                    form.insertListItem("attributesAndGroups", {
+                                        type: 'group',
+                                        group: {
+                                            id: `group-${Date.now()}`,
+                                            name: "",
+                                            attributes: []
                                         }
                                     })
                                 }
@@ -273,6 +275,7 @@ export function ItemForm({ onItemSave, item }: Props) {
                                             <Text size="sm" fw={500} c="dimmed">Attribute</Text>
                                             <Group gap={4}>
                                                 <ActionIcon
+                                                    type="button"
                                                     variant="subtle"
                                                     size="sm"
                                                     onClick={moveUp}
@@ -282,6 +285,7 @@ export function ItemForm({ onItemSave, item }: Props) {
                                                     <IconArrowUp size={14} />
                                                 </ActionIcon>
                                                 <ActionIcon
+                                                    type="button"
                                                     variant="subtle"
                                                     size="sm"
                                                     onClick={moveDown}
@@ -291,6 +295,7 @@ export function ItemForm({ onItemSave, item }: Props) {
                                                     <IconArrowDown size={14} />
                                                 </ActionIcon>
                                                 <ActionIcon
+                                                    type="button"
                                                     color="red"
                                                     variant="light"
                                                     size="sm"
@@ -406,6 +411,7 @@ export function ItemForm({ onItemSave, item }: Props) {
                                             </Group>
                                             <Group gap={4}>
                                                 <ActionIcon
+                                                    type="button"
                                                     variant="subtle"
                                                     size="sm"
                                                     onClick={moveUp}
@@ -415,6 +421,7 @@ export function ItemForm({ onItemSave, item }: Props) {
                                                     <IconArrowUp size={14} />
                                                 </ActionIcon>
                                                 <ActionIcon
+                                                    type="button"
                                                     variant="subtle"
                                                     size="sm"
                                                     onClick={moveDown}
@@ -424,6 +431,7 @@ export function ItemForm({ onItemSave, item }: Props) {
                                                     <IconArrowDown size={14} />
                                                 </ActionIcon>
                                                 <ActionIcon
+                                                    type="button"
                                                     color="red"
                                                     variant="light"
                                                     size="sm"
@@ -460,6 +468,7 @@ export function ItemForm({ onItemSave, item }: Props) {
                                                     <Group justify="space-between" align="center">
                                                         <Text size="xs" fw={500} c="dimmed">Group Attribute</Text>
                                                         <ActionIcon
+                                                            type="button"
                                                             color="red"
                                                             variant="light"
                                                             size="xs"
@@ -557,6 +566,7 @@ export function ItemForm({ onItemSave, item }: Props) {
 
                                         {/* Add Attribute to Group Button */}
                                         <Button
+                                            type="button"
                                             variant="light"
                                             size="sm"
                                             fullWidth
@@ -578,13 +588,19 @@ export function ItemForm({ onItemSave, item }: Props) {
                     })}
                 </Stack>
 
-                <Button 
-                    type="submit" 
+                {(createApi.error || updateApi.error) && (
+                    <Alert icon={<IconAlertCircle size={16} />} color="red" title="Save failed">
+                        {createApi.error || updateApi.error}
+                    </Alert>
+                )}
+
+                <Button
+                    type="submit"
                     loading={createApi.loading || updateApi.loading}
                     size="md"
                     fullWidth
                 >
-                    {item ? "Update" : "Create"} Item
+                    {item?.id ? "Update" : "Create"} Item
                 </Button>
             </Stack>
         </form>
