@@ -1,5 +1,6 @@
 package com.mosaicchurchaustin.oms.services;
 
+import com.mosaicchurchaustin.oms.client.SlackWebhookClient;
 import com.mosaicchurchaustin.oms.data.entity.BaseUuidEntity;
 import com.mosaicchurchaustin.oms.data.entity.BugReportEntity;
 import com.mosaicchurchaustin.oms.data.entity.user.UserEntity;
@@ -10,6 +11,7 @@ import com.mosaicchurchaustin.oms.repositories.BugReportRepository;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -24,6 +26,9 @@ import java.util.Optional;
 @Slf4j
 public class BugReportService {
 
+    @Value("${mosaic.oms.frontend.url}")
+    private String frontendUrl;
+
     @Autowired
     BugReportRepository bugReportRepository;
 
@@ -35,6 +40,9 @@ public class BugReportService {
 
     @Autowired
     TaskScheduler taskScheduler;
+
+    @Autowired
+    SlackWebhookClient slackWebhookClient;
 
     @Transactional
     public BugReportResponse createBugReport(final CreateBugReportRequest request) {
@@ -48,13 +56,19 @@ public class BugReportService {
                 .build();
 
         final BugReportEntity savedBugReport = bugReportRepository.save(bugReport);
-        
-        // Schedule PostHog event ID lookup 10 seconds after creation
+
         taskScheduler.schedule(
             () -> updatePostHogEventIdForBug(savedBugReport.getUuid()),
             Instant.now().plus(Duration.ofSeconds(10))
         );
-        
+
+        slackWebhookClient.postBugReport(
+            reporter.getName(),
+            savedBugReport.getTitle(),
+            savedBugReport.getDescription(),
+            frontendUrl + "/admin/bugs"
+        );
+
         return BugReportResponse.from(savedBugReport);
     }
 
