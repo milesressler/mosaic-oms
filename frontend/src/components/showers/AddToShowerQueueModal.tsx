@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Modal, Box, Stepper, Button, Group, Text, TextInput } from "@mantine/core";
 import { DateInput } from "@mantine/dates";
 import { useForm } from "@mantine/form";
+import { DateTime } from "luxon";
 import useApi from "src/hooks/useApi";
 import showersApi from "src/services/showersApi";
 import customersApi from "src/services/customersApi";
@@ -26,6 +27,13 @@ export const AddToShowerQueueModal = ({ opened, onClose, onSuccess }: Props) => 
     const createReservationApi = useApi(showersApi.createReservation);
     const updateCustomerApi = useApi(customersApi.updateCustomer);
     const createCustomerApi = useApi(customersApi.createCustomer);
+    const showerQueueApi = useApi(showersApi.getShowerQueue);
+
+    useEffect(() => {
+        if (opened) {
+            showerQueueApi.request();
+        }
+    }, [opened]);
 
     const [activeStep, setActiveStep] = useState(0);
     const [selectedCustomer, setSelectedCustomer] = useState<ShowerCustomer | null>(null);
@@ -171,9 +179,21 @@ export const AddToShowerQueueModal = ({ opened, onClose, onSuccess }: Props) => 
 
                     <Stepper.Step label="Review" description="Confirm & Add">
                         <Box>
-                            <Text mb="md">
+                            <Text mb="xs">
                                 Add {selectedCustomer?.firstName} {selectedCustomer?.lastName} to the shower queue?
                             </Text>
+                            {showerQueueApi.data && (
+                                <Box mb="md" p="sm" style={{ background: 'var(--mantine-color-gray-0)', borderRadius: 'var(--mantine-radius-sm)' }}>
+                                    <Text size="sm" c="dimmed">
+                                        {showerQueueApi.data.queue.length === 0
+                                            ? 'No one is currently waiting.'
+                                            : `${showerQueueApi.data.queue.length} ${showerQueueApi.data.queue.length === 1 ? 'person' : 'people'} currently waiting.`}
+                                    </Text>
+                                    <Text size="sm" fw={500} mt={4}>
+                                        Estimated shower time: {DateTime.fromISO(showerQueueApi.data.nextEstimatedStart).toLocaleString(DateTime.TIME_SIMPLE)}
+                                    </Text>
+                                </Box>
+                            )}
                             <Group justify="right">
                                 <Button variant="default" onClick={() => setActiveStep(selectedCustomer?.showerWaiverCompleted ? 1 : 0)}>
                                     Back

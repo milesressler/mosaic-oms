@@ -182,7 +182,8 @@ public class ShowersService {
         }
 
         // 8) Return combined response
-        return new ShowerQueueResponse(stalls, queueDto);
+        final Instant nextEstimatedStart = schedule.isEmpty() ? now : schedule.get(0);
+        return new ShowerQueueResponse(stalls, queueDto, nextEstimatedStart);
     }
 
     public ShowerQueueResponse getShowerQueue(Pageable pageable) {
@@ -225,7 +226,8 @@ public class ShowersService {
             Collections.sort(schedule);
         }
 
-        return new ShowerQueueResponse(stalls, queue);
+        final Instant nextEstimatedStart = schedule.isEmpty() ? now : schedule.get(0);
+        return new ShowerQueueResponse(stalls, queue, nextEstimatedStart);
     }
 
 

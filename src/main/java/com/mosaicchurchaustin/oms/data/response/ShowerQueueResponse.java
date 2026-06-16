@@ -10,7 +10,8 @@ import java.util.List;
  */
 public record ShowerQueueResponse(
         List<StallStatus> stalls,
-        List<QueueEntryResponse> queue
+        List<QueueEntryResponse> queue,
+        Instant nextEstimatedStart
 ) {
 
     /**

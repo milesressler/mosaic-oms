@@ -304,6 +304,7 @@ export interface QueueEntryResponse {
 export interface ShowerQueueResponse {
     stalls: StallStatus[];
     queue: QueueEntryResponse[];
+    nextEstimatedStart: string;  // ISO timestamp for when the next person added would start
 }
 
 
