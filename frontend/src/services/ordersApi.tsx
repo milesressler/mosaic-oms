@@ -1,8 +1,10 @@
 import client from "./client";
 import {
+    CreateSubstitutionRequest,
     Order,
     OrderDetails,
     OrderFeedItem,
+    OrderItemSubstitution,
     OrderRequest,
     OrderStatus,
     Page,
@@ -24,6 +26,10 @@ const changeAssignee = (uuid: string, unassign: boolean) => client.put<Order>(`/
 const updateOrderDetails = (uuid: string, data: OrderRequest) => client.put(`/order/${uuid}`, data);
 const updateOrderItem = (id: number) => client.put(`/orderitem/${id}`);
 const updateOrderItems = (data: object) => client.put(`/orderitem/quantity/bulk`, data);
+const addSubstitution = (orderItemId: number, data: CreateSubstitutionRequest) =>
+    client.post<OrderItemSubstitution>(`/orderitem/${orderItemId}/substitution`, data);
+const removeSubstitution = (orderItemId: number, substitutionUuid: string) =>
+    client.delete(`/orderitem/${orderItemId}/substitution/${substitutionUuid}`);
 const print = (uuid: string, state: OrderStatus) => client.post(`/order/${uuid}/print/${state}`, {});
 const getLabel = (uuid: string, state: OrderStatus) => client.get(`/order/${uuid}/label/${state}`, { responseType: 'blob' });
 
@@ -47,4 +53,6 @@ export default {
     getOrdersDashboardViewKiosk,
     print,
     getLabel,
+    addSubstitution,
+    removeSubstitution,
 };

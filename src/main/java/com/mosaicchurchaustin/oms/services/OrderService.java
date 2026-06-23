@@ -7,9 +7,11 @@ import com.mosaicchurchaustin.oms.data.entity.order.OrderEntity;
 import com.mosaicchurchaustin.oms.data.entity.order.OrderEventType;
 import com.mosaicchurchaustin.oms.data.entity.order.OrderHistoryEntity;
 import com.mosaicchurchaustin.oms.data.entity.order.OrderItemEntity;
+import com.mosaicchurchaustin.oms.data.entity.order.OrderItemSubstitutionEntity;
 import com.mosaicchurchaustin.oms.data.entity.order.OrderStatus;
 import com.mosaicchurchaustin.oms.data.entity.user.UserEntity;
 import com.mosaicchurchaustin.oms.data.request.CreateOrderRequest;
+import com.mosaicchurchaustin.oms.data.request.CreateSubstitutionRequest;
 import com.mosaicchurchaustin.oms.data.request.OrderItemRequest;
 import com.mosaicchurchaustin.oms.data.request.UpdateOrderItemRequest;
 import com.mosaicchurchaustin.oms.data.request.UpdateOrderRequest;
@@ -19,6 +21,7 @@ import com.mosaicchurchaustin.oms.repositories.CustomerRepository;
 import com.mosaicchurchaustin.oms.repositories.ItemRepository;
 import com.mosaicchurchaustin.oms.repositories.OrderHistoryRepository;
 import com.mosaicchurchaustin.oms.repositories.OrderItemRepository;
+import com.mosaicchurchaustin.oms.repositories.OrderItemSubstitutionRepository;
 import com.mosaicchurchaustin.oms.repositories.OrderRepository;
 import com.mosaicchurchaustin.oms.services.common.CustomerResolver;
 import com.mosaicchurchaustin.oms.specifications.OrderSpecBuilder;
@@ -53,6 +56,9 @@ public class OrderService {
 
     @Autowired
     OrderItemRepository orderItemRepository;
+
+    @Autowired
+    OrderItemSubstitutionRepository orderItemSubstitutionRepository;
 
     @Autowired
     OrderHistoryRepository orderHistoryRepository;
@@ -140,6 +146,41 @@ public class OrderService {
         );
         return orderEntity;
     }
+    @Transactional
+    public OrderItemSubstitutionEntity addSubstitution(final Long orderItemId, final CreateSubstitutionRequest request) {
+        final OrderItemEntity orderItem = orderItemRepository.findById(orderItemId).orElseThrow(() ->
+                new EntityNotFoundException(ENTITY_NAME, orderItemId.toString()));
+        final ItemEntity substituteItem = itemRepository.findById(request.itemId()).orElseThrow(() ->
+                new EntityNotFoundException("item", request.itemId().toString()));
+
+        final int alreadyHandled = orderItem.getTotalHandled();
+        final int remaining = orderItem.getQuantity() - alreadyHandled;
+        if (request.quantity() > remaining) {
+            throw new InvalidRequestException(
+                    "Substitution quantity " + request.quantity() + " exceeds remaining unhandled quantity " + remaining);
+        }
+
+        final OrderItemSubstitutionEntity substitution = OrderItemSubstitutionEntity.builder()
+                .orderItem(orderItem)
+                .item(substituteItem)
+                .attributes(request.attributes())
+                .quantity(request.quantity())
+                .note(request.note())
+                .build();
+
+        return orderItemSubstitutionRepository.save(substitution);
+    }
+
+    @Transactional
+    public void removeSubstitution(final Long orderItemId, final String substitutionUuid) {
+        final OrderItemSubstitutionEntity substitution = orderItemSubstitutionRepository.findByUuid(substitutionUuid)
+                .orElseThrow(() -> new EntityNotFoundException("orderItemSubstitution", substitutionUuid));
+        if (!substitution.getOrderItem().getId().equals(orderItemId)) {
+            throw new InvalidRequestException("Substitution does not belong to the specified order item");
+        }
+        orderItemSubstitutionRepository.delete(substitution);
+    }
+
     @Transactional
     public OrderEntity assignOrder(final String orderUuid) {
         final OrderEntity orderEntity = getOrder(orderUuid);
@@ -374,7 +415,8 @@ public class OrderService {
                     item.attributes(),
                     item.notes() == null ? null : item.notes().trim(),
                     item.quantity(),
-                    0
+                    0,
+                    new java.util.ArrayList<>()
             ));
 
             orderEntity.getOrderItemList().add(orderItemEntity);

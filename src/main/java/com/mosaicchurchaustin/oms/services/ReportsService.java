@@ -11,6 +11,7 @@ import com.mosaicchurchaustin.oms.data.response.ProcessTimingsResponse;
 import com.mosaicchurchaustin.oms.data.response.SystemMetricsResponse;
 import com.mosaicchurchaustin.oms.repositories.AnalyticsRepository;
 import com.mosaicchurchaustin.oms.repositories.OrderHistoryRepository;
+import com.mosaicchurchaustin.oms.repositories.OrderItemSubstitutionRepository;
 import com.mosaicchurchaustin.oms.repositories.OrderRepository;
 import com.mosaicchurchaustin.oms.repositories.ProcessTimingAnalyticsRepository;
 import com.mosaicchurchaustin.oms.utils.DateUtils;
@@ -33,6 +34,7 @@ public class ReportsService {
     private final OrderHistoryRepository orderHistoryRepository;
     private final AnalyticsRepository analyticsRepository;
     private final ProcessTimingAnalyticsRepository processTimingAnalyticsRepository;
+    private final OrderItemSubstitutionRepository orderItemSubstitutionRepository;
 
     public static class DateRange {
         public final LocalDate start;
@@ -144,7 +146,10 @@ public class ReportsService {
         final Long totalOrders = result.getCompletedOrders();
         final Long totalCustomers = result.getUniqueCustomers();
         final Long totalItems = result.getTotalItems();
-        final Long fulfilledItems = result.getFulfilledItems();
+        final Long exactFulfilled = result.getFulfilledItems();
+        final Long substitutedItems = orderItemSubstitutionRepository
+                .sumSubstitutedQuantities(dateRange.startInstant, dateRange.endInstant);
+        final Long fulfilledItems = exactFulfilled + substitutedItems;
 
         // Calculate derived metrics
         double avgItemsPerOrder = totalOrders > 0 ? (double) totalItems / totalOrders : 0.0;
