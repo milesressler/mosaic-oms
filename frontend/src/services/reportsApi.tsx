@@ -11,6 +11,7 @@ export interface SystemOverview {
     avgItemsPerOrder: number;
     fillRate: number; // as decimal (0.78 = 78%)
     activeVolunteers: number;
+    showersCompleted: number;
 }
 
 interface SystemMetricsParams {

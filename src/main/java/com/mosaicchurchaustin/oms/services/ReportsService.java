@@ -13,6 +13,7 @@ import com.mosaicchurchaustin.oms.repositories.AnalyticsRepository;
 import com.mosaicchurchaustin.oms.repositories.OrderHistoryRepository;
 import com.mosaicchurchaustin.oms.repositories.OrderRepository;
 import com.mosaicchurchaustin.oms.repositories.ProcessTimingAnalyticsRepository;
+import com.mosaicchurchaustin.oms.repositories.ShowerReservationRepository;
 import com.mosaicchurchaustin.oms.utils.DateUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -33,6 +34,7 @@ public class ReportsService {
     private final OrderHistoryRepository orderHistoryRepository;
     private final AnalyticsRepository analyticsRepository;
     private final ProcessTimingAnalyticsRepository processTimingAnalyticsRepository;
+    private final ShowerReservationRepository showerReservationRepository;
 
     public static class DateRange {
         public final LocalDate start;
@@ -140,6 +142,7 @@ public class ReportsService {
         
         final SystemOverviewProjection result = orderRepository.findSystemOverview(dateRange.startInstant, dateRange.endInstant);
         final Long activeVolunteers = orderHistoryRepository.countDistinctByUserEntity(dateRange.startInstant, dateRange.endInstant);
+        final Long showersCompleted = showerReservationRepository.countCompletedShowers(dateRange.startInstant, dateRange.endInstant);
 
         final Long totalOrders = result.getCompletedOrders();
         final Long totalCustomers = result.getUniqueCustomers();
@@ -157,6 +160,7 @@ public class ReportsService {
                 .avgItemsPerOrder(avgItemsPerOrder)
                 .fillRate(fillRate)
                 .activeVolunteers(activeVolunteers)
+                .showersCompleted(showersCompleted)
                 .build();
 
         return SystemMetricsResponse.builder()

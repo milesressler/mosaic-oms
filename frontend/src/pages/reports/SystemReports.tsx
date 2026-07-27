@@ -13,7 +13,7 @@ import {
 } from '@mantine/core';
 import {DatePickerInput} from '@mantine/dates';
 import {useLocalStorage} from '@mantine/hooks';
-import {IconUsers, IconTruck, IconPackage, IconTrendingUp, IconSparkles} from '@tabler/icons-react';
+import {IconUsers, IconTruck, IconPackage, IconTrendingUp, IconSparkles, IconBath} from '@tabler/icons-react';
 import {Link} from 'react-router-dom';
 import useApi from 'src/hooks/useApi';
 import reportsApi from 'src/services/reportsApi';
@@ -217,6 +217,14 @@ const SystemReports: React.FC = () => {
                         tooltip="Average number of items per order during the selected period"
                         icon={<IconTrendingUp size={24} />}
                         color="var(--mantine-color-indigo-6)"
+                    />
+
+                    <SystemOverviewWidget
+                        value={data.overview.showersCompleted.toLocaleString()}
+                        label="Showers Completed"
+                        tooltip="Number of shower reservations completed during the selected time period"
+                        icon={<IconBath size={24} />}
+                        color="var(--mantine-color-cyan-6)"
                     />
                 </SimpleGrid>
             )}
