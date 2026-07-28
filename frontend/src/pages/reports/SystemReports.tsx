@@ -20,6 +20,7 @@ import reportsApi from 'src/services/reportsApi';
 import SystemOverviewWidget from 'src/components/reports/widgets/SystemOverviewWidget';
 import WeeklyCustomersWidget from 'src/components/reports/widgets/WeeklyCustomersWidget';
 import ItemFulfillmentWidget from 'src/components/reports/widgets/ItemFulfillmentWidget';
+import WeeklyShowersWidget from 'src/components/reports/widgets/WeeklyShowersWidget';
 import OrderCreationPatternsWidget from 'src/components/reports/widgets/OrderCreationPatternsWidget';
 import BiggestMoversWidget from 'src/components/reports/widgets/BiggestMoversWidget';
 import ProcessTimesWidget from 'src/components/reports/widgets/ProcessTimesWidget';
@@ -32,6 +33,7 @@ const SystemReports: React.FC = () => {
     const systemMetricsApi = useApi(reportsApi.getSystemMetrics);
     const weeklyCustomersApi = useApi(reportsApi.getWeeklyCustomersServed);
     const weeklyItemFulfillmentApi = useApi(reportsApi.getWeeklyItemFulfillment);
+    const weeklyShowersApi = useApi(reportsApi.getWeeklyShowersCompleted);
     const orderCreationPatternsApi = useApi(reportsApi.getOrderCreationPatterns);
     const biggestMoversApi = useApi(reportsApi.getBiggestMovers);
     const processTimingsApi = useApi(reportsApi.getProcessTimings);
@@ -39,15 +41,16 @@ const SystemReports: React.FC = () => {
     useEffect(() => {
         // Load initial data
         const params: any = { range: dateRange };
-        
+
         if (dateRange === 'custom' && customDateRange[0] && customDateRange[1]) {
             params.startDate = customDateRange[0];
             params.endDate = customDateRange[1];
         }
-        
+
         systemMetricsApi.request(params);
         weeklyCustomersApi.request(params);
         weeklyItemFulfillmentApi.request(params);
+        weeklyShowersApi.request(params);
         orderCreationPatternsApi.request(params);
         biggestMoversApi.request(params);
         processTimingsApi.request(params);
@@ -101,6 +104,7 @@ const SystemReports: React.FC = () => {
         systemMetricsApi.request(params);
         weeklyCustomersApi.request(params);
         weeklyItemFulfillmentApi.request(params);
+        weeklyShowersApi.request(params);
         orderCreationPatternsApi.request(params);
         biggestMoversApi.request(params);
         processTimingsApi.request(params);
@@ -170,52 +174,52 @@ const SystemReports: React.FC = () => {
 
             {/* Key Performance Indicators - Always visible */}
             {data && (
-                <SimpleGrid cols={{ base: 2, md: 4, lg: 6 }} mb="xl">
+                <SimpleGrid cols={{ base: 2, sm: 4, md: 7 }} mb="xl">
                     <SystemOverviewWidget
                         value={data.overview.totalOrders.toLocaleString()}
                         label="Orders Completed"
                         tooltip="Number of orders completed during the selected time period"
-                        icon={<IconUsers size={24} />}
+                        icon={<IconUsers size={20} />}
                         color="var(--mantine-color-blue-6)"
                     />
-                    
+
                     <SystemOverviewWidget
                         value={data.overview.totalCustomers.toLocaleString()}
                         label="Customers Served"
                         tooltip="Unique customers who received orders during the selected time period"
-                        icon={<IconUsers size={24} />}
+                        icon={<IconUsers size={20} />}
                         color="var(--mantine-color-green-6)"
                     />
-                    
+
                     <SystemOverviewWidget
                         value={`${(data.overview.fillRate * 100).toFixed(1)}%`}
                         label="Fill Rate"
                         tooltip="Percentage of requested items that were successfully fulfilled"
-                        icon={<IconTruck size={24} />}
+                        icon={<IconTruck size={20} />}
                         color="var(--mantine-color-orange-6)"
                     />
-                    
+
                     <SystemOverviewWidget
                         value={data.overview.totalItems.toLocaleString()}
                         label="Total Items"
                         tooltip="Total number of items distributed during the selected period"
-                        icon={<IconPackage size={24} />}
+                        icon={<IconPackage size={20} />}
                         color="var(--mantine-color-violet-6)"
                     />
-                    
+
                     <SystemOverviewWidget
                         value={data.overview.activeVolunteers}
                         label="Active Volunteers"
                         tooltip="Number of volunteers who actively participated in order fulfillment during the selected period"
-                        icon={<IconUsers size={24} />}
+                        icon={<IconUsers size={20} />}
                         color="var(--mantine-color-teal-6)"
                     />
-                    
+
                     <SystemOverviewWidget
                         value={data.overview.avgItemsPerOrder.toFixed(1)}
                         label="Avg Items Per Order"
                         tooltip="Average number of items per order during the selected period"
-                        icon={<IconTrendingUp size={24} />}
+                        icon={<IconTrendingUp size={20} />}
                         color="var(--mantine-color-indigo-6)"
                     />
 
@@ -223,7 +227,7 @@ const SystemReports: React.FC = () => {
                         value={data.overview.showersCompleted.toLocaleString()}
                         label="Showers Completed"
                         tooltip="Number of shower reservations completed during the selected time period"
-                        icon={<IconBath size={24} />}
+                        icon={<IconBath size={20} />}
                         color="var(--mantine-color-cyan-6)"
                     />
                 </SimpleGrid>
@@ -266,10 +270,17 @@ const SystemReports: React.FC = () => {
                 </Grid.Col>
 
                 <Grid.Col span={{ base: 12, lg: 4 }}>
-                    <ProcessTimesWidget 
+                    <ProcessTimesWidget
                         data={processTimingsApi.data?.processStages || []}
                         totalEndToEndTime={processTimingsApi.data?.totalEndToEndTime || 0}
                         loading={processTimingsApi.loading}
+                    />
+                </Grid.Col>
+
+                <Grid.Col span={{ base: 12, lg: 4 }}>
+                    <WeeklyShowersWidget
+                        data={weeklyShowersApi.data || []}
+                        loading={weeklyShowersApi.loading}
                     />
                 </Grid.Col>
             </Grid>

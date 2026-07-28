@@ -33,6 +33,11 @@ export interface WeeklyItemFulfillment {
     unfilledItems: number;
 }
 
+export interface WeeklyShowerCount {
+    weekStart: string; // LocalDate as ISO string
+    showersCompleted: number;
+}
+
 export type OrderCreationPatterns = Record<string, Record<string, number>>; // { "9:00-9:10": { "2024-01-07": 5, ... }, ... }
 
 export interface ItemMover {
@@ -98,6 +103,9 @@ const getWeeklyCustomersServed = (params?: SystemMetricsParams) =>
 const getWeeklyItemFulfillment = (params?: SystemMetricsParams) =>
     client.get<WeeklyItemFulfillment[]>("/reports/weekly-item-fulfillment", { params });
 
+const getWeeklyShowersCompleted = (params?: SystemMetricsParams) =>
+    client.get<WeeklyShowerCount[]>("/reports/weekly-showers-completed", { params });
+
 const getOrderCreationPatterns = (params?: SystemMetricsParams) =>
     client.get<OrderCreationPatterns>("/reports/order-creation-patterns", { params });
 
@@ -124,6 +132,7 @@ export default {
     getSystemMetrics,
     getWeeklyCustomersServed,
     getWeeklyItemFulfillment,
+    getWeeklyShowersCompleted,
     getOrderCreationPatterns,
     getBiggestMovers,
     getProcessTimings,

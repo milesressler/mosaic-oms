@@ -37,6 +37,11 @@ public interface AnalyticsRepository extends JpaRepository<OrderEntity, Long> {
         Long getUnfilledItems();
     }
 
+    interface WeeklyShowerCount {
+        LocalDate getWeekStart();
+        Long getShowersCompleted();
+    }
+
     interface OrderCreationPattern {
         String getTimeSlot();
         Long getOrderCount();
@@ -185,6 +190,44 @@ public interface AnalyticsRepository extends JpaRepository<OrderEntity, Long> {
     ORDER BY wis.week_start
     """, nativeQuery = true)
     List<WeeklyItemFulfillment> findWeeklyItemFulfillment(
+            @Param("startDate") java.time.Instant startDate,
+            @Param("endDate") java.time.Instant endDate
+    );
+
+    @Query(value = """
+    WITH RECURSIVE week_series AS (
+        -- Generate series of weeks from start to end date
+        SELECT DATE_SUB(DATE(:startDate), INTERVAL (DAYOFWEEK(DATE(:startDate)) - 1) DAY) AS week_start
+        UNION ALL
+        SELECT DATE_ADD(week_start, INTERVAL 7 DAY)
+        FROM week_series
+        WHERE DATE_ADD(week_start, INTERVAL 7 DAY) <= DATE_SUB(DATE(:endDate), INTERVAL (DAYOFWEEK(DATE(:endDate)) - 1) DAY)
+    ),
+    completed_showers_in_range AS (
+        SELECT
+            r.id,
+            DATE_SUB(DATE(r.ended_at), INTERVAL (DAYOFWEEK(r.ended_at) - 1) DAY) AS week_start
+        FROM shower_reservations r
+        INNER JOIN customers c ON r.customer_id = c.id
+        WHERE r.reservation_status = 'COMPLETED'
+            AND r.ended_at BETWEEN :startDate AND :endDate
+            AND (c.exclude_from_metrics IS NULL OR c.exclude_from_metrics = 0)
+    ),
+    weekly_shower_stats AS (
+        SELECT
+            ws.week_start,
+            COUNT(csr.id) as showers_completed
+        FROM week_series ws
+        LEFT JOIN completed_showers_in_range csr ON csr.week_start = ws.week_start
+        GROUP BY ws.week_start
+    )
+    SELECT
+        wss.week_start AS weekStart,
+        wss.showers_completed AS showersCompleted
+    FROM weekly_shower_stats wss
+    ORDER BY wss.week_start
+    """, nativeQuery = true)
+    List<WeeklyShowerCount> findWeeklyShowersCompleted(
             @Param("startDate") java.time.Instant startDate,
             @Param("endDate") java.time.Instant endDate
     );

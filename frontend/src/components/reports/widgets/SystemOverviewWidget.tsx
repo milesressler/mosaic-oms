@@ -34,17 +34,17 @@ export function SystemOverviewWidget({
     trendVariant = "light"
 }: SystemOverviewWidgetProps) {
     return (
-        <Card padding="md" radius="md" withBorder>
+        <Card padding="sm" radius="md" withBorder>
             <div style={{ color }}>{icon}</div>
             <Center>
-                <Text size="45px" fw={700} mb="xs">{value}</Text>
+                <Text size="28px" fw={700} mb={4}>{value}</Text>
             </Center>
-            <Stack gap="xs" align="center">
+            <Stack gap={4} align="center">
                 <Center>
-                    <Text size="sm" c="dimmed">{label}</Text>
+                    <Text size="xs" c="dimmed" ta="center">{label}</Text>
                     <Tooltip label={tooltip}>
                         <ActionIcon variant="subtle" size="xs">
-                            <IconInfoCircle size={14} />
+                            <IconInfoCircle size={12} />
                         </ActionIcon>
                     </Tooltip>
                 </Center>

@@ -178,6 +178,11 @@ public class ReportsService {
         return analyticsRepository.findWeeklyItemFulfillment(dateRange.startInstant, dateRange.endInstant);
     }
 
+    public List<AnalyticsRepository.WeeklyShowerCount> getWeeklyShowersCompleted(Optional<LocalDate> startDate, Optional<LocalDate> endDate, String range) {
+        final DateRange dateRange = parseDateRange(startDate, endDate, range);
+        return analyticsRepository.findWeeklyShowersCompleted(dateRange.startInstant, dateRange.endInstant);
+    }
+
     public java.util.Map<String, java.util.Map<String, Long>> getOrderCreationPatterns(Optional<LocalDate> startDate, Optional<LocalDate> endDate, String range) {
         final DateRange dateRange = parseDateRange(startDate, endDate, range);
         final List<AnalyticsRepository.OrderCreationPatternByWeek> results = analyticsRepository.findOrderCreationPatternsByWeek(dateRange.startInstant, dateRange.endInstant);
