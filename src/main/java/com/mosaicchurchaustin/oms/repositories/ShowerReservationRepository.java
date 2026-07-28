@@ -39,4 +39,13 @@ public interface ShowerReservationRepository extends JpaRepository<ShowerReserva
     @Modifying
     @Query("UPDATE ShowerReservationEntity s SET s.customer.id = :toCustomerId WHERE s.customer.id = :fromCustomerId")
     int updateCustomerForAllReservations(@Param("fromCustomerId") Long fromCustomerId, @Param("toCustomerId") Long toCustomerId);
+
+    @Query("""
+        select count(r) from ShowerReservationEntity r
+        where r.reservationStatus = 'COMPLETED'
+        and r.customer.excludeFromMetrics = false
+        and (:startDate is null or r.endedAt >= :startDate)
+        and (:endDate is null or r.endedAt <= :endDate)
+    """)
+    Long countCompletedShowers(@Param("startDate") Instant startDate, @Param("endDate") Instant endDate);
 }

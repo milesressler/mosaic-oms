@@ -20,6 +20,7 @@ public class SystemMetricsResponse {
         private double avgItemsPerOrder;
         private double fillRate; // as decimal (e.g., 0.78 for 78%)
         private long activeVolunteers;
+        private long showersCompleted;
     }
 
 }

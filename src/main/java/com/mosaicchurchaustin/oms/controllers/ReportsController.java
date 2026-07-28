@@ -71,6 +71,20 @@ public class ReportsController {
     }
 
     @ResponseBody
+    @GetMapping(path = "/weekly-showers-completed", produces = MediaType.APPLICATION_JSON_VALUE)
+    public List<AnalyticsRepository.WeeklyShowerCount> getWeeklyShowersCompleted(
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+            @RequestParam(defaultValue = "6weeks") String range) {
+
+        return reportsService.getWeeklyShowersCompleted(
+            Optional.ofNullable(startDate),
+            Optional.ofNullable(endDate),
+            range
+        );
+    }
+
+    @ResponseBody
     @GetMapping(path = "/order-creation-patterns", produces = MediaType.APPLICATION_JSON_VALUE)
     public java.util.Map<String, java.util.Map<String, Long>> getOrderCreationPatterns(
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
