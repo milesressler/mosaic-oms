@@ -1,12 +1,22 @@
 import React, { useState } from 'react';
 import {ActionIcon, Button, Group, Menu, rem, useMantineTheme} from '@mantine/core';
-import {IconArrowBack, IconChevronDown, IconNotes, IconTrash} from '@tabler/icons-react';
+import {IconArrowBack, IconChevronDown, IconNotes, IconPrinter, IconTrash} from '@tabler/icons-react';
+import { notifications } from '@mantine/notifications';
 import classes from './filler-order-action-button.module.css';
 import {OrderDetails, OrderStatus} from "src/models/types.tsx";
 import {useAuth0} from "@auth0/auth0-react";
 import {useFeatures} from "src/context/FeaturesContext.tsx";
+import useApi from "src/hooks/useApi.tsx";
+import ordersApi from "src/services/ordersApi.tsx";
 import RequestInfoModal from "src/components/fillers/RequestInfoModal.tsx";
 import ReopenOrderModal from "src/components/fillers/ReopenOrderModal.tsx";
+
+const REPRINTABLE_STATUSES: OrderStatus[] = [
+    OrderStatus.PACKED,
+    OrderStatus.IN_TRANSIT,
+    OrderStatus.READY_FOR_CUSTOMER_PICKUP,
+    OrderStatus.COMPLETED,
+];
 
 interface OrderActionButtonProps {
     loading?: boolean,
@@ -23,6 +33,7 @@ export function OrderActionButton({ loading, order, onStateChange, toggleAssigne
     const {user} = useAuth0();
     const assignedToMe = order?.assignee?.externalId === user?.sub;
     const { printOnTransitionToStatus } = useFeatures();
+    const printLabel = useApi(ordersApi.print);
 
     const buttonStyle = {width: printOnTransitionToStatus === OrderStatus.ACCEPTED ? "166px" : '146px'}
 
@@ -72,6 +83,34 @@ export function OrderActionButton({ loading, order, onStateChange, toggleAssigne
                 label: "Request Info",
                 icon: IconNotes,
                 action: () => setRequestInfoModalOpened(true)
+            });
+    }
+
+    const handleReprintLabel = () => {
+        if (!order) {
+            return;
+        }
+        printLabel.request(order.uuid, OrderStatus.PACKED).then((result) => {
+            if (result?.data) {
+                notifications.show({
+                    title: 'New label printed',
+                    message: null,
+                    autoClose: 3000,
+                });
+            }
+        });
+    };
+
+    const canReprintLabel = printOnTransitionToStatus !== null
+        && !!order
+        && REPRINTABLE_STATUSES.includes(order.orderStatus);
+
+    if (canReprintLabel) {
+        options.push(
+            {
+                label: "Reprint Label",
+                icon: IconPrinter,
+                action: handleReprintLabel
             });
     }
 
