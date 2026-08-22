@@ -1,5 +1,5 @@
 import {
-    Badge, Button,
+    Button,
     Group,
     LoadingOverlay,
     Modal,
@@ -7,14 +7,16 @@ import {
     Select, Switch,
     Table,
     Text,
-    TextInput
+    TextInput,
+    Tooltip
 } from "@mantine/core";
 import useApi from "src/hooks/useApi.tsx";
 import ItemsApi from "src/services/itemsApi.tsx";
 import {useEffect, useState} from "react";
 import {AdminItem, Category, categoryDisplayNames, Item} from "src/models/types.tsx";
-import {IconPencil, IconSearch, IconTableImport, IconX} from "@tabler/icons-react";
+import {IconInfoCircle, IconPencil, IconSearch, IconTableImport, IconX} from "@tabler/icons-react";
 import ItemForm from "src/forms/items/ItemForm.tsx";
+import AvailabilityToggle from "src/components/admin/items/AvailabilityToggle.tsx";
 
 export function ItemsManagementPage() {
     const PAGE_SIZE = 250;
@@ -115,11 +117,11 @@ export function ItemsManagementPage() {
             <Table.Td>
                 {item?.attributes?.map(a => <Pill>{a.label}</Pill>)}
             </Table.Td>
-            <Table.Td>
-                <Badge variant={'dot'}
-                       color={item.availability.toLowerCase() === 'available' ? 'green' : 'red'}
-                       onClick={(e) => { e.stopPropagation(); toggleAvailability(item);}}
-                       size={'xs'}>{item.availability}</Badge>
+            <Table.Td onClick={(e) => e.stopPropagation()}>
+                <AvailabilityToggle
+                    item={item}
+                    disabled={item.id === updatingId}
+                    onToggle={toggleAvailability}/>
             </Table.Td>
             {/*<Table.Td>*/}
             {/*    {item.totalFilled} / {item.totalOrdered ?? 0}*/}
@@ -173,7 +175,16 @@ export function ItemsManagementPage() {
                         <Table.Th>Category</Table.Th>
                         <Table.Th>Placeholder</Table.Th>
                         <Table.Th>Attributes</Table.Th>
-                        <Table.Th>Availability</Table.Th>
+                        <Table.Th>
+                            <Group gap={4} wrap={'nowrap'}>
+                                <span>Availability</span>
+                                <Tooltip
+                                    label={'Toggle an item off when it is out of stock. Order takers are warned before adding unavailable items.'}
+                                    multiline w={260} withArrow>
+                                    <IconInfoCircle size={14} color={'gray'} style={{flexShrink: 0}}/>
+                                </Tooltip>
+                            </Group>
+                        </Table.Th>
                         {/*<Table.Th>Filled / Ordered</Table.Th>*/}
                         <Table.Th></Table.Th>
                     </Table.Tr>
