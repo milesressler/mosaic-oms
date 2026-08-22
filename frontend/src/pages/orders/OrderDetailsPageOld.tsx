@@ -56,7 +56,9 @@ export default function OrderDetailsPageOld() {
 
     const order = getOrder.data;
     const canEdit = order && [OrderStatus.PENDING_ACCEPTANCE, OrderStatus.NEEDS_INFO].indexOf(order.orderStatus) !== -1;
-    const canPrint = order && [OrderStatus.PACKED, OrderStatus.IN_TRANSIT].indexOf(order.orderStatus) !== -1;
+    const canPrint = order && [OrderStatus.ACCEPTED, OrderStatus.PACKING, OrderStatus.PACKED,
+        OrderStatus.IN_TRANSIT, OrderStatus.READY_FOR_CUSTOMER_PICKUP,
+        OrderStatus.COMPLETED].indexOf(order.orderStatus) !== -1;
     const canReturn = OrderStatus.PACKED === order?.orderStatus;
     const canReopen = order?.orderStatus === OrderStatus.COMPLETED;
 
