@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Modal, Box, Stepper, Button, Group, Text, TextInput } from "@mantine/core";
+import { Alert, Modal, Box, Stepper, Button, Group, Text, TextInput } from "@mantine/core";
 import { DateInput } from "@mantine/dates";
 import { useForm } from "@mantine/form";
 import { DateTime } from "luxon";
@@ -21,6 +21,7 @@ interface ShowerCustomer {
     firstName: string;
     lastName: string;
     showerWaiverCompleted?: string;
+    waiverValid: boolean;
 }
 
 export const AddToShowerQueueModal = ({ opened, onClose, onSuccess }: Props) => {
@@ -56,11 +57,13 @@ export const AddToShowerQueueModal = ({ opened, onClose, onSuccess }: Props) => 
             uuid: c.uuid,
             firstName: c.firstName,
             lastName: c.lastName,
-            // assume search result may include waiver timestamp
-            showerWaiverCompleted: (c as any).showerWaiverCompleted,
+            showerWaiverCompleted: c.showerWaiverCompleted,
+            // waivers expire after a year; the backend rejects reservations without a valid one
+            waiverValid: !!c.validWaiver,
         };
         setSelectedCustomer(customer);
-        setActiveStep(customer.showerWaiverCompleted ? 2 : 1);
+        setWaiverDate(null);
+        setActiveStep(customer.waiverValid ? 2 : 1);
     };
 
     const handleCreateCustomer = form.onSubmit(async (values) => {
@@ -70,6 +73,7 @@ export const AddToShowerQueueModal = ({ opened, onClose, onSuccess }: Props) => 
                 uuid: newCust.data.uuid,
                 firstName: newCust.data.firstName,
                 lastName: newCust.data.lastName,
+                waiverValid: false,
             };
             setSelectedCustomer(customer);
             setIsCreatingCustomer(false);
@@ -87,6 +91,7 @@ export const AddToShowerQueueModal = ({ opened, onClose, onSuccess }: Props) => 
             setSelectedCustomer({
                 ...selectedCustomer,
                 showerWaiverCompleted: waiverDate ?? undefined,
+                waiverValid: true,
             });
             setActiveStep(2);
         }
@@ -134,14 +139,16 @@ export const AddToShowerQueueModal = ({ opened, onClose, onSuccess }: Props) => 
                     </Stepper.Step>
 
                     <Stepper.Step label="Waiver" description="Review or Add">
-                        {selectedCustomer?.showerWaiverCompleted ? (
+                        {selectedCustomer?.waiverValid ? (
                             <Box>
                                 <Text fw={500} mb="xs">
                                     {selectedCustomer.firstName} {selectedCustomer.lastName}
                                 </Text>
-                                <Text size="sm" mb="md">
-                                    Waiver signed on {new Date(selectedCustomer.showerWaiverCompleted).toLocaleDateString()}
-                                </Text>
+                                {selectedCustomer.showerWaiverCompleted && (
+                                    <Text size="sm" mb="md">
+                                        Waiver signed on {new Date(selectedCustomer.showerWaiverCompleted).toLocaleDateString()}
+                                    </Text>
+                                )}
                                 <Group justify="right">
                                     <Button variant="default" onClick={() => setActiveStep(0)}>
                                         Change Customer
@@ -151,9 +158,16 @@ export const AddToShowerQueueModal = ({ opened, onClose, onSuccess }: Props) => 
                             </Box>
                         ) : (
                             <Box>
-                                <Text mb="sm">
-                                    Please have the guest sign a waiver and record the date below.
-                                </Text>
+                                {selectedCustomer?.showerWaiverCompleted ? (
+                                    <Text mb="sm">
+                                        {selectedCustomer.firstName}'s waiver from {new Date(selectedCustomer.showerWaiverCompleted).toLocaleDateString()} has expired (waivers are valid for one year).
+                                        Please have the guest sign a new waiver and record the date below.
+                                    </Text>
+                                ) : (
+                                    <Text mb="sm">
+                                        Please have the guest sign a waiver and record the date below.
+                                    </Text>
+                                )}
                                 <DateInput
                                     label="Waiver Date"
                                     value={waiverDate}
@@ -161,6 +175,9 @@ export const AddToShowerQueueModal = ({ opened, onClose, onSuccess }: Props) => 
                                     maxDate={new Date()}
                                     required
                                 />
+                                {updateCustomerApi.error && (
+                                    <Alert color="red" mt="sm">{updateCustomerApi.error}</Alert>
+                                )}
                                 <Group justify="right">
                                     <Button variant="default" onClick={() => setActiveStep(0)}>
                                         Back
@@ -194,8 +211,11 @@ export const AddToShowerQueueModal = ({ opened, onClose, onSuccess }: Props) => 
                                     </Text>
                                 </Box>
                             )}
+                            {createReservationApi.error && (
+                                <Alert color="red" mb="md">{createReservationApi.error}</Alert>
+                            )}
                             <Group justify="right">
-                                <Button variant="default" onClick={() => setActiveStep(selectedCustomer?.showerWaiverCompleted ? 1 : 0)}>
+                                <Button variant="default" onClick={() => setActiveStep(selectedCustomer?.waiverValid ? 1 : 0)}>
                                     Back
                                 </Button>
                                 <Button loading={createReservationApi.loading} onClick={handleAddToQueue}>
