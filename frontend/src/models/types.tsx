@@ -84,7 +84,7 @@ export interface CustomerSearchResult {
     id: number
     uuid: string
     flagged: boolean
-    waiverValid: boolean
+    validWaiver: boolean | null
     showerWaiverCompleted: string
 }
 
