@@ -33,13 +33,14 @@ export function ShowersDashboard() {
 
     const renderStallCard = (stall: StallStatus) => {
         const { stallNumber, status, reservation, availableAt } = stall;
-        const isOverdue = DateTime.fromISO(reservation?.endTime || availableAt) < now;
+        const targetTime: DateTime = DateTime.fromISO(reservation?.endTime || availableAt);
+        const isOverdue = targetTime < now;
 
-        const diff = DateTime.fromISO(reservation?.endTime || availableAt).diff(now, ["minutes", "seconds"]);
+        const diff = targetTime.diff(now, ["minutes", "seconds"]);
         const minutes = Math.floor(diff.as("minutes"));
         const seconds = Math.floor(diff.seconds % 60);
         const timeText = isOverdue
-            ? `Over time since ${DateTime.fromISO(reservation!.endTime!).toRelative()}`
+            ? `Over time since ${targetTime.toRelative()}`
             : `Time left: ${minutes}m ${seconds}s`;
 
         return (
