@@ -27,6 +27,10 @@ men's shoes) with stock counts in OMS:
   first time a count is entered.
 - **When stock moves: at PACKED**, using `quantity_fulfilled` (falling back to `quantity`, the same
   rule reports use). That is when items leave the shelf. Taking the order does not move stock.
+  Confirmed with the stakeholder: stock always leaves at packing.
+- **Cancelled orders return stock.** Orders are sometimes packed, taken to distribution, and
+  cancelled when nobody picks them up; those items go back on the shelf. So a CANCELLED (or
+  REJECTED) order returns everything it deducted, automatically.
 - **Reconcile, don't increment.** On every status change, an order's tracked lines are reconciled:
   the target deduction is `fulfilled` while the order is PACKED or later (not CANCELLED/REJECTED),
   and 0 otherwise. The ledger already knows what was deducted for each order line, so the
@@ -93,7 +97,7 @@ transaction as the ledger insert, so two fillers packing at once can't lose an u
 - Item update: when tracked attributes or their options change, rows whose key no longer
   matches any combination are kept and returned as **retired variants**, so stock never vanishes
   silently. (Renaming an option changes its slug, since `syncItemAttributes` keys on slugs.)
-- Endpoints (add to security config, admin role for writes):
+- Endpoints (add to security config; any admin can edit counts):
   - `GET  /api/inventory?category=`: tracked items with levels, for the Inventory page
   - `GET  /api/inventory/items/{id}`: levels + retired variants for one item
   - `POST /api/inventory/items/{id}/adjustments`: batch set/add
@@ -183,12 +187,12 @@ Inventory.
 
 Phases 1 and 2 can ship together. Phase 1 alone is still useful and has no risk to order taking.
 
+## Resolved
+- Stock leaves the shelf at packing, always.
+- Cancelling an order after packing returns its items to stock automatically.
+- Any admin can edit counts.
+
 ## Open questions for the stakeholder
-- Does stock leave the shelf at packing, or are some items handed out at the distribution table
-  (so deduction should happen at COMPLETED instead)?
-- Should items packed but never picked up (order cancelled after PACKED) go back into stock
-  automatically? This plan assumes yes.
-- Who besides her needs to edit counts? (Plan assumes the admin role.)
 - Roughly how many jeans sizes are stocked? Decides whether the matrix needs to hide empty
   rows and columns.
 
