@@ -25,6 +25,9 @@ men's shoes) with stock counts in OMS:
   item with no variants. Matching an order line to its stock row is a string compare, no joins.
 - **Missing row = 0.** With tracking on, every combination exists in the UI. A row is written the
   first time a count is entered.
+- **Flexible entry over complete entry.** A small nonprofit will not fill in every detail. Stock is
+  entered the same way orders are taken (quick add), only for what's on hand, and anything they
+  can't size goes to an explicit Unsorted bucket instead of being rejected.
 - **When stock moves: at PACKED**, using `quantity_fulfilled` (falling back to `quantity`, the same
   rule reports use). That is when items leave the shelf. Taking the order does not move stock.
   Confirmed with the stakeholder: stock always leaves at packing.
@@ -143,6 +146,22 @@ Inventory.
   Changing your mind before saving costs nothing.
 - **Paste from spreadsheet** into the matrix for the first load from the workbook.
 - Retired variants are listed under the grid with a "Zero out" action.
+- **Quick add** (the primary way to enter stock; the grid is for the weekly recount). Same
+  interaction as order taking: pick the item, pick options with the same dropdowns
+  (`OrderItemFormV2`), enter a quantity, choose Received / Count / Correct, and add another line.
+  Lines collect into a list ("3 lines, 14 units") and save as one batch. Nobody has to face a full
+  matrix to log a bag of donated jeans.
+  - **Nothing to set up first.** Missing rows count as 0, so an admin only ever enters the
+    variants they have. Empty cells in the grid are fine.
+  - **New sizes inline.** If a size isn't in the list yet, typing it in the dropdown offers
+    "Add 34 as a new waist option", which adds the option to the item.
+  - **Unsorted.** If a tracked option is left blank, the units go to the item's **Unsorted** bucket
+    (`variant_key = '?'`). It counts toward the item total and shows in the grid as its own row
+    with a "Sort" action that moves units into real sizes. Order takers see it as "plus 5 unsorted,
+    check the shelf" rather than "out". The data stays honest: unknown is labelled unknown, never
+    guessed.
+- **Turning on tracking needs one decision**, not a form: the switch defaults "Track stock by"
+  to the item's required dropdowns, so most items need no further setup.
 
 ### Order taker (`ItemSelection`, `OrderItemFormV2`, `OrderFormV2`)
 - Fetch `/api/items/stock` with the catalog; refresh on the WebSocket event.
@@ -178,8 +197,8 @@ Inventory.
 - **Quantity > 1 on a line:** compared against available.
 
 ## Phasing
-1. **Data model + admin:** migration, toggle, tracked attributes, Inventory tab with grid,
-   Count/Receive/Correct, ledger, paste import. She can stop using the workbook for counts.
+1. **Data model + admin:** migration, toggle, tracked attributes, Inventory tab with quick add and
+   grid, Count/Receive/Correct, Unsorted bucket, ledger, paste import. She can stop using the workbook for counts.
 2. **Order flow:** order-taker stock display and suggestions, snapshot, reconcile on PACKED,
    committed counts, derived availability, item page replacing the modal.
 3. **Reporting + nice-to-haves:** demand vs stock report, low-stock notification to admins,
