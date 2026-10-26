@@ -24,6 +24,7 @@ import CustomersApi from 'src/services/customersApi';
 import OrdersApi from 'src/services/ordersApi';
 import {Customer, Order} from 'src/models/types.tsx';
 import StatusBadge from 'src/components/StatusBadge.tsx';
+import CustomerItemLimits from 'src/components/customer/CustomerItemLimits.tsx';
 import {DateInput} from "@mantine/dates";
 
 const CustomerDetailPage = () => {
@@ -348,6 +349,8 @@ const CustomerDetailPage = () => {
                 </Grid.Col>
             </Grid>
 
+            <CustomerItemLimits customerUuid={customer.uuid}/>
+
             <Divider
                 label={
                     <Group gap={4}>
@@ -408,13 +411,19 @@ const CustomerDetailPage = () => {
                             );
                         })}
                     </Stack>
-                    { (ordersRequest.data?.totalElements ?? 0) > 3 && <Group justify="end" mt="sm">
+                    <Group justify="end" mt="sm">
+                        <Button variant="default" size="xs"
+                        onClick={() => navigate(`/customer/${customer.uuid}/items`)}>
+                            Item history
+                        </Button>
+                        { (ordersRequest.data?.totalElements ?? 0) > 3 &&
                         <Button variant="default" size="xs"
                         onClick={() => navigate(`/orders?customerUuid=${customer.uuid}`)}>
                             View All {ordersRequest.data?.totalElements}
                         </Button>
+                        }
                     </Group>
-                    }</>
+                    </>
 
                 ) : (
                     <Text size="sm" c="dimmed">

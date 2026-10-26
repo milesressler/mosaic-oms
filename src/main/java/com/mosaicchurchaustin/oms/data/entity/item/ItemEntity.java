@@ -5,6 +5,7 @@ import com.mosaicchurchaustin.oms.data.entity.order.OrderItemEntity;
 import com.mosaicchurchaustin.oms.services.audit.AuditLogListener;
 import com.mosaicchurchaustin.oms.services.audit.Auditable;
 import jakarta.persistence.Column;
+import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
 import jakarta.persistence.EnumType;
@@ -71,6 +72,13 @@ public class ItemEntity extends BaseEntity implements Auditable {
     @Column(name = "managed", nullable = false)
     boolean managed;
 
+    /**
+     * Null when the item is not limited
+     */
+    @Setter
+    @Embedded
+    ItemLimitRule limitRule;
+
     @BatchSize(size = 100)
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "itemEntity")
     @ToString.Exclude
@@ -83,6 +91,10 @@ public class ItemEntity extends BaseEntity implements Auditable {
 
     @Transient
     Map<String, String> previousState;
+
+    public boolean isLimited() {
+        return limitRule != null && limitRule.getQuantity() != null;
+    }
 
     @SneakyThrows
     @Override
@@ -101,6 +113,14 @@ public class ItemEntity extends BaseEntity implements Auditable {
         }
         if (this.availability != null) {
             state.put("availability", availability.name());
+        }
+        if (isLimited()) {
+            state.put("limit", String.format("%s per %s %s (%s%s)",
+                    limitRule.getQuantity(),
+                    limitRule.getPeriodValue(),
+                    limitRule.getPeriodUnit(),
+                    limitRule.getWindow(),
+                    limitRule.getPeriodStartMonth() != null ? ", starts month " + limitRule.getPeriodStartMonth() : ""));
         }
         return state;
     }

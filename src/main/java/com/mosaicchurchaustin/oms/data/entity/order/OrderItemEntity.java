@@ -4,6 +4,7 @@ import com.mosaicchurchaustin.oms.data.entity.BaseEntity;
 import com.mosaicchurchaustin.oms.data.entity.item.ItemEntity;
 import com.mosaicchurchaustin.oms.data.entity.order.attributes.AttributeValue;
 import com.mosaicchurchaustin.oms.support.converters.ItemAttributeJsonConverter;
+import com.mosaicchurchaustin.oms.support.converters.ItemLimitStatusJsonConverter;
 import jakarta.persistence.Column;
 import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
@@ -54,6 +55,13 @@ public class OrderItemEntity extends BaseEntity {
 
     @Column(name = "quantity_fulfilled")
     Integer quantityFulfilled;
+
+    /**
+     * Customer's limit status for this item when the order was taken or last edited. Null for items that are not limited.
+     */
+    @Column(name = "limit_snapshot", columnDefinition = "JSON")
+    @Convert(converter = ItemLimitStatusJsonConverter.class)
+    ItemLimitStatus limitSnapshot;
 
 
 

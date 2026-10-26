@@ -26,7 +26,7 @@ export function OrderTakerDashboard() {
         const o = fetchOrder.data;
 
         form.setValues({
-            customerId:     o.uuid,
+            customerId:     o.customer.uuid,
             firstName:      o.customer.firstName,
             lastName:       o.customer.lastName,
             specialInstructions: o.specialInstructions ?? null,

@@ -12,6 +12,7 @@ public record UpdateItemRequest(
         String category,
         String placeholder,
         String availability,
-        List<ItemAttributeRequest> attributes
+        List<ItemAttributeRequest> attributes,
+        ItemLimitRequest limit
 ) {
 }

@@ -9,6 +9,7 @@ import com.mosaicchurchaustin.oms.data.response.MergeCustomerResponse;
 import com.mosaicchurchaustin.oms.exception.EntityNotFoundException;
 import com.mosaicchurchaustin.oms.exception.InvalidRequestException;
 import com.mosaicchurchaustin.oms.repositories.CustomerRepository;
+import com.mosaicchurchaustin.oms.repositories.ItemLimitEntryRepository;
 import com.mosaicchurchaustin.oms.repositories.OrderRepository;
 import com.mosaicchurchaustin.oms.repositories.ShowerReservationRepository;
 import com.mosaicchurchaustin.oms.services.audit.AuditService;
@@ -38,6 +39,9 @@ public class CustomerService {
 
     @Autowired
     ShowerReservationRepository showerReservationRepository;
+
+    @Autowired
+    ItemLimitEntryRepository itemLimitEntryRepository;
 
     @Autowired
     AuditService auditService;
@@ -101,6 +105,8 @@ public class CustomerService {
         long ordersTransferred = orderRepository.updateCustomerForAllOrders(fromCustomer.getId(), toCustomer.getId());
 
         long showerReservationsTransferred = showerReservationRepository.updateCustomerForAllReservations(fromCustomer.getId(), toCustomer.getId());
+
+        itemLimitEntryRepository.updateCustomerForAllEntries(fromCustomer.getId(), toCustomer.getId());
 
         Optional.ofNullable(request.firstName()).ifPresent(toCustomer::setFirstName);
         Optional.ofNullable(request.lastName()).ifPresent(toCustomer::setLastName);

@@ -1,5 +1,14 @@
 import client from "./client";
-import {Customer, CustomerSearchResult, Page} from "src/models/types.tsx";
+import {
+    CreateItemLimitEntryRequest,
+    CreateItemLimitEntryResponse,
+    Customer,
+    CustomerItemHistoryParams,
+    CustomerItemHistoryRow,
+    CustomerItemLimit,
+    CustomerSearchResult,
+    Page
+} from "src/models/types.tsx";
 
 const search = (searchString: string) =>
     client.get<CustomerSearchResult[]>(`/customer/find?q=${searchString}`);
@@ -9,6 +18,18 @@ const getCustomers = (page: number, size: number, params?: {name? :string|null, 
 
 const getCustomer = (uuid: string) =>
     client.get<Customer>(`/customer/${uuid}`);
+
+const getItemLimits = (uuid: string) =>
+    client.get<CustomerItemLimit[]>(`/customer/${uuid}/item-limits`);
+
+const getItemHistory = (uuid: string, page: number, size: number, params: CustomerItemHistoryParams) =>
+    client.get<Page<CustomerItemHistoryRow>>(`/customer/${uuid}/item-history`, {params: {page, size, ...params}});
+
+const createItemLimitEntry = (uuid: string, request: CreateItemLimitEntryRequest) =>
+    client.post<CreateItemLimitEntryResponse>(`/customer/${uuid}/item-limits/entries`, request);
+
+const deleteItemLimitEntry = (uuid: string, entryId: number) =>
+    client.delete(`/customer/${uuid}/item-limits/entries/${entryId}`);
 
 const updateCustomer = (uuid: string,  body: {
     showerWaiverSigned?: string | null,
@@ -48,6 +69,10 @@ export default {
     search,
     getCustomers,
     getCustomer,
+    getItemLimits,
+    getItemHistory,
+    createItemLimitEntry,
+    deleteItemLimitEntry,
     updateCustomer,
     createCustomer,
     mergeCustomers,

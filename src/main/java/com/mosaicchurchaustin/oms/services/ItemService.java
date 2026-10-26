@@ -7,8 +7,12 @@ import com.mosaicchurchaustin.oms.data.entity.item.ItemAttributeType;
 import com.mosaicchurchaustin.oms.data.entity.item.ItemAvailability;
 import com.mosaicchurchaustin.oms.data.entity.item.ItemCategory;
 import com.mosaicchurchaustin.oms.data.entity.item.ItemEntity;
+import com.mosaicchurchaustin.oms.data.entity.item.ItemLimitRule;
+import com.mosaicchurchaustin.oms.data.entity.item.LimitPeriodUnit;
+import com.mosaicchurchaustin.oms.data.entity.item.LimitWindow;
 import com.mosaicchurchaustin.oms.data.request.CreateItemRequest;
 import com.mosaicchurchaustin.oms.data.request.ItemAttributeRequest;
+import com.mosaicchurchaustin.oms.data.request.ItemLimitRequest;
 import com.mosaicchurchaustin.oms.data.request.UpdateItemRequest;
 import com.mosaicchurchaustin.oms.data.response.SuggestedItemResponse;
 import com.mosaicchurchaustin.oms.exception.EntityNotFoundException;
@@ -127,6 +131,10 @@ public class ItemService {
             syncItemAttributes(itemEntity, request.attributes());
         }
 
+        if (request.limit() != null) {
+            itemEntity.setLimitRule(toLimitRule(request.limit()));
+        }
+
         return itemRepository.save(itemEntity);
     }
 
@@ -143,9 +151,45 @@ public class ItemService {
                 .managed(request.managed() ==  Boolean.TRUE ? Boolean.TRUE : Boolean.FALSE)
                 .availability(StringUtils.isNotBlank(request.availability()) ? ItemAvailability.from(request.availability()) : ItemAvailability.AVAILABLE)
                 .category(StringUtils.isNotBlank(request.category()) ? ItemCategory.from(request.category()) : null)
+                .limitRule(request.limit() != null ? toLimitRule(request.limit()) : null)
                 .build();
 
         return itemRepository.save(itemEntity);
+    }
+
+    /**
+     * Returns null when the limit is being turned off
+     */
+    private ItemLimitRule toLimitRule(final ItemLimitRequest request) {
+        if (!Boolean.TRUE.equals(request.enabled())) {
+            return null;
+        }
+        if (request.quantity() == null || request.quantity() < 1) {
+            throw new InvalidRequestException("Limit quantity must be at least 1");
+        }
+        if (request.periodValue() == null || request.periodValue() < 1) {
+            throw new InvalidRequestException("Limit period must be at least 1");
+        }
+        if (StringUtils.isBlank(request.periodUnit())) {
+            throw new InvalidRequestException("Limit period unit is required");
+        }
+        final LimitWindow window = StringUtils.isBlank(request.window()) ? LimitWindow.ROLLING : LimitWindow.from(request.window());
+        final LimitPeriodUnit periodUnit = LimitPeriodUnit.from(request.periodUnit());
+
+        // Start month only lines up calendar month/year periods
+        final boolean usesStartMonth = window == LimitWindow.CALENDAR && periodUnit != LimitPeriodUnit.WEEK;
+        if (usesStartMonth && request.periodStartMonth() != null
+                && (request.periodStartMonth() < 1 || request.periodStartMonth() > 12)) {
+            throw new InvalidRequestException("Limit start month must be between 1 and 12");
+        }
+
+        return ItemLimitRule.builder()
+                .quantity(request.quantity())
+                .periodValue(request.periodValue())
+                .periodUnit(periodUnit)
+                .window(window)
+                .periodStartMonth(usesStartMonth ? request.periodStartMonth() : null)
+                .build();
     }
 
     public void syncItemAttributes(final ItemEntity itemEntity, final List<ItemAttributeRequest> request) {

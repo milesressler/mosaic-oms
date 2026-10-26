@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -25,6 +26,9 @@ public interface ItemRepository extends JpaRepository<ItemEntity, Long>, JpaSpec
     Stream<ItemEntity> findAllManagedItems();
 
     Page<ItemEntity> findAllByManagedIsTrue(Pageable pageable);
+
+    @Query("SELECT i FROM ItemEntity i WHERE i.managed = true AND i.limitRule.quantity IS NOT NULL ORDER BY i.description")
+    List<ItemEntity> findAllManagedLimitedItems();
 
 
 }

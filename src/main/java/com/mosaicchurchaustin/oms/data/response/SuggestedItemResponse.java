@@ -4,6 +4,7 @@ package com.mosaicchurchaustin.oms.data.response;
 import com.mosaicchurchaustin.oms.data.entity.item.ItemAvailability;
 import com.mosaicchurchaustin.oms.data.entity.item.ItemCategory;
 import com.mosaicchurchaustin.oms.data.entity.item.ItemEntity;
+import com.mosaicchurchaustin.oms.data.entity.item.ItemLimitRule;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -19,6 +20,7 @@ public class SuggestedItemResponse implements Serializable {
     private ItemCategory category;
     private ItemAvailability availability;
     private List<SelectableItemAttribute> attributes;
+    private ItemLimitRule limit;
     private Long id;
 
     public static SuggestedItemResponse from(final ItemEntity itemEntity) {
@@ -44,6 +46,7 @@ public class SuggestedItemResponse implements Serializable {
                 .availability(itemEntity.getAvailability())
                 .id(itemEntity.getId())
                 .attributes(attributes)
+                .limit(itemEntity.isLimited() ? itemEntity.getLimitRule().toBuilder().build() : null)
                 .build();
 
     }

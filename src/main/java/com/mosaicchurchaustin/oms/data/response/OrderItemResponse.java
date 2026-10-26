@@ -2,7 +2,9 @@ package com.mosaicchurchaustin.oms.data.response;
 
 
 import com.mosaicchurchaustin.oms.data.entity.item.ItemCategory;
+import com.mosaicchurchaustin.oms.data.entity.order.ItemLimitStatus;
 import com.mosaicchurchaustin.oms.data.entity.order.OrderItemEntity;
+import com.mosaicchurchaustin.oms.data.entity.order.attributes.AttributeValue;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -20,6 +22,7 @@ public class OrderItemResponse {
     private Long id;
     private SuggestedItemResponse item;
     private Map<String, AttributeDisplay> attributes;
+    private ItemLimitStatus limitSnapshot;
     
     @Builder
     @Getter
@@ -37,7 +40,14 @@ public class OrderItemResponse {
                 .notes(orderItemEntity.getNotes())
                 .id(orderItemEntity.getId())
                 .item(SuggestedItemResponse.from(orderItemEntity.getItemEntity()))
-                .attributes(orderItemEntity.getAttributes().entrySet().stream()
+                .limitSnapshot(orderItemEntity.getLimitSnapshot())
+                .attributes(attributeDisplays(orderItemEntity.getAttributes()))
+                .build();
+
+    }
+
+    public static Map<String, AttributeDisplay> attributeDisplays(final Map<String, AttributeValue> attributes) {
+        return attributes.entrySet().stream()
                         .collect(Collectors.toMap(
                                 Map.Entry::getKey,
                                 entry -> {
@@ -60,8 +70,6 @@ public class OrderItemResponse {
                                             .displayValue(storedValue)
                                             .build();
                                 }
-                        )))
-                .build();
-
+                        ));
     }
 }
