@@ -1,4 +1,5 @@
 import {
+    Badge,
     Button,
     Group,
     LoadingOverlay,
@@ -14,7 +15,8 @@ import useApi from "src/hooks/useApi.tsx";
 import ItemsApi from "src/services/itemsApi.tsx";
 import {useEffect, useState} from "react";
 import {AdminItem, Category, categoryDisplayNames, Item} from "src/models/types.tsx";
-import {IconInfoCircle, IconPencil, IconSearch, IconTableImport, IconX} from "@tabler/icons-react";
+import {IconInfoCircle, IconPencil, IconRepeat, IconSearch, IconTableImport, IconX} from "@tabler/icons-react";
+import {formatLimitRule, formatLimitWindow} from "src/utils/ItemLimitUtils.tsx";
 import ItemForm from "src/forms/items/ItemForm.tsx";
 import AvailabilityToggle from "src/components/admin/items/AvailabilityToggle.tsx";
 
@@ -106,7 +108,18 @@ export function ItemsManagementPage() {
         <Table.Tr key={item.id} pos={'relative'} style={{cursor: 'pointer'}}  onClick={() => setEditingItem(item)}>
             <LoadingOverlay visible={item.id === deletingId || item.id === updatingId}/>
 
-            <Table.Td>{item.description}</Table.Td>
+            <Table.Td>
+                <Group gap={'xs'} wrap={'nowrap'}>
+                    <span>{item.description}</span>
+                    {item.limit && (
+                        <Tooltip label={`Limited item: ${formatLimitRule(item.limit)}, ${formatLimitWindow(item.limit)}`} withArrow>
+                            <Badge size={'sm'} variant={'light'} color={'grape'} leftSection={<IconRepeat size={10}/>}>
+                                {formatLimitRule(item.limit)}
+                            </Badge>
+                        </Tooltip>
+                    )}
+                </Group>
+            </Table.Td>
             <Table.Td>
                 {item.category && <Pill>{categoryDisplayNames[ item.category]}</Pill>}
             </Table.Td>

@@ -30,6 +30,7 @@ import {IconArrowRight, IconChevronDown, IconCalendar, IconUser, IconNotes, Icon
 import React from 'react';
 import {statusDisplay} from "src/utils/StatusUtils.tsx";
 import GroupedAttributeBadges from 'src/components/common/items/GroupedAttributeBadges';
+import ItemLimitInfo from "src/components/common/items/ItemLimitInfo.tsx";
 import classes from "src/styles/LinkStyles.module.css";
 
 // Enhanced status colors
@@ -288,6 +289,9 @@ export default function OrderDetailsPage() {
                                             <Table.Tr key={item.id}>
                                                 <Table.Td>
                                                     <Text fw={500}>{item.description}</Text>
+                                                    {item.limitSnapshot && (
+                                                        <ItemLimitInfo snapshot rule={item.limitSnapshot.rule} status={item.limitSnapshot}/>
+                                                    )}
                                                 </Table.Td>
                                                 <Table.Td style={{ verticalAlign: 'middle' }}>
                                                     <Badge variant="outline" size="md"
@@ -357,6 +361,11 @@ export default function OrderDetailsPage() {
                                                     </Badge>
                                                 </Group>
                                             </Group>
+                                            {item.limitSnapshot && (
+                                                <Box mb="xs">
+                                                    <ItemLimitInfo snapshot rule={item.limitSnapshot.rule} status={item.limitSnapshot}/>
+                                                </Box>
+                                            )}
                                             {Object.keys(item.attributes).length > 0 && (
                                                 <Box mb="xs">
                                                     <GroupedAttributeBadges 

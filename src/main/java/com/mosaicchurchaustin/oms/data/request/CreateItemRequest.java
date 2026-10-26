@@ -13,6 +13,7 @@ public record CreateItemRequest(
         String availability,
         @NotBlank(message = "description cannot be blank") String description,
         String placeholder,
-        List<ItemAttributeRequest> attributes
+        List<ItemAttributeRequest> attributes,
+        ItemLimitRequest limit
 ) {
 }

@@ -5,6 +5,7 @@ import com.mosaicchurchaustin.oms.data.request.MergeCustomerRequest;
 import com.mosaicchurchaustin.oms.data.response.MergeCustomerResponse;
 import com.mosaicchurchaustin.oms.exception.InvalidRequestException;
 import com.mosaicchurchaustin.oms.repositories.CustomerRepository;
+import com.mosaicchurchaustin.oms.repositories.ItemLimitEntryRepository;
 import com.mosaicchurchaustin.oms.repositories.OrderRepository;
 import com.mosaicchurchaustin.oms.repositories.ShowerReservationRepository;
 import com.mosaicchurchaustin.oms.services.audit.AuditService;
@@ -32,6 +33,7 @@ class CustomerServiceTest {
     @Mock CustomerResolver customerResolver;
     @Mock OrderRepository orderRepository;
     @Mock ShowerReservationRepository showerReservationRepository;
+    @Mock ItemLimitEntryRepository itemLimitEntryRepository;
     @Mock AuditService auditService;
 
     @InjectMocks CustomerService customerService;
@@ -77,6 +79,7 @@ class CustomerServiceTest {
         assertThat(response.showerReservationsTransferred()).isEqualTo(1L);
         assertThat(response.success()).isTrue();
         assertThat(response.mergedToCustomerUuid()).isEqualTo("to-uuid");
+        verify(itemLimitEntryRepository).updateCustomerForAllEntries(1L, 2L);
     }
 
     @Test

@@ -189,6 +189,97 @@ export interface ItemAttribute {
     sortOrder?: number
 }
 
+export type LimitPeriodUnit = 'WEEK' | 'MONTH' | 'YEAR';
+export type LimitWindow = 'ROLLING' | 'CALENDAR';
+
+export interface ItemLimitRule {
+    quantity: number;
+    periodValue: number;
+    periodUnit: LimitPeriodUnit;
+    window: LimitWindow;
+    periodStartMonth?: number | null;
+}
+
+export interface ItemLimitStatus {
+    rule: ItemLimitRule;
+    evaluatedAt: string;
+    periodStart: string;
+    receivedInPeriod: number;
+    remaining: number;
+    lastReceivedAt: string | null;
+    nextEligibleAt: string | null;
+    // Only set on order item snapshots
+    requestedQuantity?: number | null;
+    overLimit?: boolean | null;
+}
+
+export interface CustomerItemLimit {
+    itemId: number;
+    description: string;
+    category: Category;
+    status: ItemLimitStatus;
+}
+
+export interface ItemLimitEntry {
+    id: number;
+    itemId: number;
+    itemDescription: string;
+    receivedOn: string; // yyyy-MM-dd, local date
+    quantity: number;
+    notes: string | null;
+    createdBy: BasicUser | null;
+    created: string;
+}
+
+export interface CreateItemLimitEntryRequest {
+    itemId: number;
+    receivedOn: string; // yyyy-MM-dd
+    quantity: number;
+    notes?: string;
+    // The order being filled, to re-check its limits with this entry
+    orderUuid?: string;
+}
+
+export interface CreateItemLimitEntryResponse {
+    entry: ItemLimitEntry;
+    // Re-checked snapshots keyed by order item id
+    orderItemSnapshots: Record<number, ItemLimitStatus>;
+}
+
+export interface CustomerItemHistoryRow {
+    source: 'ORDER' | 'RECORDED';
+    // Order completion time, or the start of the recorded day
+    receivedAt: string;
+    item: Item;
+    quantityRequested: number;
+    quantityFulfilled: number | null;
+    attributes: { [key: string]: string };
+    notes: string | null;
+    orderId: number | null;
+    orderUuid: string | null;
+    entry: ItemLimitEntry | null;
+}
+
+export type HistoryFillFilter = 'ALL' | 'RECEIVED' | 'UNFILLED';
+
+export interface CustomerItemHistoryParams {
+    limitedOnly?: boolean;
+    fill?: HistoryFillFilter;
+    category?: string | null;
+    q?: string;
+    from?: string | null;
+    to?: string | null;
+}
+
+export interface ItemLimitRequest {
+    enabled: boolean;
+    quantity?: number;
+    periodValue?: number;
+    periodUnit?: LimitPeriodUnit;
+    window?: LimitWindow;
+    periodStartMonth?: number | null;
+}
+
 export interface Item {
     id: number;
     placeholder: string;
@@ -196,6 +287,7 @@ export interface Item {
     category: Category;
     availability: string;
     attributes: ItemAttribute[];
+    limit?: ItemLimitRule | null;
 }
 
 export interface AdminItem extends Item{
@@ -210,12 +302,14 @@ export interface UpdateItemRequest {
     category?: string
     availability?: string
     attributes?: any[];
+    limit?: ItemLimitRequest;
 }
 export interface CreateItemRequest {
     suggestedItem?: boolean
     placeholder?: string
     description: string
     category?: string
+    limit?: ItemLimitRequest
 }
 export interface OrderItem {
     description: string;
@@ -226,6 +320,7 @@ export interface OrderItem {
     notes: string | null;
     id: number;
     item: Item;
+    limitSnapshot?: ItemLimitStatus | null;
 }
 
 export interface AdminUser {

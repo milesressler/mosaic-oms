@@ -7,6 +7,7 @@ import {
 } from '@mantine/core';
 import { useSelectedOrder } from 'src/context/SelectedOrderContext.tsx';
 import GroupedAttributeBadges from 'src/components/common/items/GroupedAttributeBadges';
+import ItemLimitInfo from "src/components/common/items/ItemLimitInfo.tsx";
 import {Category, categoryDisplayNames} from "src/models/types.tsx";
 
 function OrderItemListView() {
@@ -68,6 +69,11 @@ function OrderItemListView() {
                                     <Text size="sm" fw={500}>
                                         {item.description}
                                     </Text>
+                                    {item.limitSnapshot?.overLimit && (
+                                        <Box ml="md" mt={2}>
+                                            <ItemLimitInfo compact snapshot rule={item.limitSnapshot.rule} status={item.limitSnapshot}/>
+                                        </Box>
+                                    )}
                                     {/* Attributes and notes on same line, minimal spacing */}
                                     {(Object.keys(item.attributes).length > 0 || item.notes) && (
                                         <Group gap="xs" ml="md" wrap="wrap" style={{ marginTop: 2 }}>

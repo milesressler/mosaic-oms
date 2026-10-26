@@ -1,4 +1,5 @@
 import {
+    Anchor,
     Button, 
     Group, 
     Text, 
@@ -14,7 +15,7 @@ import {
     IconSquare,
     IconCheckbox
 } from '@tabler/icons-react';
-import {OrderDetails, OrderItem, OrderStatus} from 'src/models/types.tsx';
+import {CreateItemLimitEntryResponse, OrderDetails, OrderItem, OrderStatus} from 'src/models/types.tsx';
 import { useSelectedOrder } from 'src/context/SelectedOrderContext.tsx';
 import { useEffect, useState } from 'react';
 import useApi from 'src/hooks/useApi.tsx';
@@ -24,6 +25,8 @@ import { useFeatures } from 'src/context/FeaturesContext.tsx';
 import {useAuth0} from "@auth0/auth0-react";
 import {useOrderFulfillmentTracking} from "src/hooks/useOrderFulfillmentTracking.tsx";
 import GroupedAttributeBadges from 'src/components/common/items/GroupedAttributeBadges';
+import ItemLimitInfo from "src/components/common/items/ItemLimitInfo.tsx";
+import RecordPickupModal from "src/components/customer/RecordPickupModal.tsx";
 import PlaceInWagonModal from './PlaceInWagonModal';
 
 function PackingView() {
@@ -33,6 +36,8 @@ function PackingView() {
     const printLabel = useApi(ordersApi.print);
     const [draftItems, setDraftItems] = useState<OrderItem[]>([]);
     const [placeInWagonModalOpened, setPlaceInWagonModalOpened] = useState(false);
+    // Item id of the limited line the filler is recording an earlier pickup for
+    const [recordPickupItemId, setRecordPickupItemId] = useState<number | null>(null);
     const navigate = useNavigate();
     const { printOnTransitionToStatus } = useFeatures();
     const { user } = useAuth0();
@@ -62,6 +67,12 @@ function PackingView() {
             }))
         );
     }, [selectedOrder]);
+
+    // Show the re-checked limits without reloading the order, which would drop unsaved packing progress
+    const handlePickupRecorded = (response: CreateItemLimitEntryResponse) => {
+        setDraftItems((prev) => prev.map((item) =>
+            response.orderItemSnapshots[item.id] ? {...item, limitSnapshot: response.orderItemSnapshots[item.id]} : item));
+    };
 
     const updateDraftItemQuantityFulfilled = (id: number, newQuantityFulfilled: number) => {
         setDraftItems((prev) =>
@@ -141,6 +152,14 @@ function PackingView() {
 
     return (
         <Box style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+            <RecordPickupModal
+                customerUuid={selectedOrder.customer.uuid}
+                opened={recordPickupItemId !== null}
+                onClose={() => setRecordPickupItemId(null)}
+                onSaved={handlePickupRecorded}
+                itemId={recordPickupItemId ?? undefined}
+                orderUuid={selectedOrder.uuid}
+            />
             {/* Items List - Streamlined for speed */}
             <Box style={{ flex: 1, overflow: 'auto' }}>
                 <Stack gap="xs">
@@ -184,6 +203,16 @@ function PackingView() {
                                             <Text size="xs" c="dimmed" style={{ fontStyle: 'italic' }}>
                                                 Note: {item.notes}
                                             </Text>
+                                        )}
+
+                                        {item.limitSnapshot && (
+                                            <Box mt="xs">
+                                                <ItemLimitInfo snapshot rule={item.limitSnapshot.rule} status={item.limitSnapshot}/>
+                                                <Anchor component="button" type="button" size="xs"
+                                                        onClick={() => setRecordPickupItemId(item.item.id)}>
+                                                    Record earlier pickup
+                                                </Anchor>
+                                            </Box>
                                         )}
                                     </Box>
                                     

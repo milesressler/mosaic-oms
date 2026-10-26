@@ -21,6 +21,7 @@ import com.mosaicchurchaustin.oms.repositories.OrderHistoryRepository;
 import com.mosaicchurchaustin.oms.repositories.OrderItemRepository;
 import com.mosaicchurchaustin.oms.repositories.OrderRepository;
 import com.mosaicchurchaustin.oms.services.common.CustomerResolver;
+import com.mosaicchurchaustin.oms.services.limits.ItemLimitService;
 import com.mosaicchurchaustin.oms.specifications.OrderSpecBuilder;
 import jakarta.transaction.Transactional;
 import org.apache.commons.lang3.StringUtils;
@@ -65,6 +66,9 @@ public class OrderService {
 
     @Autowired
     FeaturesService featuresService;
+
+    @Autowired
+    ItemLimitService itemLimitService;
 
     public List<OrderHistoryEntity> getOrderHistory(final Pageable pageable) {
         return orderHistoryRepository.findAll(pageable).getContent();
@@ -262,6 +266,7 @@ public class OrderService {
                     .collect(Collectors.toSet());
 
             orderItemRepository.deleteByIdIn(removeIds);
+            orderEntity.getOrderItemList().removeIf(item -> removeIds.contains(item.getId()));
         }
 
         final var mappedInserts = Stream.ofNullable(request.upsertItems())
@@ -293,6 +298,9 @@ public class OrderService {
                     existing.setNotes(StringUtils.isBlank(itemRequest.notes()) ? null : itemRequest.notes().trim());
                     existing.setAttributes(itemRequest.attributes());
                 });
+
+        // An edit is a new decision by the order taker, so re-check limits against the order as it now stands
+        itemLimitService.applySnapshots(orderEntity);
 
         // If order was NEEDS_INFO, change it back to PENDING_ACCEPTANCE after editing
         if (orderEntity.getOrderStatus() == OrderStatus.NEEDS_INFO) {
@@ -346,6 +354,7 @@ public class OrderService {
                 .build());
 
         addItemsToOrder(orderEntity, request.items());
+        itemLimitService.applySnapshots(orderEntity);
 
         final OrderHistoryEntity createHistoryItem = orderHistoryRepository.save(
                 OrderHistoryEntity.builder()
@@ -374,7 +383,8 @@ public class OrderService {
                     item.attributes(),
                     item.notes() == null ? null : item.notes().trim(),
                     item.quantity(),
-                    0
+                    0,
+                    null
             ));
 
             orderEntity.getOrderItemList().add(orderItemEntity);

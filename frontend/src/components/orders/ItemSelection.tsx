@@ -14,9 +14,11 @@ import {
     useMantineTheme
 } from '@mantine/core';
 import { IconAlertTriangle } from '@tabler/icons-react';
+import ItemLimitInfo from "src/components/common/items/ItemLimitInfo.tsx";
+import {isOverLimit} from "src/utils/ItemLimitUtils.tsx";
 import {useCallback, useEffect, useState} from "react";
 import itemsApi from "src/services/itemsApi.tsx";
-import {Category, categoryDisplayNames, Item} from "src/models/types.tsx";
+import {Category, categoryDisplayNames, Item, ItemLimitStatus} from "src/models/types.tsx";
 import OrderItemFormV2 from "src/forms/OrderItemFormV2.tsx";
 import {FormOrderItem} from "src/models/forms.tsx";
 import {useDisclosure} from "@mantine/hooks";
@@ -26,9 +28,11 @@ import ItemForm from "src/forms/items/ItemForm.tsx";
 interface props {
     currentSelection: FormOrderItem[]
     onItemSelectionChange: (index: number|null, formOrderItem: FormOrderItem|null) => void
+    // Customer's limit status per limited item id
+    limitStatuses?: Record<number, ItemLimitStatus>
 }
 
-export function ItemSelection ({currentSelection, onItemSelectionChange}: props) {
+export function ItemSelection ({currentSelection, onItemSelectionChange, limitStatuses = {}}: props) {
 
     const theme = useMantineTheme();
     const categoryColors = [
@@ -54,6 +58,11 @@ export function ItemSelection ({currentSelection, onItemSelectionChange}: props)
 
     const [selectedCategory, setSelectedCategory] = useState(categories[0].toString());
 
+
+    // Units of an item already selected, optionally leaving out the line being edited
+    const selectedQuantity = (itemId: number, excludeIndex: number | null = null) =>
+        currentSelection.reduce((sum, selected, index) =>
+            index !== excludeIndex && selected.item.id === itemId ? sum + (selected.quantity || 1) : sum, 0);
 
     const handleItemSelect = (item: Item) => {
         const draftItem: FormOrderItem = {
@@ -110,6 +119,15 @@ export function ItemSelection ({currentSelection, onItemSelectionChange}: props)
                    title={draftItem?.item?.description}
                    onClose={() => setDraftItem(null)}>
                 <Box mt={'xs'}>
+                { draftItem?.item.limit && (
+                    <Box mb={'sm'}>
+                        <ItemLimitInfo
+                            rule={draftItem.item.limit}
+                            status={limitStatuses[draftItem.item.id]}
+                            requested={selectedQuantity(draftItem.item.id, editingIndex) + (draftItem.quantity || 1)}
+                        />
+                    </Box>
+                )}
                 { draftItem && <OrderItemFormV2
                     formItem={draftItem}
                     onCancel={() => setDraftItem(null)}
@@ -172,6 +190,9 @@ export function ItemSelection ({currentSelection, onItemSelectionChange}: props)
                                                     />
                                                 )}
                                             </Group>
+                                            {item.limit && (
+                                                <ItemLimitInfo compact rule={item.limit} status={limitStatuses[item.id]}/>
+                                            )}
                                         </Card>
                                     </Grid.Col>
                                 ))}
@@ -183,7 +204,10 @@ export function ItemSelection ({currentSelection, onItemSelectionChange}: props)
                                 .sort((a, b) =>
                                     (a.item.category || "OTHER").localeCompare(b.item.category || "OTHER")
                                 )
-                                .map((item: FormOrderItem, index: number) => (
+                                .map((item: FormOrderItem, index: number) => {
+                                    const limitStatus = item.item.limit ? limitStatuses[item.item.id] : undefined;
+                                    const overLimit = !!limitStatus && isOverLimit(limitStatus, selectedQuantity(item.item.id));
+                                    return (
                                     <Pill
                                         size="xl"
                                         key={index}
@@ -194,11 +218,14 @@ export function ItemSelection ({currentSelection, onItemSelectionChange}: props)
                                             backgroundColor:
                                                 categoryColors[categories.indexOf(item.item.category || "OTHER")],
                                             cursor: "pointer",
+                                            outline: overLimit ? `2px solid ${theme.colors.orange[6]}` : undefined,
                                         }}
                                     >
+                                        {overLimit && <IconAlertTriangle size={14} style={{verticalAlign: 'middle', marginRight: 4}}/>}
                                         {item.item.description}
                                     </Pill>
-                                ))}
+                                    );
+                                })}
                         </Group>
                     )}
                 </Box>

@@ -1,8 +1,9 @@
-import { ActionIcon, Button, Group, Pill, PillsInput, Select, Stack, Switch, Text, TextInput, Card, Divider, rem } from "@mantine/core";
+import { ActionIcon, Button, Group, NumberInput, Pill, PillsInput, SegmentedControl, Select, Stack, Switch, Text, TextInput, Card, Divider, rem } from "@mantine/core";
 import { IconX, IconFolder, IconArrowUp, IconArrowDown } from "@tabler/icons-react";
 import useApi from "src/hooks/useApi.tsx";
 import itemsApi from "src/services/itemsApi.tsx";
-import { AdminItem, Category, categoryDisplayNames, Item } from "src/models/types.tsx";
+import { AdminItem, Category, categoryDisplayNames, Item, ItemLimitRequest, LimitPeriodUnit, LimitWindow } from "src/models/types.tsx";
+import { formatLimitRule, monthNames } from "src/utils/ItemLimitUtils.tsx";
 import { useEffect } from "react";
 import { useForm } from "@mantine/form";
 
@@ -29,6 +30,12 @@ interface FormOrderItem {
     placeholder: string;
     managed: boolean;
     attributesAndGroups: AttributeOrGroup[];
+    limitEnabled: boolean;
+    limitQuantity: number;
+    limitPeriodValue: number;
+    limitPeriodUnit: LimitPeriodUnit;
+    limitWindow: LimitWindow;
+    limitPeriodStartMonth: string;
 }
 
 interface Props {
@@ -101,10 +108,18 @@ export function ItemForm({ onItemSave, item }: Props) {
             placeholder: item?.placeholder || "",
             managed: item?.managed !== false,
             attributesAndGroups: convertExistingAttributes(),
+            limitEnabled: !!item?.limit,
+            limitQuantity: item?.limit?.quantity ?? 1,
+            limitPeriodValue: item?.limit?.periodValue ?? 1,
+            limitPeriodUnit: item?.limit?.periodUnit ?? 'MONTH',
+            limitWindow: item?.limit?.window ?? 'ROLLING',
+            limitPeriodStartMonth: String(item?.limit?.periodStartMonth ?? 1),
         },
         validate: {
             description: (value) => ((value.trim() || item?.description) ? null : "Description is required"),
             category: (value) => (value ? null : "Category is required"),
+            limitQuantity: (value, values) => (!values.limitEnabled || value >= 1 ? null : "Must be at least 1"),
+            limitPeriodValue: (value, values) => (!values.limitEnabled || value >= 1 ? null : "Must be at least 1"),
         },
     });
 
@@ -139,9 +154,25 @@ export function ItemForm({ onItemSave, item }: Props) {
             }
         });
         
+        const {
+            limitEnabled, limitQuantity, limitPeriodValue, limitPeriodUnit, limitWindow, limitPeriodStartMonth,
+            ...rest
+        } = values;
+        const limit: ItemLimitRequest = limitEnabled
+            ? {
+                enabled: true,
+                quantity: limitQuantity,
+                periodValue: limitPeriodValue,
+                periodUnit: limitPeriodUnit,
+                window: limitWindow,
+                periodStartMonth: Number(limitPeriodStartMonth),
+            }
+            : {enabled: false};
+
         return {
-            ...values,
-            attributes
+            ...rest,
+            attributes,
+            limit,
         };
     };
 
@@ -199,6 +230,86 @@ export function ItemForm({ onItemSave, item }: Props) {
                     placeholder="Enter placeholder"
                     {...form.getInputProps("placeholder")}
                 />
+
+                {/* Limited item */}
+                <Card withBorder padding="sm">
+                    <Stack gap="sm">
+                        <Switch
+                            size="md"
+                            label="Limited item"
+                            description="Customers can only receive this item so often. Order takers see a warning but can still add it."
+                            {...form.getInputProps("limitEnabled", {type: 'checkbox'})}
+                        />
+                        {form.values.limitEnabled && (
+                            <>
+                                <Group gap="xs" align="end" wrap="wrap">
+                                    <NumberInput
+                                        label="Allowed"
+                                        min={1}
+                                        w={90}
+                                        allowDecimal={false}
+                                        {...form.getInputProps("limitQuantity")}
+                                    />
+                                    <Text pb={8}>per</Text>
+                                    <NumberInput
+                                        label="Every"
+                                        min={1}
+                                        w={90}
+                                        allowDecimal={false}
+                                        {...form.getInputProps("limitPeriodValue")}
+                                    />
+                                    <Select
+                                        label="Period"
+                                        w={130}
+                                        allowDeselect={false}
+                                        data={[
+                                            {value: 'WEEK', label: form.values.limitPeriodValue === 1 ? 'week' : 'weeks'},
+                                            {value: 'MONTH', label: form.values.limitPeriodValue === 1 ? 'month' : 'months'},
+                                            {value: 'YEAR', label: form.values.limitPeriodValue === 1 ? 'year' : 'years'},
+                                        ]}
+                                        {...form.getInputProps("limitPeriodUnit")}
+                                    />
+                                </Group>
+                                <Stack gap={4}>
+                                    <Text size="sm" fw={500}>Counting</Text>
+                                    <SegmentedControl
+                                        data={[
+                                            {value: 'ROLLING', label: 'Rolling'},
+                                            {value: 'CALENDAR', label: 'Calendar'},
+                                        ]}
+                                        {...form.getInputProps("limitWindow")}
+                                    />
+                                </Stack>
+                                {form.values.limitWindow === 'CALENDAR' && form.values.limitPeriodUnit !== 'WEEK' && (
+                                    <Select
+                                        label="Period starts in"
+                                        description="Use this for seasons, e.g. a yearly limit that resets in October"
+                                        allowDeselect={false}
+                                        data={monthNames.map((name, index) => ({value: String(index + 1), label: name}))}
+                                        {...form.getInputProps("limitPeriodStartMonth")}
+                                    />
+                                )}
+                                <Text size="sm" c="dimmed">
+                                    {(() => {
+                                        const rule = formatLimitRule({
+                                            quantity: form.values.limitQuantity || 1,
+                                            periodValue: form.values.limitPeriodValue || 1,
+                                            periodUnit: form.values.limitPeriodUnit,
+                                            window: form.values.limitWindow,
+                                        });
+                                        if (form.values.limitWindow === 'ROLLING') {
+                                            return `${rule}, counted back from the day of the order.`;
+                                        }
+                                        if (form.values.limitPeriodUnit === 'WEEK') {
+                                            return `${rule}. Resets on Mondays.`;
+                                        }
+                                        return `${rule}. Periods start on ${monthNames[Number(form.values.limitPeriodStartMonth) - 1]} 1.`;
+                                    })()}
+                                </Text>
+                            </>
+                        )}
+                    </Stack>
+                </Card>
 
                 {/* Attributes Section */}
                 <Stack gap="xs">

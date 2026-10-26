@@ -29,6 +29,7 @@ import CustomerMgmtPage from "src/pages/admin/CustomerMgmtPage.tsx";
 import DevicesPage from "src/pages/admin/DevicesPage.tsx";
 import NoAccessPage from "src/pages/NoAccess.tsx";
 import CustomerDetailPage from "src/pages/search/CustomerDetailPage.tsx";
+import CustomerItemHistoryPage from "src/pages/search/CustomerItemHistoryPage.tsx";
 import ShowersDashboard from "src/pages/dashboards/ShowersDashboard.tsx";
 import OrderDetailsPageOld from "./pages/orders/OrderDetailsPageOld";
 import SystemReports from "src/pages/reports/SystemReports.tsx";
@@ -188,6 +189,13 @@ const routes = [
                 path: '/customer/:uuid',
                 element: CustomerDetailPage,
                 title: 'Customer Details',
+                showInNavBar: false,
+            },
+            {
+                key: 'customer-item-history',
+                path: '/customer/:uuid/items',
+                element: CustomerItemHistoryPage,
+                title: 'Item History',
                 showInNavBar: false,
             },
         ],

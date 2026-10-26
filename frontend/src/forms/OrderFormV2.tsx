@@ -1,6 +1,7 @@
-import { useEffect, useState} from "react";
+import {useEffect, useMemo, useState} from "react";
 import {UseFormReturnType} from "@mantine/form";
 import {
+    Alert,
     Badge, Blockquote,
     Box,
     Button,
@@ -15,14 +16,18 @@ import {
     Title, useMantineTheme
 } from "@mantine/core";
 import {useMediaQuery} from "@mantine/hooks";
-import {CustomerSearchResult, OrderDetails, OrderRequest} from "src/models/types";
+import {CustomerSearchResult, ItemLimitStatus, OrderDetails, OrderRequest} from "src/models/types";
 import ItemSelection from "src/components/orders/ItemSelection.tsx";
 import useApi from "src/hooks/useApi.tsx";
 import {FormOrderItem, OrderFormValues} from "src/models/forms.tsx";
 import {useFeatures} from "src/context/FeaturesContext.tsx";
 import ordersApi from "src/services/ordersApi.tsx";
+import customersApi from "src/services/customersApi.tsx";
 import GroupedAttributeBadges from "src/components/common/items/GroupedAttributeBadges";
+import ItemLimitInfo from "src/components/common/items/ItemLimitInfo.tsx";
+import {isOverLimit} from "src/utils/ItemLimitUtils.tsx";
 import {
+    IconAlertTriangle,
     IconNote,
     IconNotes,
     IconSend,
@@ -53,6 +58,33 @@ export function OrderFormV2({ form, mode, order, onUpdateComplete }: Props) {
 
     const createOrderAPI = useApi(ordersApi.createOrder);
     const updateOrderApi = useApi(ordersApi.updateOrderDetails);
+    const itemLimitsApi = useApi(customersApi.getItemLimits);
+
+    // Customer's live status for each limited item, keyed by item id. Empty for new customers.
+    const [limitStatuses, setLimitStatuses] = useState<Record<number, ItemLimitStatus>>({});
+
+    useEffect(() => {
+        setLimitStatuses({});
+        const customerId = form.values.customerId;
+        if (!customerId) return;
+
+        let cancelled = false;
+        itemLimitsApi.request(customerId, {silent: true}).then((result) => {
+            if (!cancelled && result) {
+                setLimitStatuses(Object.fromEntries(result.data.map((limit) => [limit.itemId, limit.status])));
+            }
+        });
+        return () => { cancelled = true; };
+    }, [form.values.customerId]);
+
+    // The same limited item can be on more than one line (e.g. two sizes), so compare the total
+    const requestedByItem = useMemo(() => form.values.items.reduce<Record<number, number>>((acc, i) => {
+        acc[i.item.id] = (acc[i.item.id] ?? 0) + (i.quantity || 1);
+        return acc;
+    }, {}), [form.values.items]);
+
+    const overLimitItems = form.values.items.filter((i) =>
+        i.item.limit && limitStatuses[i.item.id] && isOverLimit(limitStatuses[i.item.id], requestedByItem[i.item.id]));
 
     const steps = ["customer", "items", "additional", "confirm"];
 
@@ -252,6 +284,7 @@ export function OrderFormV2({ form, mode, order, onUpdateComplete }: Props) {
                 {step === "items" && <ItemSelection
                             currentSelection={form.values.items}
                             onItemSelectionChange={handleItemSelection}
+                            limitStatuses={limitStatuses}
                         />}
 
                 {/* Step 3: notes and additional */}
@@ -270,6 +303,12 @@ export function OrderFormV2({ form, mode, order, onUpdateComplete }: Props) {
                     <Stack>
                         <Title order={4}>Order Summary</Title>
                         <Text>Name: {form.values.firstName} {form.values.lastName}</Text>
+                        {overLimitItems.length > 0 && (
+                            <Alert color="orange" variant="light" icon={<IconAlertTriangle/>}
+                                   title={`${overLimitItems.length} item${overLimitItems.length === 1 ? ' is' : 's are'} over this customer's limit`}>
+                                {overLimitItems.map((i) => i.item.description).join(', ')}. They can still be included.
+                            </Alert>
+                        )}
                         <Stack gap="xs">
                             {form.values.items.map((i: FormOrderItem) => (
                                 <Card key={i.item.id} withBorder shadow="sm" padding="xs">
@@ -294,6 +333,13 @@ export function OrderFormV2({ form, mode, order, onUpdateComplete }: Props) {
                                     )}
                                     {i.notes && (
                                         <Text size="sm" c="dimmed" >Notes: {i.notes}</Text>
+                                    )}
+                                    {i.item.limit && (
+                                        <ItemLimitInfo
+                                            rule={i.item.limit}
+                                            status={limitStatuses[i.item.id]}
+                                            requested={requestedByItem[i.item.id]}
+                                        />
                                     )}
                                 </Card>
                             ))}
