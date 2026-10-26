@@ -109,8 +109,12 @@ public class OrderController {
                                          @RequestParam(value = "onlyMyOrders", required = false)
                                          final boolean onlyMyOrders,
                                          @RequestParam(value = "myOrdersActions", required = false)
-                                         final List<String> myOrdersActions) {
-        final Page<OrderEntity> results = orderService.getOrders(pageable, statuses, customer, customerUuid != null ? customerUuid.toString() : null, orderId, onlyMyOrders, myOrdersActions);
+                                         final List<String> myOrdersActions,
+                                         @RequestParam(value = "itemId", required = false)
+                                         final Long itemId,
+                                         @RequestParam(value = "attr", required = false)
+                                         final List<String> itemAttributes) {
+        final Page<OrderEntity> results = orderService.getOrders(pageable, statuses, customer, customerUuid != null ? customerUuid.toString() : null, orderId, onlyMyOrders, myOrdersActions, itemId, itemAttributes);
         if (detailed) {
             return results.map(OrderDetailResponse::from);
         } else {

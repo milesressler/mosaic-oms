@@ -2,16 +2,22 @@ package com.mosaicchurchaustin.oms.specifications;
 
 import com.mosaicchurchaustin.oms.data.entity.order.OrderEntity;
 import com.mosaicchurchaustin.oms.data.entity.order.OrderHistoryEntity;
+import com.mosaicchurchaustin.oms.data.entity.order.OrderItemEntity;
 import com.mosaicchurchaustin.oms.data.entity.order.OrderStatus;
 import com.mosaicchurchaustin.oms.data.entity.user.UserEntity;
 import org.springframework.data.jpa.domain.Specification;
 
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.Expression;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
+import jakarta.persistence.criteria.Subquery;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 public class OrderSpecBuilder {
     private List<OrderStatus> statuses;
@@ -20,6 +26,8 @@ public class OrderSpecBuilder {
     private Long orderId;
     private Long handledByUserId;
     private List<String> myOrdersActions;
+    private Long itemId;
+    private Map<String, String> itemAttributes;
 
     private OrderSpecBuilder() {}
 
@@ -57,6 +65,17 @@ public class OrderSpecBuilder {
         return this;
     }
 
+    public OrderSpecBuilder itemId(Long itemId) {
+        this.itemId = itemId;
+        return this;
+    }
+
+    /** Attribute key to value, matched against the stored value or display value (e.g. size=13) */
+    public OrderSpecBuilder itemAttributes(Map<String, String> itemAttributes) {
+        this.itemAttributes = itemAttributes;
+        return this;
+    }
+
     public Specification<OrderEntity> build() {
         return (root, query, cb) -> {
             List<Predicate> p = new ArrayList<>();
@@ -81,6 +100,21 @@ public class OrderSpecBuilder {
 
             if (orderId != null) {
                 p.add(cb.equal(root.get("id"), orderId));
+            }
+
+            if (itemId != null) {
+                // Orders with at least one line for the item, so an order with two matching lines shows once
+                Subquery<Long> lines = query.subquery(Long.class);
+                Root<OrderItemEntity> line = lines.from(OrderItemEntity.class);
+                List<Predicate> linePredicates = new ArrayList<>();
+                linePredicates.add(cb.equal(line.get("orderEntity"), root));
+                linePredicates.add(cb.equal(line.get("itemEntity").get("id"), itemId));
+                if (itemAttributes != null) {
+                    itemAttributes.forEach((key, value) ->
+                            linePredicates.add(attributeMatches(cb, line.get("attributes"), key, value)));
+                }
+                lines.select(line.get("id")).where(linePredicates.toArray(new Predicate[0]));
+                p.add(cb.exists(lines));
             }
 
             if (handledByUserId != null) {
@@ -146,5 +180,23 @@ public class OrderSpecBuilder {
 
             return cb.and(p.toArray(new Predicate[0]));
         };
+    }
+
+    private static Predicate attributeMatches(CriteriaBuilder cb, Expression<?> attributes, String key, String value) {
+        String path = "$.\"" + key + "\"";
+        String expected = value.trim().toLowerCase();
+        // Single values store {value, displayValue}; multi-selects store {values: [...]}
+        return cb.or(
+                cb.equal(cb.lower(jsonText(cb, attributes, path + ".value")), expected),
+                cb.equal(cb.lower(jsonText(cb, attributes, path + ".displayValue")), expected),
+                cb.equal(cb.function("JSON_CONTAINS", Integer.class,
+                        cb.function("JSON_EXTRACT", String.class, attributes, cb.literal(path + ".values")),
+                        cb.function("JSON_QUOTE", String.class, cb.literal(value.trim()))), 1)
+        );
+    }
+
+    private static Expression<String> jsonText(CriteriaBuilder cb, Expression<?> attributes, String path) {
+        return cb.function("JSON_UNQUOTE", String.class,
+                cb.function("JSON_EXTRACT", String.class, attributes, cb.literal(path)));
     }
 }

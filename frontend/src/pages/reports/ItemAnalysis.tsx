@@ -19,6 +19,7 @@ import {
     ActionIcon,
     Progress,
     Tooltip,
+    Anchor,
 } from '@mantine/core';
 import { useLocalStorage } from '@mantine/hooks';
 import { IconInfoCircle, IconShoppingCart, IconPackage, IconTrendingUp, IconChartLine, IconChartBar, IconChevronDown, IconChevronRight, IconDownload, IconSparkles } from '@tabler/icons-react';
@@ -203,6 +204,13 @@ const ItemAnalysis: React.FC = () => {
         }
     };
     
+    // Orders page filtered to this item and attribute values, e.g. who asked for size 13
+    const ordersLink = (attrs: Record<string, string>): string => {
+        const params = new URLSearchParams({itemId: String(selectedItem?.id ?? '')});
+        Object.entries(attrs).forEach(([attrKey, value]) => params.set(`attr.${attrKey}`, value));
+        return `/orders?${params.toString()}`;
+    };
+
     // Get metrics data from API
     const metrics = itemMetricsApi.data;
     
@@ -723,6 +731,13 @@ const ItemAnalysis: React.FC = () => {
                                                                 </ActionIcon>
                                                             )}
                                                             <Text fw={500}>{key}</Text>
+                                                            {key !== 'Unknown' && (
+                                                                <Anchor component={Link} size="xs"
+                                                                        to={ordersLink({[breakdownAttribute]: key})}
+                                                                        onClick={(e: React.MouseEvent) => e.stopPropagation()}>
+                                                                    View orders
+                                                                </Anchor>
+                                                            )}
                                                         </Group>
                                                         <Group gap="md">
                                                             <Progress 
@@ -751,7 +766,15 @@ const ItemAnalysis: React.FC = () => {
                                                                         borderRadius: 4, 
                                                                         backgroundColor: 'var(--mantine-color-gray-1)' 
                                                                     }}>
-                                                                        <Text size="sm" pl="md">↳ {subKey}</Text>
+                                                                        <Group gap="sm">
+                                                                            <Text size="sm" pl="md">↳ {subKey}</Text>
+                                                                            {key !== 'Unknown' && subKey !== 'Unknown' && (
+                                                                                <Anchor component={Link} size="xs"
+                                                                                        to={ordersLink({[breakdownAttribute]: key, [secondaryBreakdownAttribute]: subKey})}>
+                                                                                    View orders
+                                                                                </Anchor>
+                                                                            )}
+                                                                        </Group>
                                                                         <Group gap="sm">
                                                                             <Text size="sm">{String(subValue)} req.</Text>
                                                                             <Badge size="xs" variant="outline">

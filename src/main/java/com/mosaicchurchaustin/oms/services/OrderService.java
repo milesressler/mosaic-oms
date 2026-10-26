@@ -32,6 +32,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.util.Collection;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -84,7 +85,9 @@ public class OrderService {
                                        final String customerUuid,
                                        final Long orderId,
                                        final boolean onlyMyOrders,
-                                       final List<String> myOrdersActions) {
+                                       final List<String> myOrdersActions,
+                                       final Long itemId,
+                                       final List<String> itemAttributes) {
         final List<OrderStatus> statusList = Stream.ofNullable(statusFilters)
                 .flatMap(Collection::stream)
                 .map(OrderStatus::from)
@@ -97,8 +100,27 @@ public class OrderService {
                 .orderId(orderId)
                 .handledByUser(onlyMyOrders ? userService.currentUser().getId() : null)
                 .myOrdersActions(onlyMyOrders ? myOrdersActions : null)
+                .itemId(itemId)
+                .itemAttributes(itemId != null ? parseItemAttributes(itemAttributes) : null)
                 .build();
         return orderRepository.findAll(spec, pageable);
+    }
+
+    /** "key:value" pairs, e.g. "size:13" */
+    private static Map<String, String> parseItemAttributes(final List<String> itemAttributes) {
+        final Map<String, String> parsed = new LinkedHashMap<>();
+        Stream.ofNullable(itemAttributes)
+                .flatMap(Collection::stream)
+                .filter(StringUtils::isNotBlank)
+                .forEach(pair -> {
+                    final String key = StringUtils.substringBefore(pair, ":").trim();
+                    final String value = StringUtils.substringAfter(pair, ":").trim();
+                    if (key.isEmpty() || value.isEmpty() || StringUtils.containsAny(key, '"', '\\')) {
+                        throw new InvalidRequestException("Invalid attribute filter: " + pair);
+                    }
+                    parsed.put(key, value);
+                });
+        return parsed;
     }
 
     public List<OrderEntity> getDashboardOrders(final Pageable pageable) {

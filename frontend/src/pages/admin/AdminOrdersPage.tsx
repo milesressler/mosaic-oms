@@ -1,5 +1,5 @@
 import {useNavigate, useSearchParams} from "react-router-dom";
-import {OrderDetails, OrderStatus} from "src/models/types.tsx";
+import {Category, categoryDisplayNames, OrderDetails, OrderItem, OrderStatus} from "src/models/types.tsx";
 import {
     Avatar,
     Badge,
@@ -16,6 +16,7 @@ import {useDebouncedValue} from "@mantine/hooks";
 import {IconChevronDown, IconChevronUp, IconPencil, IconSearch, IconSelector, IconX} from "@tabler/icons-react";
 import useApi from "src/hooks/useApi.tsx";
 import ordersApi from "src/services/ordersApi.tsx";
+import itemsApi from "src/services/itemsApi.tsx";
 import {useEffect, useState} from "react";
 import {DateTime} from "luxon";
 import groupmeImage from "src/assets/groupme_icon.png";
@@ -23,7 +24,15 @@ import StatusBadge from "src/components/StatusBadge.tsx";
 import classes from "src/components/orders/TableSort.module.css";
 import {statusDisplay} from "src/utils/StatusUtils.tsx";
 import QrScannerButton from "src/components/scanner/QrScannerButton.tsx";
+import GroupedAttributeBadges from "src/components/common/items/GroupedAttributeBadges.tsx";
 
+
+type AttributeDisplay = string | { value: string; displayValue: string };
+
+// Statuses where packing is done, so the filled quantity is final
+const PACKED_STATUSES: OrderStatus[] = [OrderStatus.PACKED, OrderStatus.IN_TRANSIT, OrderStatus.READY_FOR_CUSTOMER_PICKUP, OrderStatus.COMPLETED];
+
+const ATTR_PARAM_PREFIX = 'attr.';
 
 interface ThProps {
     field?: string
@@ -34,6 +43,7 @@ const AdminOrdersPage = () => {
 
     const navigate = useNavigate();
     const getOrders = useApi(ordersApi.getOrdersWithDetails);
+    const suggestedItemsApi = useApi(itemsApi.getSuggestedItems);
     const [searchParams, setSearchParams] = useSearchParams();
 
     // Get page from URL or default to 1
@@ -45,6 +55,15 @@ const AdminOrdersPage = () => {
     const statusFilter = searchParams.get("status") || null;
     const onlyMyOrdersFilter = searchParams.get("onlyMyOrders") === "true";
     const customerFilter = searchParams.get("customer") || null;
+    const itemIdFilter = Number(searchParams.get("itemId")) || null;
+    // Size and other attribute filters are kept in the URL as attr.<key>=<value>, e.g. attr.size=13
+    const attrFilters: Record<string, string> = {};
+    searchParams.forEach((value, key) => {
+        if (key.startsWith(ATTR_PARAM_PREFIX) && value) {
+            attrFilters[key.slice(ATTR_PARAM_PREFIX.length)] = value;
+        }
+    });
+    const attrParam = Object.entries(attrFilters).map(([key, value]) => `${key}:${value}`).join(',');
     const [customerSearchString, setCustomerSearchString] = useState(customerFilter);
 
     // Role action filter state
@@ -67,8 +86,22 @@ const AdminOrdersPage = () => {
             customerUuid: customerUuidFilter,
             onlyMyOrders: onlyMyOrdersFilter,
             myOrdersActions: onlyMyOrdersFilter && myOrdersActions.length > 0 ? myOrdersActions.join(',') : undefined,
+            itemId: itemIdFilter ?? undefined,
+            attr: itemIdFilter && attrParam ? attrParam : undefined,
         });
-    }, [page, sortField, reversed, statusFilter, customerFilter, customerUuidFilter, orderId, onlyMyOrdersFilter, myOrdersActions]);
+    }, [page, sortField, reversed, statusFilter, customerFilter, customerUuidFilter, orderId, onlyMyOrdersFilter, myOrdersActions, itemIdFilter, attrParam]);
+
+    useEffect(() => {
+        suggestedItemsApi.request();
+    }, []);
+
+    const itemOptions = Object.entries(suggestedItemsApi.data ?? {}).map(([category, items]) => ({
+        group: categoryDisplayNames[category as Category] ?? category,
+        items: items.map((item) => ({value: item.id.toString(), label: item.description})),
+    }));
+    const selectedItem = Object.values(suggestedItemsApi.data ?? {}).flat().find((item) => item.id === itemIdFilter);
+    const filterableAttributes = (selectedItem?.attributes ?? [])
+        .filter((attr) => (attr.type === 'SINGLE_SELECT' || attr.type === 'MULTI_SELECT') && attr.options.length > 0);
 
     useEffect(() => {
         const params = new URLSearchParams(searchParams);
@@ -133,6 +166,56 @@ const AdminOrdersPage = () => {
         }
         params.set('page', '1'); // reset pagination
         setSearchParams(params, { replace: true });
+    };
+
+    const setItemFilter = (itemId: string | null) => {
+        const params = new URLSearchParams(searchParams);
+        // Attribute filters belong to the previous item
+        [...params.keys()].filter((key) => key.startsWith(ATTR_PARAM_PREFIX)).forEach((key) => params.delete(key));
+        if (itemId) {
+            params.set('itemId', itemId);
+        } else {
+            params.delete('itemId');
+        }
+        params.set('page', '1');
+        setSearchParams(params, { replace: true });
+    };
+
+    const setAttrFilter = (key: string, value: string | null) => {
+        const params = new URLSearchParams(searchParams);
+        if (value) {
+            params.set(ATTR_PARAM_PREFIX + key, value);
+        } else {
+            params.delete(ATTR_PARAM_PREFIX + key);
+        }
+        params.set('page', '1');
+        setSearchParams(params, { replace: true });
+    };
+
+    // Lines on the order for the filtered item, narrowed to the chosen sizes when the stored values line up
+    const matchingLines = (order: OrderDetails): OrderItem[] => {
+        const lines = (order.items ?? []).filter((line) => line.item?.id === itemIdFilter);
+        const narrowed = lines.filter((line) => Object.entries(attrFilters).every(([key, expected]) => {
+            const actual = (line.attributes as Record<string, AttributeDisplay>)[key];
+            const values = typeof actual === 'string' ? [actual] : actual ? [actual.value, actual.displayValue] : [];
+            return values.some((value) => value?.toLowerCase() === expected.toLowerCase());
+        }));
+        return narrowed.length > 0 ? narrowed : lines;
+    };
+
+    const renderFill = (order: OrderDetails, line: OrderItem) => {
+        if (!PACKED_STATUSES.includes(order.orderStatus)) {
+            return <Badge size="sm" variant="light" color="gray">{line.quantityRequested} requested</Badge>;
+        }
+        const fulfilled = line.quantityFulfilled ?? 0;
+        if (fulfilled >= line.quantityRequested) {
+            return <Badge size="sm" variant="light" color="green">{fulfilled} received</Badge>;
+        }
+        return (
+            <Badge size="sm" variant="light" color="orange">
+                {fulfilled === 0 ? 'Not filled' : `${fulfilled} of ${line.quantityRequested}`}
+            </Badge>
+        );
     };
 
     const setOnlyMyOrders = (val: boolean) => {
@@ -208,6 +291,20 @@ const AdminOrdersPage = () => {
                     </Text></Group></></Table.Td>
                 <Table.Td>{order.id}  { order.postedToGroupMe && <Image w={16} h={16} src={groupmeImage}></Image> } </Table.Td>
                 <Table.Td>{order.customer.firstName} {order.customer.lastName}</Table.Td>
+                {itemIdFilter && (
+                    <Table.Td>
+                        <Stack gap={4}>
+                            {matchingLines(order).map((line) => (
+                                <Group key={line.id} gap="xs" wrap="nowrap">
+                                    {Object.keys(line.attributes ?? {}).length > 0 && (
+                                        <GroupedAttributeBadges attrs={line.attributes} itemAttributes={line.item.attributes}/>
+                                    )}
+                                    {renderFill(order, line)}
+                                </Group>
+                            ))}
+                        </Stack>
+                    </Table.Td>
+                )}
                 <Table.Td> <>
                     <Text>{DateTime.fromISO(order.created).toLocaleString(DateTime.TIME_SIMPLE)}</Text>
                     <Text c={"dimmed"} size={'xs'}>{DateTime.fromISO(order.created).toLocaleString(DateTime.DATE_MED)}</Text>
@@ -282,6 +379,43 @@ const AdminOrdersPage = () => {
                     }}/>
                 </Group>
 
+                {/* Item filter: who asked for this item, optionally in a given size */}
+                <Group gap="sm" wrap="wrap">
+                    <Select
+                        data={itemOptions}
+                        placeholder="Filter by item"
+                        searchable
+                        clearable
+                        value={itemIdFilter ? itemIdFilter.toString() : null}
+                        onChange={setItemFilter}
+                        style={{ flex: 1, minWidth: 200, maxWidth: 320 }}
+                    />
+                    {itemIdFilter && filterableAttributes.map((attr) => {
+                        const current = attrFilters[attr.key];
+                        // Links from reports may use the display value, so match either
+                        const option = current
+                            ? attr.options.find((o) => [o.value, o.label].some((v) => v.toLowerCase() === current.toLowerCase()))
+                            : undefined;
+                        const data = attr.options.map((o) => ({value: o.value, label: o.label}));
+                        if (current && !option) {
+                            data.push({value: current, label: current});
+                        }
+                        return (
+                            <Select
+                                key={attr.key}
+                                data={data}
+                                placeholder={`Any ${attr.label.toLowerCase()}`}
+                                aria-label={attr.label}
+                                searchable
+                                clearable
+                                value={option?.value ?? current ?? null}
+                                onChange={(value) => setAttrFilter(attr.key, value)}
+                                style={{ minWidth: 140, maxWidth: 200 }}
+                            />
+                        );
+                    })}
+                </Group>
+
                 {/* Row 2: Switch + action checkboxes */}
                 <Group gap="sm">
                     <Switch
@@ -318,6 +452,7 @@ const AdminOrdersPage = () => {
                             <>Order #</>
                         </Th>
                         <Th key={'customer'} field={'customer.lastName'}>Customer</Th>
+                        {itemIdFilter && <Th key={'matching'}>{selectedItem?.description ?? 'Matching item'}</Th>}
                         <Th
                             key={'created'}
                             field={'created'}>
