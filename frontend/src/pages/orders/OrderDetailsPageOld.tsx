@@ -83,6 +83,7 @@ export default function OrderDetailsPageOld() {
             printOrder.request(order.uuid, OrderStatus.PACKED).then(
                 (result) => {
                     if (result?.data) {
+                        notifications.clean();
                         notifications.show({
                             title: `New label printed`,
                             message: null,

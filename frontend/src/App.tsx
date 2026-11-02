@@ -82,7 +82,7 @@ function App() {
         >
             <ModalsProvider>
                 <PreferencesProvider>
-                    <Notifications/>
+                    <Notifications limit={1}/>
                         <CookiesProvider defaultSetOptions >
                             <Auth0ProviderWithNavigate>
                                     <AuthContextProvider>

@@ -46,6 +46,7 @@ export function NotificationsHandler({}) {
         if (!shouldShow(body)) {
             return;
         }
+        notifications.clean();
         notifications.show({
             // title: 'New Order Created',
             title: `${body.userName} created a new order`,
@@ -60,6 +61,7 @@ export function NotificationsHandler({}) {
         if (!shouldShow(body)) {
             return;
         }
+        notifications.clean();
         notifications.show({
             title: `${body.userName} updated order ${body.orderId} status to ${statusDisplay(body.orderStatus)}`,
             message: null,
@@ -73,6 +75,7 @@ export function NotificationsHandler({}) {
         if (!shouldShow(body)) {
             return;
         }
+        notifications.clean();
         notifications.show({
             title: `${body.userName} updated ${body.orders.length} orders to ${statusDisplay(body.orders[0].orderStatus)}`,
             message: null,
@@ -96,6 +99,7 @@ export function NotificationsHandler({}) {
         } else {
             messagecontent = `${body.userName} assigned order ${body.orderId} to ${body.assigneeName}`;
         }
+        notifications.clean();
         notifications.show({
             // title: !body.assigneeName ? 'Order Unassigned' : 'Order Assigned',
             title: messagecontent,
