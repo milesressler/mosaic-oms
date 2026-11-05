@@ -23,7 +23,7 @@ import {
 import {DatePickerInput} from '@mantine/dates';
 import {useDebouncedValue, useDisclosure} from '@mantine/hooks';
 import {modals} from '@mantine/modals';
-import {IconArrowLeft, IconPlus, IconRepeat, IconSearch, IconTrash} from '@tabler/icons-react';
+import {IconArrowBackUp, IconArrowLeft, IconPlus, IconRepeat, IconSearch, IconTrash} from '@tabler/icons-react';
 import {useEffect, useRef, useState} from 'react';
 import {useNavigate, useParams, useSearchParams} from 'react-router-dom';
 import {DateTime} from 'luxon';
@@ -54,6 +54,7 @@ const CustomerItemHistoryPage = () => {
     const customerRequest = useApi(CustomersApi.getCustomer);
     const historyRequest = useApi(CustomersApi.getItemHistory);
     const deleteEntryRequest = useApi(CustomersApi.deleteItemLimitEntry);
+    const unfillRequest = useApi(CustomersApi.unfillOrderItem);
     const [recordOpened, {open: openRecord, close: closeRecord}] = useDisclosure(false);
 
     // Filters start from the URL so other pages can link here pre-filtered, e.g. ?limited=true
@@ -121,6 +122,26 @@ const CustomerItemHistoryPage = () => {
         },
     });
 
+    const confirmUnfill = (row: CustomerItemHistoryRow) => modals.openConfirmModal({
+        title: 'Mark as not filled',
+        children: (
+            <Text size="sm" mt={'xs'}>
+                Mark {row.item.description} on <strong>Order #{row.orderId}</strong> ({formatReceived(row)}) as not
+                filled? Use this when the item was given back, e.g. it didn't fit. It will no longer count toward
+                this customer's limit.
+            </Text>
+        ),
+        labels: {confirm: 'Mark not filled', cancel: 'Cancel'},
+        confirmProps: {color: 'red'},
+        onConfirm: () => {
+            unfillRequest.request(uuid!, row.orderItemId!).then(loadHistory);
+        },
+    });
+
+    // Only lines that show as received can be reversed
+    const canUnfill = (row: CustomerItemHistoryRow): boolean =>
+        row.source === 'ORDER' && row.orderItemId != null && (row.quantityFulfilled ?? 0) > 0;
+
     const rows = historyRequest.data?.content ?? [];
     const customer = customerRequest.data;
 
@@ -156,7 +177,17 @@ const CustomerItemHistoryPage = () => {
     };
 
     const renderSource = (row: CustomerItemHistoryRow) => row.source === 'ORDER' ? (
-        <Anchor size="sm" onClick={() => navigate(`/order/${row.orderId}`)}>Order #{row.orderId}</Anchor>
+        <Group gap={4} wrap="nowrap">
+            <Anchor size="sm" onClick={() => navigate(`/order/${row.orderId}`)}>Order #{row.orderId}</Anchor>
+            {canUnfill(row) && (
+                <Tooltip label="Given back? Mark as not filled" withArrow>
+                    <ActionIcon size="sm" variant="subtle" color="red" disabled={unfillRequest.loading}
+                                onClick={() => confirmUnfill(row)} aria-label="Mark as not filled">
+                        <IconArrowBackUp size={14}/>
+                    </ActionIcon>
+                </Tooltip>
+            )}
+        </Group>
     ) : (
         <Group gap={4} wrap="nowrap">
             <Text size="sm" c="dimmed">

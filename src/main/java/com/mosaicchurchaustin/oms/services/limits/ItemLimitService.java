@@ -120,6 +120,26 @@ public class ItemLimitService {
     }
 
     /**
+     * Clears the fill on a line of a completed order, e.g. when a limited item was handed back because it
+     * didn't fit, so it no longer counts against the customer's limit. The line stays on the order as not filled.
+     */
+    @Transactional
+    public void unfillOrderItem(final String customerUuid, final Long orderItemId) {
+        final OrderItemEntity orderItem = orderItemRepository.findById(orderItemId)
+                .filter(found -> found.getOrderEntity().getCustomer().getUuid().equals(customerUuid))
+                .orElseThrow(() -> new EntityNotFoundException(OrderItemEntity.ENTITY_NAME, orderItemId.toString()));
+        if (orderItem.getOrderEntity().getOrderStatus() != OrderStatus.COMPLETED) {
+            throw new InvalidRequestException("Only items on completed orders can be marked not filled here");
+        }
+        // A missing fulfilled quantity means an older order where everything requested was received
+        if (Objects.requireNonNullElse(orderItem.getQuantityFulfilled(), orderItem.getQuantity()) <= 0) {
+            throw new InvalidRequestException("Item is already not filled");
+        }
+        orderItem.setQuantityFulfilled(0);
+        orderItemRepository.save(orderItem);
+    }
+
+    /**
      * Records each limited line's status on the order as it stands right now, so later rule changes
      * don't alter what the order shows. Items that are not limited have their snapshot cleared.
      */

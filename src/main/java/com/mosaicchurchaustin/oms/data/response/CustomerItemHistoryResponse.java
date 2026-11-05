@@ -9,6 +9,7 @@ import java.util.Map;
  * @param source     ORDER or RECORDED
  * @param receivedAt when the order was completed, or the start of the recorded day
  * @param orderId    ORDER only
+ * @param orderItemId ORDER only, used to clear a fill that was given back
  * @param orderUuid  ORDER only
  * @param entry      RECORDED only
  */
@@ -21,6 +22,7 @@ public record CustomerItemHistoryResponse(
         Map<String, OrderItemResponse.AttributeDisplay> attributes,
         String notes,
         Long orderId,
+        Long orderItemId,
         String orderUuid,
         ItemLimitEntryResponse entry
 ) {
