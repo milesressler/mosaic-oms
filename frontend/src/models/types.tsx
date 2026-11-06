@@ -256,6 +256,8 @@ export interface CustomerItemHistoryRow {
     attributes: { [key: string]: string };
     notes: string | null;
     orderId: number | null;
+    // ORDER only, used to clear a fill that was given back
+    orderItemId: number | null;
     orderUuid: string | null;
     entry: ItemLimitEntry | null;
 }

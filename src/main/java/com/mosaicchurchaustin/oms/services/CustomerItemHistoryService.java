@@ -100,6 +100,7 @@ public class CustomerItemHistoryService {
                         line.getAttributes() == null ? Map.of() : OrderItemResponse.attributeDisplays(line.getAttributes()),
                         line.getNotes(),
                         line.getOrderId(),
+                        line.getOrderItemId(),
                         line.getOrderUuid(),
                         null));
 
@@ -112,6 +113,7 @@ public class CustomerItemHistoryService {
                         entry.quantity(),
                         Map.of(),
                         entry.notes(),
+                        null,
                         null,
                         null,
                         entry));
