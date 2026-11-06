@@ -33,6 +33,7 @@ import CustomersApi from 'src/services/customersApi';
 import {Category, categoryDisplayNames, CustomerItemHistoryRow, HistoryFillFilter} from 'src/models/types.tsx';
 import GroupedAttributeBadges from 'src/components/common/items/GroupedAttributeBadges';
 import RecordPickupModal from 'src/components/customer/RecordPickupModal.tsx';
+import {confirmUnfillOrderItem} from 'src/components/orders/confirmUnfillOrderItem.tsx';
 import {formatLimitRule, LIMIT_ZONE} from 'src/utils/ItemLimitUtils.tsx';
 
 const PAGE_SIZE = 25;
@@ -122,17 +123,10 @@ const CustomerItemHistoryPage = () => {
         },
     });
 
-    const confirmUnfill = (row: CustomerItemHistoryRow) => modals.openConfirmModal({
-        title: 'Mark as not filled',
-        children: (
-            <Text size="sm" mt={'xs'}>
-                Mark {row.item.description} on <strong>Order #{row.orderId}</strong> ({formatReceived(row)}) as not
-                filled? Use this when the item was given back, e.g. it didn't fit. It will no longer count toward
-                this customer's limit.
-            </Text>
-        ),
-        labels: {confirm: 'Mark not filled', cancel: 'Cancel'},
-        confirmProps: {color: 'red'},
+    const confirmUnfill = (row: CustomerItemHistoryRow) => confirmUnfillOrderItem({
+        itemDescription: row.item.description,
+        orderId: row.orderId!,
+        detail: formatReceived(row),
         onConfirm: () => {
             unfillRequest.request(uuid!, row.orderItemId!).then(loadHistory);
         },

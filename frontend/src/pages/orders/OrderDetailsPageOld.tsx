@@ -2,6 +2,8 @@ import {useEffect, useState} from 'react';
 import {Link, useNavigate, useParams} from 'react-router-dom';
 import useApi from 'src/hooks/useApi';
 import ordersApi from 'src/services/ordersApi';
+import customersApi from 'src/services/customersApi';
+import {confirmUnfillOrderItem} from 'src/components/orders/confirmUnfillOrderItem.tsx';
 import {DateTime} from 'luxon';
 import { notifications } from '@mantine/notifications';
 import ReopenOrderModal from 'src/components/fillers/ReopenOrderModal.tsx';
@@ -10,6 +12,7 @@ import {
     Avatar,
     Badge, Box,
     Button,
+    ActionIcon,
     Card, Center,
     Container,
     Divider,
@@ -19,11 +22,11 @@ import {
     Table,
     Text,
     Timeline,
-    Title, useMantineTheme,
+    Title, Tooltip, useMantineTheme,
 } from '@mantine/core';
 import {Category, categoryDisplayNames, OrderStatus} from "src/models/types.tsx";
 import UserAvatar from 'src/components/common/userAvatar/UserAvatar';
-import {IconArrowRight, IconCalendar, IconChevronDown, IconNotes, IconPackage, IconTrash, IconArrowLeft, IconEdit, IconPrinter} from '@tabler/icons-react';
+import {IconArrowBackUp, IconArrowRight, IconCalendar, IconChevronDown, IconNotes, IconPackage, IconTrash, IconArrowLeft, IconEdit, IconPrinter} from '@tabler/icons-react';
 import React from 'react';
 import {statusDisplay} from "src/utils/StatusUtils.tsx";
 import GroupedAttributeBadges from 'src/components/common/items/GroupedAttributeBadges';
@@ -44,6 +47,7 @@ export default function OrderDetailsPageOld() {
     const printOrder = useApi(ordersApi.print);
     const getOrder = useApi(ordersApi.getOrderById);
     const updateOrder = useApi(ordersApi.updateOrderStatus);
+    const unfillRequest = useApi(customersApi.unfillOrderItem);
     const navigate = useNavigate();
     const theme = useMantineTheme();
     const [reopenModalOpened, setReopenModalOpened] = useState(false);
@@ -61,6 +65,17 @@ export default function OrderDetailsPageOld() {
         OrderStatus.COMPLETED].indexOf(order.orderStatus) !== -1;
     const canReturn = OrderStatus.PACKED === order?.orderStatus;
     const canReopen = order?.orderStatus === OrderStatus.COMPLETED;
+    // Items given back after the order was completed can be marked not filled
+    const canUnfill = order?.orderStatus === OrderStatus.COMPLETED;
+
+    const confirmUnfill = (orderItemId: number, itemDescription: string) => order && confirmUnfillOrderItem({
+        itemDescription,
+        orderId: order.id,
+        onConfirm: () => {
+            unfillRequest.request(order.customer.uuid, orderItemId)
+                .then(() => getOrder.request(order.id));
+        },
+    });
 
     const cancel = () => {
         order && updateOrder.request(order.uuid, OrderStatus.CANCELLED)
@@ -262,7 +277,21 @@ export default function OrderDetailsPageOld() {
                                             {item.description}
                                         </Table.Td>
                                         <Table.Td>{item.quantityRequested}</Table.Td>
-                                        <Table.Td>{item.quantityFulfilled}</Table.Td>
+                                        <Table.Td>
+                                            <Group gap={4} wrap="nowrap">
+                                                <Text size="sm">{item.quantityFulfilled}</Text>
+                                                {canUnfill && (item.quantityFulfilled ?? 0) > 0 && (
+                                                    <Tooltip label="Given back? Mark as not filled" withArrow>
+                                                        <ActionIcon size="sm" variant="subtle" color="red"
+                                                                    disabled={unfillRequest.loading}
+                                                                    onClick={() => confirmUnfill(item.id, item.description)}
+                                                                    aria-label="Mark as not filled">
+                                                            <IconArrowBackUp size={14}/>
+                                                        </ActionIcon>
+                                                    </Tooltip>
+                                                )}
+                                            </Group>
+                                        </Table.Td>
                                         <Table.Td>
                                             <GroupedAttributeBadges 
                                                 attrs={item.attributes}
