@@ -4,6 +4,7 @@ import useApi from 'src/hooks/useApi';
 import ordersApi from 'src/services/ordersApi';
 import customersApi from 'src/services/customersApi';
 import {confirmUnfillOrderItem} from 'src/components/orders/confirmUnfillOrderItem.tsx';
+import {useIsAdmin} from 'src/components/auth0/Auth0Utils.tsx';
 import {DateTime} from 'luxon';
 import { notifications } from '@mantine/notifications';
 import ReopenOrderModal from 'src/components/fillers/ReopenOrderModal.tsx';
@@ -48,6 +49,7 @@ export default function OrderDetailsPageOld() {
     const getOrder = useApi(ordersApi.getOrderById);
     const updateOrder = useApi(ordersApi.updateOrderStatus);
     const unfillRequest = useApi(customersApi.unfillOrderItem);
+    const isAdmin = useIsAdmin();
     const navigate = useNavigate();
     const theme = useMantineTheme();
     const [reopenModalOpened, setReopenModalOpened] = useState(false);
@@ -65,8 +67,8 @@ export default function OrderDetailsPageOld() {
         OrderStatus.COMPLETED].indexOf(order.orderStatus) !== -1;
     const canReturn = OrderStatus.PACKED === order?.orderStatus;
     const canReopen = order?.orderStatus === OrderStatus.COMPLETED;
-    // Items given back after the order was completed can be marked not filled
-    const canUnfill = order?.orderStatus === OrderStatus.COMPLETED;
+    // Admins can mark items given back after the order was completed as not filled
+    const canUnfill = isAdmin && order?.orderStatus === OrderStatus.COMPLETED;
 
     const confirmUnfill = (orderItemId: number, itemDescription: string) => order && confirmUnfillOrderItem({
         itemDescription,

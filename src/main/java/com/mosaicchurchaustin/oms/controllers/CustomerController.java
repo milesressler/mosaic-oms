@@ -93,11 +93,6 @@ public class CustomerController {
         return itemLimitService.createEntry(id.toString(), request);
     }
 
-    @PostMapping(path = "/customer/{id}/item-history/order-items/{orderItemId}/unfill")
-    public void unfillOrderItem(@PathVariable("id") final UUID id, @PathVariable("orderItemId") final Long orderItemId) {
-        itemLimitService.unfillOrderItem(id.toString(), orderItemId);
-    }
-
     @DeleteMapping(path = "/customer/{id}/item-limits/entries/{entryId}")
     public void deleteItemLimitEntry(@PathVariable("id") final UUID id, @PathVariable("entryId") final Long entryId) {
         itemLimitService.deleteEntry(id.toString(), entryId);
