@@ -124,9 +124,8 @@ public class ItemLimitService {
      * didn't fit, so it no longer counts against the customer's limit. The line stays on the order as not filled.
      */
     @Transactional
-    public void unfillOrderItem(final String customerUuid, final Long orderItemId) {
+    public void unfillOrderItem(final Long orderItemId) {
         final OrderItemEntity orderItem = orderItemRepository.findById(orderItemId)
-                .filter(found -> found.getOrderEntity().getCustomer().getUuid().equals(customerUuid))
                 .orElseThrow(() -> new EntityNotFoundException(OrderItemEntity.ENTITY_NAME, orderItemId.toString()));
         if (orderItem.getOrderEntity().getOrderStatus() != OrderStatus.COMPLETED) {
             throw new InvalidRequestException("Only items on completed orders can be marked not filled here");

@@ -30,6 +30,7 @@ import {DateTime} from 'luxon';
 
 import useApi from 'src/hooks/useApi';
 import CustomersApi from 'src/services/customersApi';
+import OrdersApi from 'src/services/ordersApi';
 import {Category, categoryDisplayNames, CustomerItemHistoryRow, HistoryFillFilter} from 'src/models/types.tsx';
 import GroupedAttributeBadges from 'src/components/common/items/GroupedAttributeBadges';
 import RecordPickupModal from 'src/components/customer/RecordPickupModal.tsx';
@@ -56,7 +57,7 @@ const CustomerItemHistoryPage = () => {
     const customerRequest = useApi(CustomersApi.getCustomer);
     const historyRequest = useApi(CustomersApi.getItemHistory);
     const deleteEntryRequest = useApi(CustomersApi.deleteItemLimitEntry);
-    const unfillRequest = useApi(CustomersApi.unfillOrderItem);
+    const unfillRequest = useApi(OrdersApi.unfillOrderItem);
     const isAdmin = useIsAdmin();
     const [recordOpened, {open: openRecord, close: closeRecord}] = useDisclosure(false);
 
@@ -130,7 +131,7 @@ const CustomerItemHistoryPage = () => {
         orderId: row.orderId!,
         detail: formatReceived(row),
         onConfirm: () => {
-            unfillRequest.request(uuid!, row.orderItemId!).then(loadHistory);
+            unfillRequest.request(row.orderItemId!).then(loadHistory);
         },
     });
 

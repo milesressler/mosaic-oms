@@ -2,7 +2,6 @@ import {useEffect, useState} from 'react';
 import {Link, useNavigate, useParams} from 'react-router-dom';
 import useApi from 'src/hooks/useApi';
 import ordersApi from 'src/services/ordersApi';
-import customersApi from 'src/services/customersApi';
 import {confirmUnfillOrderItem} from 'src/components/orders/confirmUnfillOrderItem.tsx';
 import {useIsAdmin} from 'src/components/auth0/Auth0Utils.tsx';
 import {DateTime} from 'luxon';
@@ -48,7 +47,7 @@ export default function OrderDetailsPageOld() {
     const printOrder = useApi(ordersApi.print);
     const getOrder = useApi(ordersApi.getOrderById);
     const updateOrder = useApi(ordersApi.updateOrderStatus);
-    const unfillRequest = useApi(customersApi.unfillOrderItem);
+    const unfillRequest = useApi(ordersApi.unfillOrderItem);
     const isAdmin = useIsAdmin();
     const navigate = useNavigate();
     const theme = useMantineTheme();
@@ -74,7 +73,7 @@ export default function OrderDetailsPageOld() {
         itemDescription,
         orderId: order.id,
         onConfirm: () => {
-            unfillRequest.request(order.customer.uuid, orderItemId)
+            unfillRequest.request(orderItemId)
                 .then(() => getOrder.request(order.id));
         },
     });

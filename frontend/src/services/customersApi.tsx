@@ -28,9 +28,6 @@ const getItemHistory = (uuid: string, page: number, size: number, params: Custom
 const createItemLimitEntry = (uuid: string, request: CreateItemLimitEntryRequest) =>
     client.post<CreateItemLimitEntryResponse>(`/customer/${uuid}/item-limits/entries`, request);
 
-const unfillOrderItem = (uuid: string, orderItemId: number) =>
-    client.post<void>(`/admin/customer/${uuid}/item-history/order-items/${orderItemId}/unfill`);
-
 const deleteItemLimitEntry = (uuid: string, entryId: number) =>
     client.delete(`/customer/${uuid}/item-limits/entries/${entryId}`);
 
@@ -76,7 +73,6 @@ export default {
     getItemHistory,
     createItemLimitEntry,
     deleteItemLimitEntry,
-    unfillOrderItem,
     updateCustomer,
     createCustomer,
     mergeCustomers,
