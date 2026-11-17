@@ -2,8 +2,8 @@ import {useEffect, useState} from 'react';
 import {Link, useNavigate, useParams} from 'react-router-dom';
 import useApi from 'src/hooks/useApi';
 import ordersApi from 'src/services/ordersApi';
-import customersApi from 'src/services/customersApi';
 import {confirmUnfillOrderItem} from 'src/components/orders/confirmUnfillOrderItem.tsx';
+import {useIsAdmin} from 'src/components/auth0/Auth0Utils.tsx';
 import {DateTime} from 'luxon';
 import { notifications } from '@mantine/notifications';
 import ReopenOrderModal from 'src/components/fillers/ReopenOrderModal.tsx';
@@ -47,7 +47,8 @@ export default function OrderDetailsPageOld() {
     const printOrder = useApi(ordersApi.print);
     const getOrder = useApi(ordersApi.getOrderById);
     const updateOrder = useApi(ordersApi.updateOrderStatus);
-    const unfillRequest = useApi(customersApi.unfillOrderItem);
+    const unfillRequest = useApi(ordersApi.unfillOrderItem);
+    const isAdmin = useIsAdmin();
     const navigate = useNavigate();
     const theme = useMantineTheme();
     const [reopenModalOpened, setReopenModalOpened] = useState(false);
@@ -65,14 +66,15 @@ export default function OrderDetailsPageOld() {
         OrderStatus.COMPLETED].indexOf(order.orderStatus) !== -1;
     const canReturn = OrderStatus.PACKED === order?.orderStatus;
     const canReopen = order?.orderStatus === OrderStatus.COMPLETED;
-    // Items given back after the order was completed can be marked not filled
-    const canUnfill = order?.orderStatus === OrderStatus.COMPLETED;
+    // Once packing is finished, admins can mark items given back as not filled
+    const canUnfill = isAdmin && !!order && [OrderStatus.PACKED, OrderStatus.IN_TRANSIT,
+        OrderStatus.READY_FOR_CUSTOMER_PICKUP, OrderStatus.COMPLETED].indexOf(order.orderStatus) !== -1;
 
     const confirmUnfill = (orderItemId: number, itemDescription: string) => order && confirmUnfillOrderItem({
         itemDescription,
         orderId: order.id,
         onConfirm: () => {
-            unfillRequest.request(order.customer.uuid, orderItemId)
+            unfillRequest.request(orderItemId)
                 .then(() => getOrder.request(order.id));
         },
     });

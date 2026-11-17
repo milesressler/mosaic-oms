@@ -30,10 +30,12 @@ import {DateTime} from 'luxon';
 
 import useApi from 'src/hooks/useApi';
 import CustomersApi from 'src/services/customersApi';
+import OrdersApi from 'src/services/ordersApi';
 import {Category, categoryDisplayNames, CustomerItemHistoryRow, HistoryFillFilter} from 'src/models/types.tsx';
 import GroupedAttributeBadges from 'src/components/common/items/GroupedAttributeBadges';
 import RecordPickupModal from 'src/components/customer/RecordPickupModal.tsx';
 import {confirmUnfillOrderItem} from 'src/components/orders/confirmUnfillOrderItem.tsx';
+import {useIsAdmin} from 'src/components/auth0/Auth0Utils.tsx';
 import {formatLimitRule, LIMIT_ZONE} from 'src/utils/ItemLimitUtils.tsx';
 
 const PAGE_SIZE = 25;
@@ -55,7 +57,8 @@ const CustomerItemHistoryPage = () => {
     const customerRequest = useApi(CustomersApi.getCustomer);
     const historyRequest = useApi(CustomersApi.getItemHistory);
     const deleteEntryRequest = useApi(CustomersApi.deleteItemLimitEntry);
-    const unfillRequest = useApi(CustomersApi.unfillOrderItem);
+    const unfillRequest = useApi(OrdersApi.unfillOrderItem);
+    const isAdmin = useIsAdmin();
     const [recordOpened, {open: openRecord, close: closeRecord}] = useDisclosure(false);
 
     // Filters start from the URL so other pages can link here pre-filtered, e.g. ?limited=true
@@ -128,13 +131,13 @@ const CustomerItemHistoryPage = () => {
         orderId: row.orderId!,
         detail: formatReceived(row),
         onConfirm: () => {
-            unfillRequest.request(uuid!, row.orderItemId!).then(loadHistory);
+            unfillRequest.request(row.orderItemId!).then(loadHistory);
         },
     });
 
-    // Only lines that show as received can be reversed
+    // Only admins can reverse a fill, and only on lines that show as received
     const canUnfill = (row: CustomerItemHistoryRow): boolean =>
-        row.source === 'ORDER' && row.orderItemId != null && (row.quantityFulfilled ?? 0) > 0;
+        isAdmin && row.source === 'ORDER' && row.orderItemId != null && (row.quantityFulfilled ?? 0) > 0;
 
     const rows = historyRequest.data?.content ?? [];
     const customer = customerRequest.data;
