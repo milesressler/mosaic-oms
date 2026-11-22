@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import {ActionIcon, Button, Group, Menu, rem, useMantineTheme} from '@mantine/core';
-import {IconArrowBack, IconChevronDown, IconNotes, IconTrash} from '@tabler/icons-react';
+import {IconArrowBack, IconChevronDown, IconNotes, IconPrinter, IconTrash} from '@tabler/icons-react';
 import classes from './filler-order-action-button.module.css';
 import {OrderDetails, OrderStatus} from "src/models/types.tsx";
 import {useAuth0} from "@auth0/auth0-react";
@@ -27,7 +27,7 @@ export function OrderActionButton({ loading, order, onStateChange, toggleAssigne
     const buttonStyle = {width: printOnTransitionToStatus === OrderStatus.ACCEPTED ? "166px" : '146px'}
 
 
-    const disabled = order?.orderStatus === OrderStatus.CANCELLED;
+    const isClosed = order?.orderStatus === OrderStatus.COMPLETED || order?.orderStatus === OrderStatus.CANCELLED;
 
     const getButton = () => {
         switch (order?.orderStatus) {
@@ -46,6 +46,7 @@ export function OrderActionButton({ loading, order, onStateChange, toggleAssigne
                     <Button style={buttonStyle} loading={loading} onClick={() => onStateChange(OrderStatus.COMPLETED)}>Complete Order</Button>
                 </>
             case OrderStatus.COMPLETED:
+            case OrderStatus.CANCELLED:
                 return <>
                     <Button style={buttonStyle} loading={loading} color="orange" leftSection={<IconArrowBack size={16}/>} onClick={() => setReopenModalOpened(true)}>Reopen Order</Button>
                 </>
@@ -56,7 +57,7 @@ export function OrderActionButton({ loading, order, onStateChange, toggleAssigne
 
     const options: { label: string; icon: React.ElementType; action: () => void }[] = [];
 
-    if (order?.orderStatus !== OrderStatus.COMPLETED) {
+    if (!isClosed) {
         options.push(
             {
                 label: "Cancel Order",
@@ -78,10 +79,6 @@ export function OrderActionButton({ loading, order, onStateChange, toggleAssigne
     const handleRequestInfo = (comment: string) => {
         onStateChange(OrderStatus.NEEDS_INFO, comment);
     };
-
-    if (disabled) {
-        return  (<></>);
-    }
 
     return (
         <>

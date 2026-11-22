@@ -66,7 +66,7 @@ export default function OrderDetailsPage() {
     const canPrint = order && [OrderStatus.ACCEPTED, OrderStatus.PACKING, OrderStatus.PACKED,
         OrderStatus.IN_TRANSIT, OrderStatus.READY_FOR_CUSTOMER_PICKUP,
         OrderStatus.COMPLETED].indexOf(order.orderStatus) !== -1;
-    const canReopen = order?.orderStatus === OrderStatus.COMPLETED;
+    const canReopen = order?.orderStatus === OrderStatus.COMPLETED || order?.orderStatus === OrderStatus.CANCELLED;
 
     const cancel = () => {
         order && updateOrder.request(order.uuid, OrderStatus.CANCELLED)

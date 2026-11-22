@@ -65,7 +65,7 @@ export default function OrderDetailsPageOld() {
         OrderStatus.IN_TRANSIT, OrderStatus.READY_FOR_CUSTOMER_PICKUP,
         OrderStatus.COMPLETED].indexOf(order.orderStatus) !== -1;
     const canReturn = OrderStatus.PACKED === order?.orderStatus;
-    const canReopen = order?.orderStatus === OrderStatus.COMPLETED;
+    const canReopen = order?.orderStatus === OrderStatus.COMPLETED || order?.orderStatus === OrderStatus.CANCELLED;
     // Once packing is finished, admins can mark items given back as not filled
     const canUnfill = isAdmin && !!order && [OrderStatus.PACKED, OrderStatus.IN_TRANSIT,
         OrderStatus.READY_FOR_CUSTOMER_PICKUP, OrderStatus.COMPLETED].indexOf(order.orderStatus) !== -1;
