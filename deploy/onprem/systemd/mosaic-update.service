@@ -1,0 +1,10 @@
+[Unit]
+Description=Mosaic OMS - pull latest code/config and deploy if changed
+After=network-online.target docker.service
+Wants=network-online.target
+Requires=docker.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/mosaic update
+TimeoutStartSec=30min

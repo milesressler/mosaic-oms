@@ -140,6 +140,14 @@ Vite binds to all interfaces (`host: true` in vite.config.ts), but Auth0 require
 ```
 Then access the app at `http://localhost:5173` inside the emulator.
 
+### On-Prem Deployment (`deploy/onprem/`)
+- Single Linux box: MySQL 8.4 + app + Caddy/cloudflared via Docker Compose, Spring profiles `prod,onprem`
+- `.github/workflows/onprem-image.yml` pushes `ghcr.io/milesressler/mosaic-oms:main` on every push to main
+- Box polls every 5 min (`mosaic update`): git pull + image pull → pre-deploy DB backup → health check → auto-rollback
+- Remote config = git: `deploy/onprem/config/app.env` (plain) + `secrets.env` (sops/age encrypted to box + dev keys)
+- Frontend Auth0 callback / WebSocket URLs are relative and resolved at runtime (`frontend/src/utils/runtimeUrls.ts`)
+- See `deploy/onprem/README.md`
+
 ### Database
 - Local: MySQL via Docker Compose on port 33060
 - Migrations: Flyway (`src/main/resources/db/migration/`) - Currently ~40 migration files

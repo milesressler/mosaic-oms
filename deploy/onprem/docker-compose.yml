@@ -1,0 +1,84 @@
+# Mosaic OMS on-prem stack. Driven by bin/mosaic - don't run this by hand
+# unless you know what you're doing; `mosaic` generates the env files it reads.
+#
+#   compose.env (interpolation): box-local values from /etc/mosaic/box.env
+#                                plus APP_IMAGE pinned to a digest.
+#   app.env     (app container): config/app.env + decrypted config/secrets.env
+#                                + /etc/mosaic/override.env
+
+name: mosaic
+
+services:
+  mysql:
+    image: mysql:8.4
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: mosaicoms
+      MYSQL_USER: mosaic
+      MYSQL_PASSWORD: ${DB_PASSWORD:?missing DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?missing MYSQL_ROOT_PASSWORD}
+      TZ: UTC
+    command: ["--log-bin-trust-function-creators=1"]
+    volumes:
+      - ${MOSAIC_DATA_DIR:-/var/lib/mosaic}/mysql:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p\"$$MYSQL_ROOT_PASSWORD\" --silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 30s
+
+  app:
+    image: ${APP_IMAGE:?missing APP_IMAGE}
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+    env_file:
+      - ${MOSAIC_RUN_DIR:-/var/lib/mosaic/run}/app.env
+    environment:
+      SPRING_PROFILES_ACTIVE: prod,onprem
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/mosaicoms?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: mosaic
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
+      DB_READONLY_URL: jdbc:mysql://mysql:3306/mosaicoms?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      DB_READONLY_USERNAME: oms_ai_agent
+      DB_READONLY_PASSWORD: ${DB_READONLY_PASSWORD:?missing DB_READONLY_PASSWORD}
+      MOSAIC_OMS_FRONTEND_URL: https://${MOSAIC_HOSTNAME:?missing MOSAIC_HOSTNAME}
+      JAVA_TOOL_OPTIONS: -XX:MaxRAMPercentage=70
+      TZ: UTC
+    ports:
+      # Only reachable from the box itself (health checks, debugging).
+      # Public traffic goes through caddy or cloudflared.
+      - "127.0.0.1:8080:8080"
+
+  # INGRESS=caddy: Caddy gets a Let's Encrypt cert automatically.
+  # Requires ports 80/443 forwarded to this box and DNS pointing at it.
+  caddy:
+    image: caddy:2
+    profiles: ["caddy"]
+    restart: unless-stopped
+    depends_on: [app]
+    environment:
+      MOSAIC_HOSTNAME: ${MOSAIC_HOSTNAME}
+      ACME_EMAIL: ${ACME_EMAIL:-}
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - ${MOSAIC_DATA_DIR:-/var/lib/mosaic}/caddy/data:/data
+      - ${MOSAIC_DATA_DIR:-/var/lib/mosaic}/caddy/config:/config
+
+  # INGRESS=cloudflared: outbound-only Cloudflare Tunnel. No port forwarding,
+  # works behind any church router. Set TUNNEL_TOKEN in config/secrets.env and
+  # point the tunnel's public hostname at http://app:8080 in the Cloudflare UI.
+  cloudflared:
+    image: cloudflare/cloudflared:2025.11.1
+    profiles: ["cloudflared"]
+    restart: unless-stopped
+    depends_on: [app]
+    command: ["tunnel", "--no-autoupdate", "run"]
+    environment:
+      TUNNEL_TOKEN: ${TUNNEL_TOKEN:-}

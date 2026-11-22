@@ -1,0 +1,7 @@
+# Who can decrypt secrets.env. Add the box's public key (printed by install.sh
+# and by `mosaic status`) and your own, then run:  sops updatekeys secrets.env
+creation_rules:
+  - path_regex: secrets\.env$
+    age: >-
+      REPLACE_WITH_YOUR_AGE_PUBLIC_KEY,
+      REPLACE_WITH_BOX_AGE_PUBLIC_KEY

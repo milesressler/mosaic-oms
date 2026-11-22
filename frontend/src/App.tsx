@@ -17,7 +17,8 @@ import {PreferencesProvider} from "src/context/PreferencesContext.tsx";
 import {FeaturesProvider} from "src/context/FeaturesContext.tsx";
 import {ModalsProvider} from "@mantine/modals";
 import {PostHogProvider} from "posthog-js/react";
-const WS_URL = import.meta.env.VITE_API_WEBSOCKET_URL;
+import {resolveWebSocketUrl} from "src/utils/runtimeUrls.ts";
+const WS_URL: string = resolveWebSocketUrl(import.meta.env.VITE_API_WEBSOCKET_URL);
 
 
 const theme = createTheme({

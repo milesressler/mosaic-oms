@@ -1,0 +1,66 @@
+name: Build on-prem image
+
+# Every push to main builds the app and pushes a Docker image to GitHub
+# Container Registry. On-prem boxes poll for the `main` tag and deploy it
+# themselves (see deploy/onprem/README.md), so nothing here needs network
+# access to the church.
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - 'deploy/onprem/**'   # box scripts/config are pulled via git, not baked into the image
+  workflow_dispatch:
+
+concurrency:
+  group: onprem-image
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  packages: write
+
+env:
+  IMAGE: ghcr.io/${{ github.repository }}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # git-properties plugin wants history for /actuator/info
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: corretto
+          java-version: '21'
+          cache: gradle
+
+      - name: Build jar (frontend + backend + tests)
+        run: ./gradlew buildProdUI build bootJar
+
+      - uses: docker/setup-qemu-action@v3
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.IMAGE }}
+          tags: |
+            type=raw,value=main
+            type=sha,format=short
+
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
