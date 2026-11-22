@@ -1,12 +1,11 @@
 import React, { useState } from 'react';
 import {ActionIcon, Button, Group, Menu, rem, useMantineTheme} from '@mantine/core';
-import {IconArrowBack, IconChevronDown, IconNotes, IconPrinter, IconTrash} from '@tabler/icons-react';
+import {IconChevronDown, IconNotes, IconPrinter, IconTrash} from '@tabler/icons-react';
 import classes from './filler-order-action-button.module.css';
 import {OrderDetails, OrderStatus} from "src/models/types.tsx";
 import {useAuth0} from "@auth0/auth0-react";
 import {useFeatures} from "src/context/FeaturesContext.tsx";
 import RequestInfoModal from "src/components/fillers/RequestInfoModal.tsx";
-import ReopenOrderModal from "src/components/fillers/ReopenOrderModal.tsx";
 
 interface OrderActionButtonProps {
     loading?: boolean,
@@ -17,7 +16,6 @@ interface OrderActionButtonProps {
 
 export function OrderActionButton({ loading, order, onStateChange, toggleAssigned }: OrderActionButtonProps) {
     const [requestInfoModalOpened, setRequestInfoModalOpened] = useState(false);
-    const [reopenModalOpened, setReopenModalOpened] = useState(false);
 
     const theme = useMantineTheme();
     const {user} = useAuth0();
@@ -27,7 +25,8 @@ export function OrderActionButton({ loading, order, onStateChange, toggleAssigne
     const buttonStyle = {width: printOnTransitionToStatus === OrderStatus.ACCEPTED ? "166px" : '146px'}
 
 
-    const disabled = order?.orderStatus === OrderStatus.CANCELLED;
+    // Completed and cancelled orders are reopened from the order details page
+    const disabled = order?.orderStatus === OrderStatus.CANCELLED || order?.orderStatus === OrderStatus.COMPLETED;
 
     const getButton = () => {
         switch (order?.orderStatus) {
@@ -45,26 +44,18 @@ export function OrderActionButton({ loading, order, onStateChange, toggleAssigne
                 return <>
                     <Button style={buttonStyle} loading={loading} onClick={() => onStateChange(OrderStatus.COMPLETED)}>Complete Order</Button>
                 </>
-            case OrderStatus.COMPLETED:
-                return <>
-                    <Button style={buttonStyle} loading={loading} color="orange" leftSection={<IconArrowBack size={16}/>} onClick={() => setReopenModalOpened(true)}>Reopen Order</Button>
-                </>
             default:
                 return <Button style={buttonStyle} loading={loading} onClick={toggleAssigned} >{assignedToMe ? "Unassign" : "Assign to Me"}</Button>
         }
     }
 
-    const options: { label: string; icon: React.ElementType; action: () => void }[] = [];
-
-    if (order?.orderStatus !== OrderStatus.COMPLETED) {
-        options.push(
-            {
-                label: "Cancel Order",
-                icon: IconTrash,
-                action: () => onStateChange(OrderStatus.CANCELLED)
-            },
-        );
-    }
+    const options: { label: string; icon: React.ElementType; action: () => void }[] = [
+        {
+            label: "Cancel Order",
+            icon: IconTrash,
+            action: () => onStateChange(OrderStatus.CANCELLED)
+        },
+    ];
 
     if (order?.orderStatus === OrderStatus.PENDING_ACCEPTANCE || order?.orderStatus === OrderStatus.ACCEPTED) {
         options.push(
@@ -123,13 +114,6 @@ export function OrderActionButton({ loading, order, onStateChange, toggleAssigne
                 onClose={() => setRequestInfoModalOpened(false)}
                 onConfirm={handleRequestInfo}
                 orderNumber={order?.id}
-            />
-            <ReopenOrderModal
-                opened={reopenModalOpened}
-                onClose={() => setReopenModalOpened(false)}
-                onConfirm={(status) => onStateChange(status)}
-                orderNumber={order?.id}
-                previousStatus={order?.lastStatusChange?.previousStatus}
             />
         </>
     );

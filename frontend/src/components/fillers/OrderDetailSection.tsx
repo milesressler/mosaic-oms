@@ -54,8 +54,13 @@ export function OrderDetailSection({ unselectOrder, onUpdate }: OrderDetailsProp
     };
 
     const changeState = (orderStatus: OrderStatus, comment?: string) => {
-        const request = comment ? { comment } : undefined;
-        updateStateApi.request(selectedOrder!.uuid, orderStatus, request);
+        if (orderStatus === OrderStatus.ACCEPTED
+            || orderStatus === OrderStatus.CANCELLED
+            || orderStatus === OrderStatus.NEEDS_INFO
+            || orderStatus === OrderStatus.COMPLETED) {
+            const request = comment ? { comment } : undefined;
+            updateStateApi.request(selectedOrder!.uuid, orderStatus, request);
+        }
     };
 
     if (!selectedOrder) {
