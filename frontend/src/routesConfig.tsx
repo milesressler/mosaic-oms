@@ -31,7 +31,7 @@ import NoAccessPage from "src/pages/NoAccess.tsx";
 import CustomerDetailPage from "src/pages/search/CustomerDetailPage.tsx";
 import CustomerItemHistoryPage from "src/pages/search/CustomerItemHistoryPage.tsx";
 import ShowersDashboard from "src/pages/dashboards/ShowersDashboard.tsx";
-import OrderDetailsPageOld from "./pages/orders/OrderDetailsPageOld";
+import OrderDetailsPage from "./pages/orders/OrderDetailsPage";
 import SystemReports from "src/pages/reports/SystemReports.tsx";
 import ItemAnalysis from "src/pages/reports/ItemAnalysis.tsx";
 import PrinterManagementPage from "src/pages/admin/PrinterManagementPage.tsx";
@@ -173,7 +173,7 @@ const routes = [
             {
                 key: 'order-details',
                 path: '/order/:id',
-                    element: OrderDetailsPageOld,
+                element: OrderDetailsPage,
                 title: 'Order Details',
                 showInNavBar: false,
             },
