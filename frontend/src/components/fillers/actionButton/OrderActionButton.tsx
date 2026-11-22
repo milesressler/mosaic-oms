@@ -27,7 +27,7 @@ export function OrderActionButton({ loading, order, onStateChange, toggleAssigne
     const buttonStyle = {width: printOnTransitionToStatus === OrderStatus.ACCEPTED ? "166px" : '146px'}
 
 
-    const isClosed = order?.orderStatus === OrderStatus.COMPLETED || order?.orderStatus === OrderStatus.CANCELLED;
+    const disabled = order?.orderStatus === OrderStatus.CANCELLED;
 
     const getButton = () => {
         switch (order?.orderStatus) {
@@ -46,7 +46,6 @@ export function OrderActionButton({ loading, order, onStateChange, toggleAssigne
                     <Button style={buttonStyle} loading={loading} onClick={() => onStateChange(OrderStatus.COMPLETED)}>Complete Order</Button>
                 </>
             case OrderStatus.COMPLETED:
-            case OrderStatus.CANCELLED:
                 return <>
                     <Button style={buttonStyle} loading={loading} color="orange" leftSection={<IconArrowBack size={16}/>} onClick={() => setReopenModalOpened(true)}>Reopen Order</Button>
                 </>
@@ -57,7 +56,7 @@ export function OrderActionButton({ loading, order, onStateChange, toggleAssigne
 
     const options: { label: string; icon: React.ElementType; action: () => void }[] = [];
 
-    if (!isClosed) {
+    if (order?.orderStatus !== OrderStatus.COMPLETED) {
         options.push(
             {
                 label: "Cancel Order",
@@ -79,6 +78,10 @@ export function OrderActionButton({ loading, order, onStateChange, toggleAssigne
     const handleRequestInfo = (comment: string) => {
         onStateChange(OrderStatus.NEEDS_INFO, comment);
     };
+
+    if (disabled) {
+        return  (<></>);
+    }
 
     return (
         <>
