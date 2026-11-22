@@ -13,11 +13,13 @@ import {
 } from '@mantine/core';
 import {
     IconSquare,
-    IconCheckbox
+    IconCheckbox,
+    IconCloudCheck,
+    IconAlertTriangle
 } from '@tabler/icons-react';
 import {CreateItemLimitEntryResponse, OrderDetails, OrderItem, OrderStatus} from 'src/models/types.tsx';
 import { useSelectedOrder } from 'src/context/SelectedOrderContext.tsx';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import useApi from 'src/hooks/useApi.tsx';
 import ordersApi from 'src/services/ordersApi.tsx';
 import { useNavigate } from 'react-router-dom';
@@ -29,9 +31,41 @@ import ItemLimitInfo from "src/components/common/items/ItemLimitInfo.tsx";
 import RecordPickupModal from "src/components/customer/RecordPickupModal.tsx";
 import PlaceInWagonModal from './PlaceInWagonModal';
 
+type SaveState = 'idle' | 'saving' | 'saved' | 'error';
+type QuantityMap = Record<number, number>;
+
+const AUTO_SAVE_DELAY_MS = 600;
+
+const toQuantityMap = (items: OrderItem[]): QuantityMap =>
+    items.reduce((acc, item) => {
+        acc[item.id] = item.quantityFulfilled;
+        return acc;
+    }, {} as QuantityMap);
+
+const isDirty = (items: OrderItem[], saved: QuantityMap): boolean =>
+    items.some((item) => item.quantityFulfilled !== (saved[item.id] ?? 0));
+
+function SaveStatus({ state, onRetry }: { state: SaveState; onRetry: () => void }) {
+    if (state === 'saving') {
+        return <Group gap={4}><Loader size={12}/><Text size="xs" c="dimmed">Saving…</Text></Group>;
+    }
+    if (state === 'saved') {
+        return <Group gap={4}><IconCloudCheck size={14} color="gray"/><Text size="xs" c="dimmed">Saved</Text></Group>;
+    }
+    if (state === 'error') {
+        return (
+            <Group gap={4}>
+                <IconAlertTriangle size={14} color="red"/>
+                <Text size="xs" c="red">Not saved</Text>
+                <Anchor component="button" type="button" size="xs" onClick={onRetry}>Retry</Anchor>
+            </Group>
+        );
+    }
+    return null;
+}
+
 function PackingView() {
-    const { selectedOrder, doForceRefresh } = useSelectedOrder();
-    const updateQuantities = useApi(ordersApi.updateOrderItems);
+    const { selectedOrder } = useSelectedOrder();
     const updateStatus = useApi(ordersApi.updateOrderStatus);
     const printLabel = useApi(ordersApi.print);
     const [draftItems, setDraftItems] = useState<OrderItem[]>([]);
@@ -51,22 +85,117 @@ function PackingView() {
         }
     }, [updateStatus.data]);
 
-    useEffect(() => {
-        if (updateQuantities.data) {
-            doForceRefresh();
-        }
-    }, [updateQuantities.data]);
+    // Auto-save state. Refs hold the latest values so debounced/unmount saves never act on stale closures.
+    const [saveState, setSaveState] = useState<SaveState>('idle');
+    const draftRef = useRef<OrderItem[]>([]);
+    const lastSavedRef = useRef<QuantityMap>({});
+    const loadedOrderUuidRef = useRef<string | null>(null);
+    const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const inFlightRef = useRef<Promise<boolean> | null>(null);
 
     useEffect(() => {
         if (!selectedOrder) return;
-        startFilling(`${selectedOrder!.id!}`)
-        setDraftItems(
-            selectedOrder.items.map((item) => ({
-                ...item,
-                quantityFulfilled: item.quantityFulfilled || 0,
-            }))
-        );
+        const serverItems = selectedOrder.items.map((item) => ({
+            ...item,
+            quantityFulfilled: item.quantityFulfilled || 0,
+        }));
+
+        if (loadedOrderUuidRef.current !== selectedOrder.uuid) {
+            // Newly opened order: don't drop unsaved progress from the previous one, then take the server state as-is
+            const previousUuid = loadedOrderUuidRef.current;
+            if (previousUuid && isDirty(draftRef.current, lastSavedRef.current)) {
+                if (saveTimerRef.current) {
+                    clearTimeout(saveTimerRef.current);
+                    saveTimerRef.current = null;
+                }
+                void ordersApi.updateOrderItems({orderUuid: previousUuid, quantities: toQuantityMap(draftRef.current)});
+            }
+            loadedOrderUuidRef.current = selectedOrder.uuid;
+            draftRef.current = serverItems;
+            startFilling(`${selectedOrder.id!}`);
+            lastSavedRef.current = toQuantityMap(serverItems);
+            setSaveState('idle');
+            setDraftItems(serverItems);
+            return;
+        }
+
+        // Same order refreshed (e.g. assignee change). Keep packing progress that hasn't reached the server yet.
+        const hasPendingLocal = isDirty(draftRef.current, lastSavedRef.current) || inFlightRef.current !== null;
+        if (!hasPendingLocal) {
+            lastSavedRef.current = toQuantityMap(serverItems);
+        }
+        const localQuantities = toQuantityMap(draftRef.current);
+        setDraftItems(serverItems.map((item) =>
+            hasPendingLocal && localQuantities[item.id] !== undefined
+                ? {...item, quantityFulfilled: localQuantities[item.id]}
+                : item));
     }, [selectedOrder]);
+
+    useEffect(() => {
+        draftRef.current = draftItems;
+    }, [draftItems]);
+
+    // Sends the latest draft if it differs from what the server has. Saves are serialized so they can't land out of order.
+    const flushSave = useCallback(async (): Promise<boolean> => {
+        if (saveTimerRef.current) {
+            clearTimeout(saveTimerRef.current);
+            saveTimerRef.current = null;
+        }
+        while (inFlightRef.current) {
+            await inFlightRef.current;
+        }
+        // Loop because more changes may be made while a save is in flight
+        let orderUuid = loadedOrderUuidRef.current;
+        while (orderUuid && isDirty(draftRef.current, lastSavedRef.current)) {
+            const quantities = toQuantityMap(draftRef.current);
+            setSaveState('saving');
+            const savePromise = ordersApi.updateOrderItems({orderUuid, quantities})
+                .then(() => {
+                    // Ignore if the filler has already moved on to a different order
+                    if (loadedOrderUuidRef.current === orderUuid) lastSavedRef.current = quantities;
+                    return true;
+                })
+                .catch(() => false);
+            inFlightRef.current = savePromise;
+            const ok = await savePromise;
+            inFlightRef.current = null;
+
+            if (!ok) {
+                setSaveState('error');
+                return false;
+            }
+            if (loadedOrderUuidRef.current !== orderUuid) return true;
+            orderUuid = loadedOrderUuidRef.current;
+            if (!isDirty(draftRef.current, lastSavedRef.current)) {
+                setSaveState('saved');
+            }
+        }
+        return true;
+    }, []);
+
+    // Debounced auto-save whenever packing progress changes
+    useEffect(() => {
+        if (!loadedOrderUuidRef.current || !isDirty(draftItems, lastSavedRef.current)) return;
+        if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+        saveTimerRef.current = setTimeout(() => {
+            saveTimerRef.current = null;
+            void flushSave();
+        }, AUTO_SAVE_DELAY_MS);
+    }, [draftItems, flushSave]);
+
+    // Save immediately when leaving the view (back button, closing the modal, opening another order)
+    useEffect(() => {
+        const flushOnHide = () => {
+            if (document.visibilityState === 'hidden') void flushSave();
+        };
+        document.addEventListener('visibilitychange', flushOnHide);
+        window.addEventListener('pagehide', flushOnHide);
+        return () => {
+            document.removeEventListener('visibilitychange', flushOnHide);
+            window.removeEventListener('pagehide', flushOnHide);
+            void flushSave();
+        };
+    }, [flushSave]);
 
     // Show the re-checked limits without reloading the order, which would drop unsaved packing progress
     const handlePickupRecorded = (response: CreateItemLimitEntryResponse) => {
@@ -90,19 +219,11 @@ function PackingView() {
         setDraftItems((prev) => prev.map((item) => ({ ...item, quantityFulfilled: item.quantityRequested })));
     };
 
-    const saveProgress = () => {
-        const quantities = draftItems.reduce((acc, item) => {
-            acc[item.id] = item.quantityFulfilled;
-            return acc;
-        }, {} as Record<number, number>);
+    const handlePlaceInWagonClick = async () => {
+        // Make sure the server has the latest packing progress before confirming
+        const saved = await flushSave();
+        if (!saved) return;
 
-        return updateQuantities.request({
-            orderUuid: selectedOrder?.uuid,
-            quantities,
-        });
-    };
-
-    const handlePlaceInWagonClick = () => {
         if (printOnTransitionToStatus !== null) {
             // If printing is enabled, always show modal
             setPlaceInWagonModalOpened(true);
@@ -123,11 +244,6 @@ function PackingView() {
     const handlePrintLabel = () => {
         printLabel.request(selectedOrder!.uuid, OrderStatus.PACKED);
     };
-
-
-    const hasStateChanged = draftItems.some(
-        (draftItem) => draftItem.quantityFulfilled !== selectedOrder?.items.find((item) => item.id === draftItem.id)?.quantityFulfilled
-    );
 
     if (!selectedOrder) return <Loader />;
     
@@ -246,7 +362,10 @@ function PackingView() {
                 {/* Progress bar */}
                 <Box mb="md">
                     <Group justify="space-between" mb="xs">
-                        <Text size="sm" fw={500}>Packing Progress</Text>
+                        <Group gap={6}>
+                            <Text size="sm" fw={500}>Packing Progress</Text>
+                            <SaveStatus state={saveState} onRetry={() => void flushSave()}/>
+                        </Group>
                         <Text size="sm" c="dimmed">
                             {completedItems}/{totalItems} items ({progressPercentage}%)
                         </Text>
@@ -280,29 +399,17 @@ function PackingView() {
                         Pack All
                     </Button>
                     
-                    {hasStateChanged ? (
-                        <Button
-                            disabled={!assignedToMe}
-                            onClick={saveProgress}
-                            color="blue"
-                            size="sm"
-                            p={'xs'}
-                            style={{ marginLeft: 'auto' }}
-                        >
-                            Save Progress
-                        </Button>
-                    ) : (
-                        <Button
-                            disabled={!assignedToMe}
-                            onClick={handlePlaceInWagonClick}
-                            color="green"
-                            p={'xs'}
-                            size="sm"
-                            style={{ marginLeft: 'auto' }}
-                        >
-                            Done Packing
-                        </Button>
-                    )}
+                    <Button
+                        disabled={!assignedToMe}
+                        loading={saveState === 'saving' || updateStatus.loading}
+                        onClick={handlePlaceInWagonClick}
+                        color="green"
+                        p={'xs'}
+                        size="sm"
+                        style={{ marginLeft: 'auto' }}
+                    >
+                        Done Packing
+                    </Button>
                 </Group>
             </Box>
 
