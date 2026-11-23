@@ -31,10 +31,11 @@ import ItemLimitInfo from "src/components/common/items/ItemLimitInfo.tsx";
 import RecordPickupModal from "src/components/customer/RecordPickupModal.tsx";
 import PlaceInWagonModal from './PlaceInWagonModal';
 
-type SaveState = 'idle' | 'saving' | 'saved' | 'error';
+// 'pending' = edited locally, waiting for the debounced save to start
+type SaveState = 'idle' | 'pending' | 'saving' | 'saved' | 'error';
 type QuantityMap = Record<number, number>;
 
-const AUTO_SAVE_DELAY_MS = 600;
+const AUTO_SAVE_DELAY_MS = 1000;
 
 const toQuantityMap = (items: OrderItem[]): QuantityMap =>
     items.reduce((acc, item) => {
@@ -46,7 +47,7 @@ const isDirty = (items: OrderItem[], saved: QuantityMap): boolean =>
     items.some((item) => item.quantityFulfilled !== (saved[item.id] ?? 0));
 
 function SaveStatus({ state, onRetry }: { state: SaveState; onRetry: () => void }) {
-    if (state === 'saving') {
+    if (state === 'pending' || state === 'saving') {
         return <Group gap={4}><Loader size={12}/><Text size="xs" c="dimmed">Saving…</Text></Group>;
     }
     if (state === 'saved') {
@@ -170,12 +171,14 @@ function PackingView() {
                 setSaveState('saved');
             }
         }
+        // Edits that ended up back where the server already is (e.g. toggled twice) need no request
+        setSaveState((prev) => (prev === 'pending' ? 'saved' : prev));
         return true;
     }, []);
 
     // Debounced auto-save whenever packing progress changes
     useEffect(() => {
-        if (!loadedOrderUuidRef.current || !isDirty(draftItems, lastSavedRef.current)) return;
+        if (!loadedOrderUuidRef.current) return;
         if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
         saveTimerRef.current = setTimeout(() => {
             saveTimerRef.current = null;
@@ -203,8 +206,14 @@ function PackingView() {
             response.orderItemSnapshots[item.id] ? {...item, limitSnapshot: response.orderItemSnapshots[item.id]} : item));
     };
 
+    // Every packing edit goes through here so the status stops showing "Saved" as soon as something changes
+    const editDraft = (update: (prev: OrderItem[]) => OrderItem[]) => {
+        setSaveState('pending');
+        setDraftItems(update);
+    };
+
     const updateDraftItemQuantityFulfilled = (id: number, newQuantityFulfilled: number) => {
-        setDraftItems((prev) =>
+        editDraft((prev) =>
             prev.map((item) =>
                 item.id === id ? { ...item, quantityFulfilled: newQuantityFulfilled } : item
             )
@@ -212,11 +221,11 @@ function PackingView() {
     };
 
     const clearAll = () => {
-        setDraftItems((prev) => prev.map((item) => ({ ...item, quantityFulfilled: 0 })));
+        editDraft((prev) => prev.map((item) => ({ ...item, quantityFulfilled: 0 })));
     };
 
     const fillAll = () => {
-        setDraftItems((prev) => prev.map((item) => ({ ...item, quantityFulfilled: item.quantityRequested })));
+        editDraft((prev) => prev.map((item) => ({ ...item, quantityFulfilled: item.quantityRequested })));
     };
 
     const handlePlaceInWagonClick = async () => {
