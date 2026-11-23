@@ -47,7 +47,8 @@ const isDirty = (items: OrderItem[], saved: QuantityMap): boolean =>
     items.some((item) => item.quantityFulfilled !== (saved[item.id] ?? 0));
 
 function SaveStatus({ state, onRetry }: { state: SaveState; onRetry: () => void }) {
-    if (state === 'pending' || state === 'saving') {
+    // Nothing is shown while edits wait for the debounce ('pending'), so it never claims "Saved" for unsaved changes
+    if (state === 'saving') {
         return <Group gap={4}><Loader size={12}/><Text size="xs" c="dimmed">Saving…</Text></Group>;
     }
     if (state === 'saved') {
