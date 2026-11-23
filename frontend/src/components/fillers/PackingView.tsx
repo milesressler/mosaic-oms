@@ -35,7 +35,7 @@ import PlaceInWagonModal from './PlaceInWagonModal';
 type SaveState = 'idle' | 'pending' | 'saving' | 'saved' | 'error';
 type QuantityMap = Record<number, number>;
 
-const AUTO_SAVE_DELAY_MS = 1000;
+const AUTO_SAVE_DELAY_MS = 600;
 
 const toQuantityMap = (items: OrderItem[]): QuantityMap =>
     items.reduce((acc, item) => {
