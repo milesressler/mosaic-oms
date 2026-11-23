@@ -14,6 +14,15 @@ export interface FeaturesContextType {
     setOrdersOpen: (enabled: boolean) => void
     printOnTransitionToStatus: OrderStatus|null;
     setPrintOnTransitionToStatus: (orderStatus: OrderStatus|null) => void
+    /** Special event order takers should see, or null when none is running */
+    activeSpecialEvent: ActiveSpecialEvent|null;
+    /** Whether the feature config has loaded at least once */
+    featuresLoaded: boolean;
+}
+
+export interface ActiveSpecialEvent {
+    uuid: string;
+    name: string;
 }
 
 // Create the context
@@ -80,6 +89,10 @@ export const FeaturesProvider: React.FC<{ children: ReactNode }> = ({ children }
             ordersOpen: features ? features.ordersOpen : true,
             groupMeEnabled: !!features?.groupMeEnabled,
             printOnTransitionToStatus: features?.printOnTransitionToStatus ?? null,
+            activeSpecialEvent: features?.activeSpecialEventUuid
+                ? {uuid: features.activeSpecialEventUuid, name: features.activeSpecialEventName ?? 'Special Event'}
+                : null,
+            featuresLoaded: !!features,
             setGroupMeEnabled,
             setOrdersOpen,
             setPrintOnTransitionToStatus,

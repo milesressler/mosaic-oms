@@ -14,6 +14,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.Instant;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -25,6 +26,10 @@ public interface OrderRepository extends JpaRepository<OrderEntity, Long>, JpaSp
     List<OrderEntity> findAllByUuidIn(List<String> uuids);
 
     Optional<OrderEntity> findByUuid(String uuid);
+
+    List<OrderEntity> findAllByCustomerIdAndSpecialEventIdAndOrderStatusNotIn(Long customerId, Long specialEventId, Collection<OrderStatus> orderStatuses);
+
+    boolean existsBySpecialEventId(Long specialEventId);
     Page<OrderEntity> findAllByOrderStatusIn(Pageable pageable, List<OrderStatus> orderStatusList);
 
     @Query("SELECT o FROM OrderEntity o " +

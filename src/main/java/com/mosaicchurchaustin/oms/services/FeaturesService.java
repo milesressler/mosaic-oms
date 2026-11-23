@@ -1,5 +1,6 @@
 package com.mosaicchurchaustin.oms.services;
 
+import com.mosaicchurchaustin.oms.data.entity.event.SpecialEventEntity;
 import com.mosaicchurchaustin.oms.data.entity.order.OrderStatus;
 import com.mosaicchurchaustin.oms.data.request.FeatureConfigRequestInterface;
 import com.mosaicchurchaustin.oms.data.response.FeatureConfigResponse;
@@ -54,6 +55,19 @@ public class FeaturesService {
                 }
             }
         }
+        final var result = featureConfigRepository.save(existing);
+        featuresNotifier.notifyFeaturesChange(existing);
+        return FeatureConfigResponse.from(result);
+    }
+
+    /**
+     * Sets which special event order takers see, or none. Also used to refresh the cached name after an event is renamed.
+     */
+    @CachePut(value = "features", key = "#root.target.FEATURES_KEY")
+    @Transactional
+    public FeatureConfigResponse setActiveSpecialEvent(final SpecialEventEntity specialEvent) {
+        final var existing = featureConfigRepository.findFirstByOrderByIdDesc();
+        existing.setActiveSpecialEvent(specialEvent);
         final var result = featureConfigRepository.save(existing);
         featuresNotifier.notifyFeaturesChange(existing);
         return FeatureConfigResponse.from(result);

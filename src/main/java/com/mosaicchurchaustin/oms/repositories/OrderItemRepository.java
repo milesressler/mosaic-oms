@@ -18,6 +18,41 @@ import java.util.Map;
 public interface OrderItemRepository extends JpaRepository<OrderItemEntity, Long> {
     void deleteByIdIn(Collection<Long> ids);
 
+    interface ItemClaimCount {
+        Long getItemId();
+        Long getClaimed();
+    }
+
+    /**
+     * Units of each item on a special event's orders, leaving out orders in the given (e.g. cancelled) statuses.
+     */
+    @Query("""
+        SELECT oi.itemEntity.id AS itemId, SUM(oi.quantity) AS claimed
+          FROM OrderItemEntity oi
+         WHERE oi.orderEntity.specialEvent.id = :eventId
+           AND oi.orderEntity.orderStatus NOT IN :excludedStatuses
+         GROUP BY oi.itemEntity.id
+        """)
+    List<ItemClaimCount> countClaimedForSpecialEvent(@Param("eventId") Long eventId,
+                                                     @Param("excludedStatuses") Collection<OrderStatus> excludedStatuses);
+
+    /**
+     * Same as {@link #countClaimedForSpecialEvent} but as a locking read, which sees the latest committed orders
+     * rather than the transaction's snapshot. Used for stock checks, after the event's lines are locked.
+     */
+    @Query(nativeQuery = true, value = """
+        SELECT oi.item_entity_id AS itemId, CAST(SUM(oi.quantity) AS SIGNED) AS claimed
+          FROM order_items oi
+          JOIN orders o ON o.id = oi.order_entity_id
+         WHERE o.special_event_id = :eventId
+           AND o.order_status NOT IN (:excludedStatuses)
+         GROUP BY oi.item_entity_id
+         LOCK IN SHARE MODE
+        """)
+    List<ItemClaimCount> countClaimedForSpecialEventLocking(@Param("eventId") Long eventId,
+                                                            @Param("excludedStatuses") Collection<String> excludedStatuses);
+
+
     interface LimitedItemReceipt {
         Long getItemId();
         Integer getQuantity();

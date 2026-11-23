@@ -4,6 +4,7 @@ import ordersApi from "src/services/ordersApi.tsx";
 import {useEffect, useState} from "react";
 import {useInterval} from "@mantine/hooks";
 import {
+    Badge,
     Center,
     Group,
     Image,
@@ -44,7 +45,11 @@ interface OrdersTable {
     forceRefresh?: boolean,
     disableSorting?: boolean,
     statusFilter?: OrderStatus[],
-    maxNumberOfRecords?: number
+    maxNumberOfRecords?: number,
+    /** Only orders whose customer name contains this */
+    customerSearch?: string,
+    /** Only orders taken for this special event */
+    specialEventUuid?: string|null,
 }
 
 function Th({ children, reversed, sorted, onSort, sortingEnabled }: ThProps) {
@@ -81,6 +86,8 @@ export function OrdersTable({
         statusFilter = [],
         forceRefresh,
         disableSorting = false,
+        customerSearch,
+        specialEventUuid,
 }: OrdersTable){
     const refreshPercent = refreshInterval/100;
 
@@ -102,6 +109,12 @@ export function OrdersTable({
             page: activePage,
             size: maxNumberOfRecords,
         };
+        if (customerSearch?.trim()) {
+            params = {...params, customer: customerSearch.trim()};
+        }
+        if (specialEventUuid) {
+            params = {...params, specialEvent: specialEventUuid};
+        }
         if (maxNumberOfRecords) {
             params = {...params, size: maxNumberOfRecords};
         }
@@ -140,7 +153,16 @@ export function OrdersTable({
     useEffect(() => {
         refreshOrders();
         setCounter(0);
-    }, [forceRefresh]);
+    }, [forceRefresh, customerSearch, specialEventUuid]);
+
+    // Special event orders are created already waiting for pickup, so show new orders that match the filter
+    useSubscription("/topic/orders/created", (message) => {
+        const body: OrderNotification = JSON.parse(message.body);
+        if (body.order?.specialEventName && statusFilter?.length > 0
+            && statusFilter.indexOf(body.orderStatus) !== -1 && !getOrdersApi.loading) {
+            refreshOrders();
+        }
+    });
 
     useEffect(() => {
         if (getOrdersApi?.data && getOrdersApi?.data?.number !== activePage) {
@@ -232,7 +254,10 @@ export function OrdersTable({
                     {key === 'filler' &&
                         <UserAvatar user={order.lastStatusChange?.user}/>
                   }
-                    {key === 'Customer' && `${order.customer?.firstName || ''} ${order.customer?.lastName || ''}`.trim()}
+                    {key === 'Customer' && <>
+                        {`${order.customer?.firstName || ''} ${order.customer?.lastName || ''}`.trim()}
+                        {order.specialEventName && <Badge ml={'xs'} size={'xs'} color={'red'} variant={'light'}>{order.specialEventName}</Badge>}
+                    </>}
                     {key === 'order-customer' && <>
                         <Text size={'xs'} c={'dimmed'}>#{order.id}</Text>
                         <Text size={'sm'}>{`${order.customer?.firstName || ''} ${order.customer?.lastName || ''}`.trim()}</Text>

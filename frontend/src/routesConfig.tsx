@@ -11,7 +11,7 @@ import {
     IconMovie,
     IconExclamationCircle,
     IconBasketSearch,
-    IconPrinter, IconBug, IconSparkles
+    IconPrinter, IconBug, IconSparkles, IconGift
 } from "@tabler/icons-react";
 import ItemsManagementPage from "src/pages/admin/ItemsManagementPage.tsx";
 import OrderTakerDashboard from "src/pages/dashboards/OrderTakerDashboard.tsx";
@@ -37,6 +37,8 @@ import ItemAnalysis from "src/pages/reports/ItemAnalysis.tsx";
 import PrinterManagementPage from "src/pages/admin/PrinterManagementPage.tsx";
 import BugManagementPage from "src/pages/admin/BugManagementPage.tsx";
 import AiQueryPage from "src/pages/admin/AiQueryPage.tsx";
+import SpecialEventDashboard from "src/pages/dashboards/SpecialEventDashboard.tsx";
+import SpecialEventsPage from "src/pages/admin/SpecialEventsPage.tsx";
 
 
 const routes = [
@@ -85,6 +87,17 @@ const routes = [
                 title: 'Customer Monitor',
                 showInNavBar: true,
                 hideNotifications: true,
+            },
+            {
+                // Only listed while a special event is running; titled with the event's name
+                key: 'special-event-dashboard',
+                path: '/dashboard/event',
+                element: SpecialEventDashboard,
+                errorElement: ErrorPage,
+                title: 'Special Event',
+                icon: IconGift,
+                showInNavBar: true,
+                requiresActiveSpecialEvent: true,
             },
             {
                 key: 'taker-dashboard',
@@ -211,6 +224,14 @@ const routes = [
                 path: '/admin/items',
                 element: ItemsManagementPage,
                 title: 'Items',
+                showInNavBar: true,
+            },
+            {
+                key: 'special-events',
+                path: '/admin/events',
+                element: SpecialEventsPage,
+                title: 'Special Events',
+                icon: IconGift,
                 showInNavBar: true,
             },
             {

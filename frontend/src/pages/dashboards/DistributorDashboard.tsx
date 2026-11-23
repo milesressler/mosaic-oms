@@ -1,4 +1,7 @@
-import {Box, Group, Modal, Text} from "@mantine/core";
+import {Box, Group, Modal, SegmentedControl, Text, TextInput} from "@mantine/core";
+import {useDebouncedValue} from "@mantine/hooks";
+import {IconSearch} from "@tabler/icons-react";
+import {useFeatures} from "src/context/FeaturesContext.tsx";
 import {Order, OrderStatus} from "src/models/types.tsx";
 import OrdersTable from "src/components/orders/OrdersTable.tsx";
 import {useNavigate, useParams} from "react-router-dom";
@@ -30,6 +33,12 @@ export function DistributorDashboard() {
         }
     }
     const [ forceRefreshTable, setForceRefreshTable ] = useState(false);
+    const [ search, setSearch ] = useState('');
+    const [ debouncedSearch ] = useDebouncedValue(search, 300);
+    const { activeSpecialEvent } = useFeatures();
+    // 'all', or the running event's uuid to show only its orders
+    const [ orderFilter, setOrderFilter ] = useState<string>('all');
+    const specialEventFilter = activeSpecialEvent && orderFilter === activeSpecialEvent.uuid ? orderFilter : null;
     const customerName = `${selectedOrder?.customer?.firstName || ''} ${selectedOrder?.customer?.lastName || ''}`.trim()
 
     return (
@@ -45,7 +54,28 @@ export function DistributorDashboard() {
                 navigate(`/dashboard/distributor/`)}}>
                 <OrderDetailSection onUpdate={handleUpdateCompleted}/>            </Modal>
             <>
+            <Group p={'xs'} gap={'xs'} wrap={'wrap'}>
+                <TextInput
+                    placeholder="Search by name"
+                    leftSection={<IconSearch size={16}/>}
+                    value={search}
+                    onChange={(event) => setSearch(event.currentTarget.value)}
+                    style={{flex: 1, minWidth: 200}}
+                />
+                {activeSpecialEvent && (
+                    <SegmentedControl
+                        value={specialEventFilter ?? 'all'}
+                        onChange={setOrderFilter}
+                        data={[
+                            {label: 'All orders', value: 'all'},
+                            {label: activeSpecialEvent.name, value: activeSpecialEvent.uuid},
+                        ]}
+                    />
+                )}
+            </Group>
             <OrdersTable
+                customerSearch={debouncedSearch}
+                specialEventUuid={specialEventFilter}
                 statusFilter={[OrderStatus.READY_FOR_CUSTOMER_PICKUP, OrderStatus.IN_TRANSIT]}
                 view={OrdersView.DISTRIBUTOR}
                 onSelectRow={onSelectOrder}

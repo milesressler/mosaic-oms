@@ -16,6 +16,7 @@ import ChangelogModalContent from "src/components/announcements/ChangelogModalCo
 import {usePostHog} from "posthog-js/react";
 import {useEffect} from "react";
 import {BugReportModal} from "src/components/feedback/BugReport.tsx";
+import {useFeatures} from "src/context/FeaturesContext.tsx";
 
 
 export function NavbarNested() {
@@ -25,6 +26,7 @@ export function NavbarNested() {
     const userRoles = getRolesFromAuth0User(user); // Adjust namespace accordingly
 
     const { notificationsEnabled, setNotificationsEnabled } = usePreferences();
+    const { activeSpecialEvent } = useFeatures();
     const hasRequiredRole = (requiredRole: string) => {
         if (!requiredRole) return true;
         return userRoles.includes(requiredRole.toLowerCase());
@@ -52,8 +54,11 @@ export function NavbarNested() {
                         onClick: route.onClick, // pass down onClick if defined
                         links: route.children
                             .filter((childRoute: any) => childRoute.showInNavBar !== false)
+                            .filter((childRoute: any) => !childRoute.requiresActiveSpecialEvent || !!activeSpecialEvent)
                             .map((childRoute: any) => ({
-                                label: childRoute.title,
+                                label: childRoute.requiresActiveSpecialEvent && activeSpecialEvent
+                                    ? activeSpecialEvent.name
+                                    : childRoute.title,
                                 link: childRoute.path,
                                 key: childRoute.key,
                                 onClick: childRoute.onClick, // pass down onClick if defined

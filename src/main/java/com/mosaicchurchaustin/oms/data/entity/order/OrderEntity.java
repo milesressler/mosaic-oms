@@ -2,6 +2,7 @@ package com.mosaicchurchaustin.oms.data.entity.order;
 
 import com.mosaicchurchaustin.oms.data.entity.BaseUuidEntity;
 import com.mosaicchurchaustin.oms.data.entity.customer.CustomerEntity;
+import com.mosaicchurchaustin.oms.data.entity.event.SpecialEventEntity;
 import com.mosaicchurchaustin.oms.data.entity.user.UserEntity;
 import com.mosaicchurchaustin.oms.services.audit.AuditLogListener;
 import com.mosaicchurchaustin.oms.services.audit.Auditable;
@@ -62,6 +63,14 @@ public class OrderEntity extends BaseUuidEntity implements Auditable {
 
     @Column(name = "cart_id")
     String cartId;
+
+    /**
+     * Set when the order was taken for a special event (e.g. a Christmas giveaway)
+     */
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "special_event_id")
+    @ToString.Exclude
+    SpecialEventEntity specialEvent;
 
     @BatchSize(size = 100)
     @OneToMany(mappedBy = "orderEntity")

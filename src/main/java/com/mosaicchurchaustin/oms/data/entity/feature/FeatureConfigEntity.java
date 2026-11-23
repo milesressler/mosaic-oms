@@ -2,6 +2,7 @@ package com.mosaicchurchaustin.oms.data.entity.feature;
 
 
 import com.mosaicchurchaustin.oms.data.entity.BaseEntity;
+import com.mosaicchurchaustin.oms.data.entity.event.SpecialEventEntity;
 import com.mosaicchurchaustin.oms.data.entity.order.OrderStatus;
 import com.mosaicchurchaustin.oms.services.audit.AuditLogListener;
 import com.mosaicchurchaustin.oms.services.audit.Auditable;
@@ -10,6 +11,9 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.Transient;
 import lombok.AllArgsConstructor;
@@ -52,6 +56,14 @@ public class FeatureConfigEntity extends BaseEntity implements Auditable, Serial
     @Column(name = "orders_open", nullable = false)
     boolean ordersOpen;
 
+    /**
+     * Special event shown to order takers. Null when no event is running.
+     */
+    @Setter
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "active_special_event_id")
+    SpecialEventEntity activeSpecialEvent;
+
     @Transient
     @Getter
     Map<String, String> previousState;
@@ -67,7 +79,8 @@ public class FeatureConfigEntity extends BaseEntity implements Auditable, Serial
         return Map.of(
                 "groupMeEnabled", String.valueOf(groupMeEnabled),
                 "printOnTransitionToStatus", String.valueOf(printOnTransitionToStatus),
-                "ordersOpen", String.valueOf(ordersOpen)
+                "ordersOpen", String.valueOf(ordersOpen),
+                "activeSpecialEvent", activeSpecialEvent == null ? "" : activeSpecialEvent.getUuid()
         );
     }
 }

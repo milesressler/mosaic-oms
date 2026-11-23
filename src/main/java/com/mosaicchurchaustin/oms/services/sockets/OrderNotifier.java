@@ -86,7 +86,8 @@ public class OrderNotifier {
 
         messagingTemplate.convertAndSend("/topic/orders/created", orderNotification);
 
-        if (featuresService.getFeaturesConfig().isGroupMeEnabled()) {
+        // Special event orders skip the regular queue, so they aren't posted to GroupMe
+        if (featuresService.getFeaturesConfig().isGroupMeEnabled() && orderEntity.getSpecialEvent() == null) {
             groupMeService.handleOrderCreated(orderEntity);
             final var newHistory = orderHistoryRepository.save(
                 OrderHistoryEntity.builder()

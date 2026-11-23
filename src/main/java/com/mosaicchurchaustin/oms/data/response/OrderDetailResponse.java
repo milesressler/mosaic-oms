@@ -33,6 +33,7 @@ public class OrderDetailResponse extends OrderResponse {
                 .id(orderEntity.getId())
                 .created(orderEntity.getCreated())
                 .orderStatus(orderEntity.getOrderStatus())
+                .specialEventName(specialEventName(orderEntity))
                 .customer(
                         OrderResponse.Customer.builder()
                                 .firstName(orderEntity.getCustomer().getFirstName())

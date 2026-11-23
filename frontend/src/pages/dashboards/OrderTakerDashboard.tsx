@@ -5,7 +5,9 @@ import {useNavigate, useParams} from "react-router-dom";
 import {useEffect} from "react";
 import useApi from "src/hooks/useApi.tsx";
 import ordersApi from "src/services/ordersApi.tsx";
-import {LoadingOverlay, Box} from "@mantine/core";
+import {LoadingOverlay, Box, Alert, Button, Group, Text} from "@mantine/core";
+import {IconGift} from "@tabler/icons-react";
+import {useFeatures} from "src/context/FeaturesContext.tsx";
 import NeedsInfoBanner from "src/components/notifications/NeedsInfoBanner.tsx";
 import {usePullToRefreshDisabled} from "src/hooks/usePullToRefreshDisabled.tsx";
 
@@ -13,6 +15,7 @@ export function OrderTakerDashboard() {
     const {  id: orderId } = useParams<{ id?: string }>();
     const fetchOrder = useApi(ordersApi.getOrderById);
     const navigate = useNavigate();
+    const { activeSpecialEvent } = useFeatures();
 
     usePullToRefreshDisabled();
 
@@ -105,6 +108,18 @@ export function OrderTakerDashboard() {
         }}>
             <LoadingOverlay visible={!!orderId && fetchOrder.loading}></LoadingOverlay>
             <Box p={'xs'} style={{ flexShrink: 0 }}><NeedsInfoBanner /></Box>
+            {activeSpecialEvent && !orderId && (
+                <Box px={'xs'} style={{ flexShrink: 0 }}>
+                    <Alert color="red" variant="light" icon={<IconGift/>}>
+                        <Group justify="space-between">
+                            <Text size="sm">{activeSpecialEvent.name} is running. Take its orders on the event page.</Text>
+                            <Button size="xs" color="red" onClick={() => navigate('/dashboard/event')}>
+                                Go to {activeSpecialEvent.name}
+                            </Button>
+                        </Group>
+                    </Alert>
+                </Box>
+            )}
             <Box style={{ flex: 1, minHeight: 0 }}>
                 <OrderFormV2
                     form={form}

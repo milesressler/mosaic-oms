@@ -10,6 +10,8 @@ export interface Order extends BaseObject {
     customer: Customer;
     lastStatusUpdate: string;
     postedToGroupMe: string;
+    /** Set when the order was taken for a special event */
+    specialEventName?: string | null;
 }
 
 export interface OrderNotification {
@@ -344,6 +346,52 @@ export interface FeatureConfig {
     groupMeEnabled: boolean
     ordersOpen: boolean
     printOnTransitionToStatus: OrderStatus
+    activeSpecialEventUuid: string | null
+    activeSpecialEventName: string | null
+}
+
+export interface SpecialEventItem {
+    item: Item;
+    /** Stock for the event; null means no limit */
+    quantityAvailable: number | null;
+    /** Units on the event's orders that are not cancelled or rejected */
+    claimed: number;
+    /** Stock left; null means no limit */
+    remaining: number | null;
+}
+
+export interface SpecialEvent {
+    uuid: string;
+    name: string;
+    eventDate: string | null;
+    itemsPerGuest: number;
+    active: boolean;
+    hasOrders: boolean;
+    items: SpecialEventItem[];
+}
+
+export interface SpecialEventRequest {
+    name: string;
+    eventDate: string | null;
+    itemsPerGuest: number;
+    items: { itemId: number, quantityAvailable: number | null }[];
+}
+
+export interface SpecialEventOrderRequest {
+    customerUuid?: string;
+    customerFirstName?: string;
+    customerLastName?: string;
+    customerNameObfuscated?: boolean;
+    itemIds: number[];
+    allowAdditional?: boolean;
+}
+
+export interface SpecialEventCustomerOrder {
+    id: number;
+    uuid: string;
+    orderStatus: OrderStatus;
+    created: string;
+    items: string[];
 }
 
 export interface Device extends BaseObject{

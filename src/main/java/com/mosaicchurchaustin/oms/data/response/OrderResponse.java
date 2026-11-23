@@ -1,5 +1,6 @@
 package com.mosaicchurchaustin.oms.data.response;
 
+import com.mosaicchurchaustin.oms.data.entity.event.SpecialEventEntity;
 import com.mosaicchurchaustin.oms.data.entity.order.OrderEntity;
 import com.mosaicchurchaustin.oms.data.entity.order.OrderHistoryEntity;
 import com.mosaicchurchaustin.oms.data.entity.order.OrderStatus;
@@ -25,6 +26,8 @@ public class OrderResponse {
     private Customer customer;
     private UserResponse assignee;
     private OrderStatus orderStatus;
+    /** Set when the order was taken for a special event */
+    private String specialEventName;
 
     public static OrderResponse from(final OrderEntity orderEntity) {
 
@@ -39,6 +42,7 @@ public class OrderResponse {
                                 .orElse(null)
                 )
                 .orderStatus(orderEntity.getOrderStatus())
+                .specialEventName(specialEventName(orderEntity))
                 .customer(
                         Customer.builder()
                                 .firstName(orderEntity.getCustomer().getFirstName())
@@ -48,6 +52,10 @@ public class OrderResponse {
                                 .build()
                 )
                 .build();
+    }
+
+    static String specialEventName(final OrderEntity orderEntity) {
+        return Optional.ofNullable(orderEntity.getSpecialEvent()).map(SpecialEventEntity::getName).orElse(null);
     }
 
     @Builder

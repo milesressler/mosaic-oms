@@ -28,6 +28,7 @@ public class OrderSpecBuilder {
     private List<String> myOrdersActions;
     private Long itemId;
     private Map<String, String> itemAttributes;
+    private String specialEventUuid;
 
     private OrderSpecBuilder() {}
 
@@ -76,6 +77,14 @@ public class OrderSpecBuilder {
         return this;
     }
 
+    /**
+     * Only orders taken for this special event
+     */
+    public OrderSpecBuilder specialEventUuid(String specialEventUuid) {
+        this.specialEventUuid = specialEventUuid;
+        return this;
+    }
+
     public Specification<OrderEntity> build() {
         return (root, query, cb) -> {
             List<Predicate> p = new ArrayList<>();
@@ -100,6 +109,10 @@ public class OrderSpecBuilder {
 
             if (orderId != null) {
                 p.add(cb.equal(root.get("id"), orderId));
+            }
+
+            if (specialEventUuid != null && !specialEventUuid.isBlank()) {
+                p.add(cb.equal(root.join("specialEvent").get("uuid"), specialEventUuid));
             }
 
             if (itemId != null) {

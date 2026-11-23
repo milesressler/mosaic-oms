@@ -2,6 +2,7 @@ package com.mosaicchurchaustin.oms.services;
 
 import com.mosaicchurchaustin.oms.data.entity.BaseEntity;
 import com.mosaicchurchaustin.oms.data.entity.customer.CustomerEntity;
+import com.mosaicchurchaustin.oms.data.entity.event.SpecialEventEntity;
 import com.mosaicchurchaustin.oms.data.entity.item.ItemEntity;
 import com.mosaicchurchaustin.oms.data.entity.order.OrderEntity;
 import com.mosaicchurchaustin.oms.data.entity.order.OrderEventType;
@@ -31,6 +32,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -87,7 +89,8 @@ public class OrderService {
                                        final boolean onlyMyOrders,
                                        final List<String> myOrdersActions,
                                        final Long itemId,
-                                       final List<String> itemAttributes) {
+                                       final List<String> itemAttributes,
+                                       final String specialEventUuid) {
         final List<OrderStatus> statusList = Stream.ofNullable(statusFilters)
                 .flatMap(Collection::stream)
                 .map(OrderStatus::from)
@@ -102,6 +105,7 @@ public class OrderService {
                 .myOrdersActions(onlyMyOrders ? myOrdersActions : null)
                 .itemId(itemId)
                 .itemAttributes(itemId != null ? parseItemAttributes(itemAttributes) : null)
+                .specialEventUuid(specialEventUuid)
                 .build();
         return orderRepository.findAll(spec, pageable);
     }
@@ -392,6 +396,52 @@ public class OrderService {
         return orderEntity;
     }
 
+
+    /**
+     * Creates an order for a special event, one of each item. Nothing is packed or run for these orders, so the items
+     * are recorded as filled and the order goes straight to waiting for pickup. Stock checks are the caller's job.
+     */
+    @Transactional
+    public OrderEntity createSpecialEventOrder(final SpecialEventEntity specialEvent,
+                                               final CustomerEntity customer,
+                                               final List<ItemEntity> items) {
+        final UserEntity userEntity = userService.currentUser();
+        final OrderEntity orderEntity = orderRepository.save(OrderEntity.builder()
+                .customer(customer)
+                .optInNotifications(false)
+                .specialEvent(specialEvent)
+                .orderStatus(OrderStatus.PENDING_ACCEPTANCE)
+                .build());
+
+        for (final ItemEntity itemEntity : items) {
+            final OrderItemEntity orderItemEntity = orderItemRepository.save(OrderItemEntity.builder()
+                    .orderEntity(orderEntity)
+                    .itemEntity(itemEntity)
+                    .attributes(Map.of())
+                    .quantity(1)
+                    // Filled when taken, so fill rates and item limits count it like any other order
+                    .quantityFulfilled(1)
+                    .build());
+            orderEntity.getOrderItemList().add(orderItemEntity);
+        }
+        itemLimitService.applySnapshots(orderEntity);
+
+        final OrderHistoryEntity createHistoryItem = orderHistoryRepository.save(
+                OrderHistoryEntity.builder()
+                        .orderStatus(OrderStatus.PENDING_ACCEPTANCE)
+                        .orderEntity(orderEntity)
+                        .eventType(OrderEventType.STATUS_CHANGE)
+                        .userEntity(userEntity)
+                        // The latest status change is found by timestamp, so keep this one strictly before the next
+                        .timestamp(Instant.now().minusMillis(1))
+                        .build()
+        );
+        orderEntity.getOrderHistoryEntityList().add(createHistoryItem);
+        orderEntity.setLastStatusChange(createHistoryItem);
+
+        updateOrderStatus(orderEntity, OrderStatus.READY_FOR_CUSTOMER_PICKUP.name(), specialEvent.getName());
+        return orderRepository.save(orderEntity);
+    }
 
     private void addItemsToOrder(final OrderEntity orderEntity, List<OrderItemRequest> items) {
         for (final OrderItemRequest item: items) {

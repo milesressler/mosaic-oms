@@ -113,8 +113,10 @@ public class OrderController {
                                          @RequestParam(value = "itemId", required = false)
                                          final Long itemId,
                                          @RequestParam(value = "attr", required = false)
-                                         final List<String> itemAttributes) {
-        final Page<OrderEntity> results = orderService.getOrders(pageable, statuses, customer, customerUuid != null ? customerUuid.toString() : null, orderId, onlyMyOrders, myOrdersActions, itemId, itemAttributes);
+                                         final List<String> itemAttributes,
+                                         @RequestParam(value = "specialEvent", required = false)
+                                         final String specialEventUuid) {
+        final Page<OrderEntity> results = orderService.getOrders(pageable, statuses, customer, customerUuid != null ? customerUuid.toString() : null, orderId, onlyMyOrders, myOrdersActions, itemId, itemAttributes, specialEventUuid);
         if (detailed) {
             return results.map(OrderDetailResponse::from);
         } else {
