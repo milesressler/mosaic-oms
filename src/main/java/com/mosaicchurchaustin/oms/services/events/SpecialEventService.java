@@ -117,11 +117,27 @@ public class SpecialEventService {
     }
 
     /**
+     * Archives or restores an event. A running event has to be stopped first.
+     */
+    @Transactional
+    public void setArchived(final String uuid, final boolean archived) {
+        final SpecialEventEntity event = findByUuid(uuid);
+        if (archived && isActive(event)) {
+            throw new InvalidRequestException("Stop the event before archiving it");
+        }
+        event.setArchived(archived);
+        specialEventRepository.save(event);
+    }
+
+    /**
      * Makes the event the one order takers see, replacing any other active event. Pass null to stop all events.
      */
     @Transactional
     public void setActiveEvent(final String uuid) {
         final SpecialEventEntity event = uuid == null ? null : findByUuid(uuid);
+        if (event != null && event.isArchived()) {
+            throw new InvalidRequestException("Restore the event from the archive before starting it");
+        }
         if (event != null && event.getItems().isEmpty()) {
             throw new InvalidRequestException("Add at least one item before starting the event");
         }
@@ -263,6 +279,7 @@ public class SpecialEventService {
                 .eventDate(event.getEventDate())
                 .itemsPerGuest(event.getItemsPerGuest())
                 .active(active)
+                .archived(event.isArchived())
                 .hasOrders(!claimed.isEmpty() || (event.getId() != null && orderRepository.existsBySpecialEventId(event.getId())))
                 .items(event.getItems().stream().map(line -> {
                     final long claimedCount = claimed.getOrDefault(line.getItemEntity().getId(), 0L);

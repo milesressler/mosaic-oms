@@ -226,7 +226,7 @@ export function SpecialEventDashboard() {
                 <Stack align="center" gap="sm">
                     <ThemeIcon size={80} radius="xl" color="green"><IconCheck size={56}/></ThemeIcon>
                     <Title order={2} ta="center">{confirmation.guestName}: {confirmation.items.join(', ')}</Title>
-                    <Text c="dimmed">Order #{confirmation.orderId} is ready for pickup</Text>
+                    <Text c="dimmed">Order #{confirmation.orderId}</Text>
                     <Button variant="light" mt="md" onClick={() => setConfirmation(null)}>Next guest</Button>
                 </Stack>
             </Center>

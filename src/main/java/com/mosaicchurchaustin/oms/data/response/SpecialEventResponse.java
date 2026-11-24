@@ -14,6 +14,7 @@ public class SpecialEventResponse {
     private LocalDate eventDate;
     private Integer itemsPerGuest;
     private boolean active;
+    private boolean archived;
     /** Whether any orders were taken for the event; events with orders can't be deleted */
     private boolean hasOrders;
     private List<SpecialEventItemResponse> items;

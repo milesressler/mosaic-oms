@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -54,6 +55,17 @@ public class AdminSpecialEventController {
     @DeleteMapping(path = "/{uuid}")
     public void deleteEvent(@PathVariable("uuid") final String uuid) {
         specialEventService.deleteEvent(uuid);
+    }
+
+    /**
+     * Archives (archived=true) or restores (archived=false) an event
+     */
+    @ResponseBody
+    @PutMapping(path = "/{uuid}/archived", produces = MediaType.APPLICATION_JSON_VALUE)
+    public List<SpecialEventResponse> setArchived(@PathVariable("uuid") final String uuid,
+                                                  @RequestParam("archived") final boolean archived) {
+        specialEventService.setArchived(uuid, archived);
+        return specialEventService.getAllEvents();
     }
 
     /**

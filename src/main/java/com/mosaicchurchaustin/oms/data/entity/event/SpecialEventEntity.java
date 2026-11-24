@@ -53,6 +53,13 @@ public class SpecialEventEntity extends BaseUuidEntity {
     @Column(name = "items_per_guest", nullable = false)
     Integer itemsPerGuest;
 
+    /**
+     * Hidden from the Special Events page by default. Events with orders can't be deleted, so they're archived instead.
+     */
+    @Builder.Default
+    @Column(name = "archived", nullable = false)
+    boolean archived = false;
+
     @Builder.Default
     @OneToMany(mappedBy = "specialEvent", cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("sortOrder ASC NULLS LAST, id ASC")

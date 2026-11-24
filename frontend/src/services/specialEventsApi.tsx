@@ -27,6 +27,9 @@ const deleteEvent = (uuid: string) =>
 /** Starts the event (stopping any other), or stops the running event when uuid is null */
 const setActiveEvent = (uuid: string | null) =>
     client.put<SpecialEvent[]>("/admin/special-event/active", {uuid});
+/** Archives or restores an event */
+const setArchived = (uuid: string, archived: boolean) =>
+    client.put<SpecialEvent[]>(`/admin/special-event/${uuid}/archived`, null, {params: {archived}});
 
 export default {
     getActiveEvent,
@@ -37,4 +40,5 @@ export default {
     updateEvent,
     deleteEvent,
     setActiveEvent,
+    setArchived,
 };

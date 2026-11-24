@@ -98,6 +98,8 @@ const routes = [
                 icon: IconGift,
                 showInNavBar: true,
                 requiresActiveSpecialEvent: true,
+                // Every order here is one the order takers just made, so pop-ups about orders are just noise
+                hideNotifications: true,
             },
             {
                 key: 'taker-dashboard',

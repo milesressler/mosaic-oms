@@ -366,6 +366,7 @@ export interface SpecialEvent {
     eventDate: string | null;
     itemsPerGuest: number;
     active: boolean;
+    archived: boolean;
     hasOrders: boolean;
     items: SpecialEventItem[];
 }

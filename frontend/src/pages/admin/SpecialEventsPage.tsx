@@ -12,6 +12,7 @@ import {
     NumberInput,
     Select,
     Stack,
+    Switch,
     Table,
     Text,
     TextInput,
@@ -22,6 +23,8 @@ import {DateInput} from "@mantine/dates";
 import {modals} from "@mantine/modals";
 import {
     IconAlertTriangle,
+    IconArchive,
+    IconArchiveOff,
     IconArrowDown,
     IconArrowUp,
     IconPencil,
@@ -59,6 +62,9 @@ export function SpecialEventsPage() {
     const [events, setEvents] = useState<SpecialEvent[]>([]);
     const [draft, setDraft] = useState<Draft | null>(null);
     const [error, setError] = useState('');
+    const [showArchived, setShowArchived] = useState(false);
+    const visibleEvents = events.filter((e) => showArchived || !e.archived);
+    const archivedCount = events.filter((e) => e.archived).length;
 
     const loadEvents = () => {
         eventsApi.request().then((result) => result && setEvents(result.data));
@@ -98,6 +104,13 @@ export function SpecialEventsPage() {
         });
     };
 
+    const setArchived = (event: SpecialEvent, archived: boolean) => {
+        setError('');
+        specialEventsApi.setArchived(event.uuid, archived)
+            .then((result) => setEvents(result.data))
+            .catch((err) => setError(errorMessage(err)));
+    };
+
     const confirmDelete = (event: SpecialEvent) => {
         modals.openConfirmModal({
             title: `Delete ${event.name}?`,
@@ -131,16 +144,21 @@ export function SpecialEventsPage() {
 
             {error && <Alert color="red" icon={<IconAlertTriangle/>} mb="md" withCloseButton onClose={() => setError('')}>{error}</Alert>}
             {eventsApi.loading && events.length === 0 && <Loader/>}
-            {!eventsApi.loading && events.length === 0 && <Text c="dimmed">No events yet.</Text>}
+            {!eventsApi.loading && visibleEvents.length === 0 && <Text c="dimmed">No events yet.</Text>}
+            {archivedCount > 0 && (
+                <Switch mb="md" label={`Show archived (${archivedCount})`} checked={showArchived}
+                        onChange={(e) => setShowArchived(e.currentTarget.checked)}/>
+            )}
 
             <Stack>
-                {events.map((event) => (
+                {visibleEvents.map((event) => (
                     <Card key={event.uuid} withBorder padding="md"
                           style={event.active ? {borderColor: 'var(--mantine-color-green-6)', borderWidth: 2} : undefined}>
                         <Group justify="space-between" mb="xs">
                             <Group gap="xs">
                                 <Text fw={700} size="lg">{event.name}</Text>
                                 {event.active && <Badge color="green">Running</Badge>}
+                                {event.archived && <Badge color="gray">Archived</Badge>}
                                 {event.eventDate && <Badge variant="light" color="gray">{event.eventDate}</Badge>}
                                 <Badge variant="light" color="blue">
                                     {event.itemsPerGuest === 1 ? '1 item per guest' : `${event.itemsPerGuest} items per guest`}
@@ -150,13 +168,23 @@ export function SpecialEventsPage() {
                                 {event.active
                                     ? <Button size="xs" color="red" variant="light" leftSection={<IconPlayerStop size={14}/>}
                                               onClick={() => confirmStop(event)}>Stop</Button>
-                                    : <Button size="xs" color="green" variant="light" leftSection={<IconPlayerPlay size={14}/>}
-                                              disabled={event.items.length === 0}
-                                              onClick={() => confirmStart(event)}>Start</Button>}
+                                    : !event.archived &&
+                                    <Button size="xs" color="green" variant="light" leftSection={<IconPlayerPlay size={14}/>}
+                                            disabled={event.items.length === 0}
+                                            onClick={() => confirmStart(event)}>Start</Button>}
+                                {!event.active && (
+                                    <Tooltip label={event.archived ? 'Restore from archive' : 'Archive (hide from this list)'}>
+                                        <ActionIcon variant="subtle" color="gray"
+                                                    aria-label={event.archived ? 'Restore event' : 'Archive event'}
+                                                    onClick={() => setArchived(event, !event.archived)}>
+                                            {event.archived ? <IconArchiveOff size={18}/> : <IconArchive size={18}/>}
+                                        </ActionIcon>
+                                    </Tooltip>
+                                )}
                                 <ActionIcon variant="subtle" onClick={() => editEvent(event)} aria-label="Edit event">
                                     <IconPencil size={18}/>
                                 </ActionIcon>
-                                <Tooltip label={event.hasOrders ? 'Events with orders can\'t be deleted' : 'Delete event'}>
+                                <Tooltip label={event.hasOrders ? 'Events with orders can\'t be deleted. Archive it instead.' : 'Delete event'}>
                                     <ActionIcon variant="subtle" color="red" aria-label="Delete event"
                                                 disabled={event.hasOrders || event.active}
                                                 onClick={() => confirmDelete(event)}>

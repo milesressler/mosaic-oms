@@ -268,4 +268,37 @@ class SpecialEventServiceTest {
                 .isInstanceOf(InvalidRequestException.class);
         verify(specialEventRepository, never()).delete(any());
     }
+
+    @Test
+    void archive_whileRunning_isRejected() {
+        when(specialEventRepository.findByUuid("event-uuid")).thenReturn(Optional.of(event));
+        eventIsActive(true);
+
+        assertThatThrownBy(() -> specialEventService.setArchived("event-uuid", true))
+                .isInstanceOf(InvalidRequestException.class)
+                .hasMessageContaining("Stop the event");
+        assertThat(event.isArchived()).isFalse();
+    }
+
+    @Test
+    void archive_whenStopped_hidesEvent() {
+        when(specialEventRepository.findByUuid("event-uuid")).thenReturn(Optional.of(event));
+        eventIsActive(false);
+
+        specialEventService.setArchived("event-uuid", true);
+
+        assertThat(event.isArchived()).isTrue();
+        verify(specialEventRepository).save(event);
+    }
+
+    @Test
+    void start_archivedEvent_isRejected() {
+        event.setArchived(true);
+        when(specialEventRepository.findByUuid("event-uuid")).thenReturn(Optional.of(event));
+
+        assertThatThrownBy(() -> specialEventService.setActiveEvent("event-uuid"))
+                .isInstanceOf(InvalidRequestException.class)
+                .hasMessageContaining("Restore");
+        verify(featuresService, never()).setActiveSpecialEvent(any());
+    }
 }
